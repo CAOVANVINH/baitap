@@ -24,7 +24,17 @@
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.3);
             transition: all 0.2s ease-in-out;
+            /* Đảm bảo chữ trong nút có màu dễ đọc */
+            color: #2d3748; /* Màu xám đậm cho chữ */
         }
+        /* Override text color for specific buttons if needed for better contrast */
+        #start-btn, #next-btn, #play-again-btn, #admin-login-btn, #logout-btn, #view-history-btn, #back-to-admin-btn {
+            color: white; /* Giữ màu trắng cho các nút hành động chính */
+        }
+        #admin-login-btn {
+            color: #cbd5e0; /* Màu xám nhạt cho nút admin ở màn hình chính */
+        }
+
         .choice-btn.selected {
             transform: scale(1.05);
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
@@ -34,13 +44,45 @@
         .answer-option.correct {
             background-color: rgba(34, 197, 94, 0.7) !important;
             border-color: rgba(22, 163, 74, 0.8);
+            color: white !important; /* Đảm bảo chữ trắng trên nền xanh */
         }
         .answer-option.incorrect {
             background-color: rgba(239, 68, 68, 0.7) !important;
             border-color: rgba(220, 38, 38, 0.8);
+            color: white !important; /* Đảm bảo chữ trắng trên nền đỏ */
         }
         .modal-overlay {
             transition: opacity 0.3s ease;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .glass-container {
+                padding: 1rem; /* Giảm padding trên điện thoại */
+                margin: 0.5rem; /* Giảm margin trên điện thoại */
+            }
+            h1 {
+                font-size: 2.25rem; /* Điều chỉnh kích thước tiêu đề */
+            }
+            h2 {
+                font-size: 1.5rem; /* Điều chỉnh kích thước tiêu đề phụ */
+            }
+            .choice-btn, .answer-option, #start-btn, #next-btn, #play-again-btn {
+                font-size: 1rem; /* Điều chỉnh kích thước chữ nút */
+                padding: 0.8rem; /* Điều chỉnh padding nút */
+            }
+            #progress-text, #score-text {
+                font-size: 0.9rem;
+            }
+            #question-container p {
+                font-size: 1.1rem; /* Điều chỉnh kích thước chữ câu hỏi */
+            }
+            #final-score {
+                font-size: 4rem; /* Giảm kích thước điểm cuối cùng */
+            }
+            #login-modal .glass-container {
+                padding: 1.5rem;
+            }
         }
     </style>
 </head>
@@ -48,35 +90,31 @@
 
     <div class="w-full max-w-3xl mx-auto glass-container rounded-3xl shadow-2xl p-4 md:p-8 relative">
 
-        <!-- Màn hình lựa chọn -->
         <div id="selection-screen">
             <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-2">Trò Chơi Học Tập</h1>
             <p class="text-center text-gray-700 mb-8">Cùng bé vừa học vừa chơi!</p>
 
-            <!-- Chọn Môn học -->
             <div class="mb-6">
                 <h2 class="text-xl font-semibold mb-3 text-gray-700">1. Chọn Môn Học</h2>
                 <div class="grid grid-cols-2 gap-4">
-                    <button data-subject="toan" class="choice-btn glass-btn bg-sky-500/40 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-sky-500/60">🔢 Toán Học</button>
-                    <button data-subject="tiengviet" class="choice-btn glass-btn bg-emerald-500/40 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-emerald-500/60">✍️ Tiếng Việt</button>
+                    <button data-subject="toan" class="choice-btn glass-btn bg-sky-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-sky-500/60">🔢 Toán Học</button>
+                    <button data-subject="tiengviet" class="choice-btn glass-btn bg-emerald-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-emerald-500/60">✍️ Tiếng Việt</button>
                 </div>
             </div>
 
-            <!-- Chọn Lớp -->
             <div class="mb-6">
                 <h2 class="text-xl font-semibold mb-3 text-gray-700">2. Chọn Lớp</h2>
                 <div class="grid grid-cols-2 gap-4">
-                    <button data-grade="lop1" class="choice-btn glass-btn bg-amber-500/40 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-amber-500/60">Lớp 1</button>
-                    <button data-grade="lop2" class="choice-btn glass-btn bg-rose-500/40 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-rose-500/60">Lớp 2</button>
+                    <button data-grade="lop1" class="choice-btn glass-btn bg-amber-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-amber-500/60">Lớp 1</button>
+                    <button data-grade="lop2" class="choice-btn glass-btn bg-rose-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-rose-500/60">Lớp 2</button>
                 </div>
             </div>
 
-            <!-- Chọn Học Kỳ -->
             <div class="mb-8">
                 <h2 class="text-xl font-semibold mb-3 text-gray-700">3. Chọn Học Kỳ</h2>
                 <div class="grid grid-cols-2 gap-4">
-                    <button data-semester="hocky1" class="choice-btn glass-btn bg-purple-500/40 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-purple-500/60">Học Kỳ 1</button>
-                    <button data-semester="hocky2" class="choice-btn glass-btn bg-pink-500/40 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-pink-500/60">Học Kỳ 2</button>
+                    <button data-semester="hocky1" class="choice-btn glass-btn bg-purple-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-purple-500/60">Học Kỳ 1</button>
+                    <button data-semester="hocky2" class="choice-btn glass-btn bg-pink-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-pink-500/60">Học Kỳ 2</button>
                 </div>
             </div>
 
@@ -84,7 +122,6 @@
             <div class="text-right mt-4"><button id="admin-login-btn" class="text-sm text-gray-200 hover:text-white font-semibold">Quản trị viên</button></div>
         </div>
 
-        <!-- Màn hình trò chơi -->
         <div id="game-screen" class="hidden">
             <div class="flex justify-between items-center mb-4 text-white">
                 <div id="progress-text" class="font-semibold">Câu 1/20</div>
@@ -98,7 +135,6 @@
             <button id="next-btn" class="hidden w-full mt-4 glass-btn bg-blue-500/60 text-white font-bold py-3 rounded-2xl shadow-lg hover:bg-blue-500/80">Câu tiếp theo</button>
         </div>
 
-        <!-- Màn hình kết quả -->
         <div id="results-screen" class="hidden text-center">
             <h2 class="text-3xl font-bold text-gray-800 mb-4">Hoàn thành!</h2>
             <p id="final-score-text" class="text-xl text-gray-700 mb-2">Bé đã đạt được</p>
@@ -107,38 +143,34 @@
             <button id="play-again-btn" class="w-full glass-btn bg-green-500/60 text-white font-bold py-4 rounded-2xl text-xl shadow-lg hover:bg-green-500/80">Chơi lại</button>
         </div>
         
-        <!-- Màn hình Admin -->
         <div id="admin-panel" class="hidden">
             <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Bảng điều khiển Admin</h2>
             <div class="space-y-4">
-                 <button id="view-history-btn" class="w-full glass-btn bg-indigo-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-indigo-500/80">Xem Lịch Sử Thi</button>
-                 <button id="logout-btn" class="w-full glass-btn bg-red-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-500/80">Đăng xuất</button>
+                   <button id="view-history-btn" class="w-full glass-btn bg-indigo-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-indigo-500/80">Xem Lịch Sử Thi</button>
+                   <button id="logout-btn" class="w-full glass-btn bg-red-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-500/80">Đăng xuất</button>
             </div>
         </div>
         
-        <!-- Màn hình Lịch sử thi -->
         <div id="history-panel" class="hidden">
             <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Lịch Sử Làm Bài</h2>
             <div id="history-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4">
-                <!-- Bảng lịch sử sẽ được chèn vào đây -->
-            </div>
+                </div>
             <button id="back-to-admin-btn" class="w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
         </div>
 
     </div>
 
-    <!-- Modal Đăng nhập Admin -->
     <div id="login-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0">
         <div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative">
             <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Đăng Nhập Admin</h2>
             <form id="login-form">
                 <div class="mb-4">
                     <label for="username" class="block text-gray-700 font-semibold mb-2">Tên đăng nhập</label>
-                    <input type="text" id="username" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" id="username" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
                 </div>
                 <div class="mb-6">
                     <label for="password" class="block text-gray-700 font-semibold mb-2">Mật khẩu</label>
-                    <input type="password" id="password" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="password" id="password" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
                 </div>
                 <p id="login-error" class="text-red-500 text-center text-sm h-4 mb-4"></p>
                 <button type="submit" class="w-full glass-btn bg-blue-600/70 text-white font-bold py-3 rounded-2xl hover:bg-blue-600/90">Đăng nhập</button>
@@ -156,7 +188,7 @@
 
         // --- NGÂN HÀNG CÂU HỎI LỚN (Giữ nguyên) ---
         const questions = {
-             toan: {
+            toan: {
                 lop1: {
                     hocky1: [ { question: "5 + 4 = ?", options: [8, 9, 10, 7], answer: 9 }, { question: "8 - 3 = ?", options: [4, 5, 6, 7], answer: 5 }, { question: "Số liền sau của 9 là?", options: [8, 10, 11, 7], answer: 10 }, { question: "Có mấy hình tròn: 🔵 🔺 🔵 ⬜", options: [1, 2, 3, 4], answer: 2 }, { question: "2 + 6 = ?", options: [7, 8, 9, 10], answer: 8 }, { question: "Số liền trước của 15 là?", options: [13, 14, 16, 17], answer: 14 }, { question: "Hình vuông có mấy cạnh?", options: [2, 3, 4, 5], answer: 4 }, { question: "Điền dấu: 5 + 3 ... 8", options: ["<", ">", "="], answer: "=" }, { question: "7 + ... = 10", options: [1, 2, 3, 4], answer: 3 }, { question: "Số bé nhất trong các số: 9, 3, 7, 5 là?", options: [9, 3, 7, 5], answer: 3 }, { question: "6 + 1 = ?", options: [5, 6, 7, 8], answer: 7 }, { question: "10 - 10 = ?", options: [0, 1, 10, 20], answer: 0 }, { question: "Số lớn nhất trong các số: 1, 8, 4, 6 là?", options: [1, 8, 4, 6], answer: 8 }, { question: "3 + ... = 9", options: [5, 6, 7, 8], answer: 6 }, { question: "Có mấy hình vuông: ⬜ ⬜ 🔵 ⬜", options: [1, 2, 3, 4], answer: 3 }, { question: "9 - 7 = ?", options: [1, 2, 3, 16], answer: 2 }, { question: "Số liền sau của 0 là?", options: [0, 1, 2, -1], answer: 1 }, { question: "4 + 4 = ?", options: [6, 7, 8, 9], answer: 8 }, { question: "Điền dấu: 10 ... 5 + 6", options: ["<", ">", "="], answer: "<" }, { question: "Trong các số 2, 8, 5, 1, số nào nhỏ nhất?", options: [2, 8, 5, 1], answer: 1 } ],
                     hocky2: [ { question: "10 + 6 = ?", options: [15, 16, 17, 18], answer: 16 }, { question: "18 - 5 = ?", options: [12, 13, 14, 15], answer: 13 }, { question: "Số gồm 1 chục và 7 đơn vị là?", options: [10, 7, 17, 71], answer: 17 }, { question: "Hôm nay là thứ Hai, ngày mai là thứ mấy?", options: ["Chủ Nhật", "Thứ Ba", "Thứ Tư"], answer: "Thứ Ba" }, { question: "Lan có 8 kẹo, mẹ cho thêm 5. Lan có tất cả...cái kẹo?", options: [12, 13, 14, 3], answer: 13 }, { question: "Số lớn nhất có hai chữ số là?", options: [10, 90, 99, 100], answer: 99 }, { question: "15 + 4 = ?", options: [18, 19, 20, 21], answer: 19 }, { question: "Trên cành có 12 con chim, bay đi 4 con. Còn lại...con chim?", options: [7, 8, 9, 16], answer: 8 }, { question: "Số 50 còn được gọi là?", options: ["Năm mươi", "Năm chục", "Cả hai đều đúng"], answer: "Cả hai đều đúng" }, { question: "Điền số: 20, 30, ..., 50", options: [35, 40, 45, 60], answer: 40 }, { question: "30 + 40 = ?", options: [60, 70, 80, 10], answer: 70 }, { question: "90 - 20 = ?", options: [60, 70, 80, 110], answer: 70 }, { question: "Số gồm 8 chục và 1 đơn vị là?", options: [80, 18, 81, 9], answer: 81 }, { question: "Số bé nhất có hai chữ số giống nhau là?", options: [10, 11, 12, 22], answer: 11 }, { question: "An có 19 viên bi, An cho Bình 7 viên. An còn lại...viên bi?", options: [11, 12, 13, 26], answer: 12 }, { question: "1 tuần có mấy ngày?", options: [5, 6, 7, 8], answer: 7 }, { question: "Số liền trước của 100 là?", options: [90, 98, 99, 101], answer: 99 }, { question: "Điền dấu: 45 ... 54", options: ["<", ">", "="], answer: "<" }, { question: "50 + 50 = ?", options: [90, 100, 10, 0], answer: 100 }, { question: "Số tròn chục lớn nhất có hai chữ số là?", options: [10, 80, 90, 99], answer: 90 } ]
@@ -185,6 +217,7 @@
 
         // --- BIẾN FIREBASE ---
         let db, auth;
+        // The __app_id variable is expected to be defined by the environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
         // --- LẤY CÁC PHẦN TỬ DOM ---
@@ -212,6 +245,7 @@
         // --- HÀM KHỞI TẠO FIREBASE VÀ XÁC THỰC ---
         async function initializeFirebase() {
             try {
+                // The __firebase_config variable is expected to be defined by the environment
                 const firebaseConfig = JSON.parse(window.__firebase_config || '{}');
                 const app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
@@ -271,18 +305,18 @@
 
                 const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
                 const table = document.createElement('table');
-                table.id = 'history-table';
+                table.classList.add('min-w-full', 'divide-y', 'divide-gray-200', 'rounded-lg', 'overflow-hidden');
                 table.innerHTML = `
-                    <thead>
+                    <thead class="bg-gray-100/50">
                         <tr>
-                            <th>Ngày Giờ</th>
-                            <th>Môn</th>
-                            <th>Lớp</th>
-                            <th>Học Kỳ</th>
-                            <th>Điểm</th>
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Ngày Giờ</th>
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Môn</th>
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Lớp</th>
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Học Kỳ</th>
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Điểm</th>
                         </tr>
                     </thead>
-                    <tbody></tbody>
+                    <tbody class="bg-white/30 divide-y divide-gray-200 text-gray-800"></tbody>
                 `;
                 const tbody = table.querySelector('tbody');
 
@@ -293,18 +327,18 @@
                     const date = result.date.toDate ? result.date.toDate() : new Date(result.date);
                     const formattedDate = date.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                     row.innerHTML = `
-                        <td>${formattedDate}</td>
-                        <td>${nameMap[result.subject] || result.subject}</td>
-                        <td>${nameMap[result.grade] || result.grade}</td>
-                        <td>${nameMap[result.semester] || result.semester}</td>
-                        <td class="font-bold">${result.score}/10</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-sm">${formattedDate}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-sm">${nameMap[result.subject] || result.subject}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-sm">${nameMap[result.grade] || result.grade}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-sm">${nameMap[result.semester] || result.semester}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-sm font-bold">${result.score}/10</td>
                     `;
                 });
                 historyTableContainer.appendChild(table);
 
             } catch (e) {
                 console.error("Error fetching history from Firestore:", e);
-                historyTableContainer.innerHTML = '<p class="text-center text-red-500">Không thể tải lịch sử. Lỗi quyền truy cập.</p>';
+                historyTableContainer.innerHTML = '<p class="text-center text-red-500">Không thể tải lịch sử. Lỗi quyền truy cập hoặc kết nối.</p>';
             }
         }
         
@@ -314,18 +348,119 @@
         }
 
         // --- CÁC HÀM LOGIC GAME (Giữ nguyên) ---
-        function updateStartButtonState() { if (selectedSubject && selectedGrade && selectedSemester) { startBtn.disabled = false; startBtn.classList.remove('bg-gray-400', 'cursor-not-allowed'); startBtn.classList.add('bg-blue-600/70', 'hover:bg-blue-600/90'); startBtn.classList.add('glass-btn'); } else { startBtn.disabled = true; startBtn.classList.add('bg-gray-500/50'); startBtn.classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90'); } }
-        function startGame() { let allQuestions = questions[selectedSubject][selectedGrade][selectedSemester]; currentQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, NUM_OF_QUESTIONS_PER_GAME); currentQuestionIndex = 0; score = 0; selectionScreen.classList.add('hidden'); gameScreen.classList.remove('hidden'); resultsScreen.classList.add('hidden'); displayQuestion(); }
-        function displayQuestion() { document.getElementById('feedback-container').innerHTML = ''; document.getElementById('next-btn').classList.add('hidden'); const questionData = currentQuestions[currentQuestionIndex]; document.getElementById('question-container').querySelector('p').textContent = questionData.question; const optionsContainer = document.getElementById('options-container'); optionsContainer.innerHTML = ''; const shuffledOptions = [...questionData.options].sort(() => Math.random() - 0.5); shuffledOptions.forEach(option => { const button = document.createElement('button'); button.textContent = option; button.classList.add('answer-option', 'w-full', 'p-4', 'rounded-2xl', 'font-semibold', 'text-white', 'glass-btn', 'bg-white/20', 'hover:bg-white/40'); button.onclick = (e) => checkAnswer(e.target, questionData.answer); optionsContainer.appendChild(button); }); document.getElementById('progress-text').textContent = `Câu ${currentQuestionIndex + 1}/${currentQuestions.length}`; document.getElementById('score-text').textContent = `Điểm: ${score * 0.5}`; }
-        function checkAnswer(selectedButton, correctAnswer) { const allOptions = document.querySelectorAll('.answer-option'); allOptions.forEach(btn => btn.disabled = true); const feedbackContainer = document.getElementById('feedback-container'); if (selectedButton.textContent == correctAnswer) { score++; selectedButton.classList.add('correct'); feedbackContainer.textContent = '🎉 Đúng rồi!'; } else { selectedButton.classList.add('incorrect'); feedbackContainer.textContent = '😥 Sai rồi!'; allOptions.forEach(btn => { if (btn.textContent == correctAnswer) { btn.classList.add('correct'); } }); } document.getElementById('score-text').textContent = `Điểm: ${score * 0.5}`; document.getElementById('next-btn').classList.remove('hidden'); }
-        function nextQuestion() { currentQuestionIndex++; if (currentQuestionIndex < currentQuestions.length) { displayQuestion(); } else { showResults(); } }
-        function showResults() { gameScreen.classList.add('hidden'); resultsScreen.classList.remove('hidden'); const finalScore = score * 0.5; document.getElementById('final-score').textContent = `${finalScore}/10`; const resultData = { date: serverTimestamp(), subject: selectedSubject, grade: selectedGrade, semester: selectedSemester, score: finalScore }; saveResult(resultData); const finalMessage = document.getElementById('final-message'); const percentage = (score / currentQuestions.length) * 100; if (percentage === 100) { finalMessage.textContent = "Xuất sắc! Bé thật là giỏi!"; } else if (percentage >= 70) { finalMessage.textContent = "Giỏi lắm! Cố gắng thêm chút nữa nhé!"; } else if (percentage >= 50) { finalMessage.textContent = "Làm tốt lắm! Tiếp tục luyện tập nhé!"; } else { finalMessage.textContent = "Đừng buồn, lần sau sẽ tốt hơn!"; } }
-        function resetGame() { resultsScreen.classList.add('hidden'); selectionScreen.classList.remove('hidden'); selectedSubject = null; selectedGrade = null; selectedSemester = null; subjectBtns.forEach(btn => btn.classList.remove('selected')); gradeBtns.forEach(btn => btn.classList.remove('selected')); semesterBtns.forEach(btn => btn.classList.remove('selected')); updateStartButtonState(); }
+        function updateStartButtonState() { 
+            if (selectedSubject && selectedGrade && selectedSemester) { 
+                startBtn.disabled = false; 
+                startBtn.classList.remove('bg-gray-500/50', 'cursor-not-allowed'); 
+                startBtn.classList.add('bg-blue-600/70', 'hover:bg-blue-600/90'); 
+            } else { 
+                startBtn.disabled = true; 
+                startBtn.classList.add('bg-gray-500/50', 'cursor-not-allowed'); 
+                startBtn.classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90'); 
+            } 
+        }
+        function startGame() { 
+            let allQuestions = questions[selectedSubject][selectedGrade][selectedSemester]; 
+            currentQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, NUM_OF_QUESTIONS_PER_GAME); 
+            currentQuestionIndex = 0; 
+            score = 0; 
+            selectionScreen.classList.add('hidden'); 
+            gameScreen.classList.remove('hidden'); 
+            resultsScreen.classList.add('hidden'); 
+            displayQuestion(); 
+        }
+        function displayQuestion() { 
+            document.getElementById('feedback-container').innerHTML = ''; 
+            document.getElementById('next-btn').classList.add('hidden'); 
+            const questionData = currentQuestions[currentQuestionIndex]; 
+            document.getElementById('question-container').querySelector('p').textContent = questionData.question; 
+            const optionsContainer = document.getElementById('options-container'); 
+            optionsContainer.innerHTML = ''; 
+            const shuffledOptions = [...questionData.options].sort(() => Math.random() - 0.5); 
+            shuffledOptions.forEach(option => { 
+                const button = document.createElement('button'); 
+                button.textContent = option; 
+                button.classList.add('answer-option', 'w-full', 'p-4', 'rounded-2xl', 'font-semibold', 'glass-btn', 'bg-white/20', 'hover:bg-white/40', 'text-gray-800'); /* Thêm text-gray-800 */
+                button.onclick = (e) => checkAnswer(e.target, questionData.answer); 
+                optionsContainer.appendChild(button); 
+            }); 
+            document.getElementById('progress-text').textContent = `Câu ${currentQuestionIndex + 1}/${currentQuestions.length}`; 
+            document.getElementById('score-text').textContent = `Điểm: ${score / 2}/10`; 
+        }
+        function checkAnswer(selectedButton, correctAnswer) { 
+            const allOptions = document.querySelectorAll('.answer-option'); 
+            allOptions.forEach(btn => btn.disabled = true); 
+            const feedbackContainer = document.getElementById('feedback-container'); 
+            if (selectedButton.textContent == correctAnswer) { 
+                score++; 
+                selectedButton.classList.add('correct'); 
+                feedbackContainer.textContent = '🎉 Đúng rồi!'; 
+            } else { 
+                selectedButton.classList.add('incorrect'); 
+                feedbackContainer.textContent = '😥 Sai rồi!'; 
+                allOptions.forEach(btn => { 
+                    if (btn.textContent == correctAnswer) { 
+                        btn.classList.add('correct'); 
+                    } 
+                }); 
+            } 
+            document.getElementById('score-text').textContent = `Điểm: ${score / 2}/10`; 
+            document.getElementById('next-btn').classList.remove('hidden'); 
+        }
+        function nextQuestion() { 
+            currentQuestionIndex++; 
+            if (currentQuestionIndex < currentQuestions.length) { 
+                displayQuestion(); 
+            } else { 
+                showResults(); 
+            } 
+        }
+        function showResults() { 
+            gameScreen.classList.add('hidden'); 
+            resultsScreen.classList.remove('hidden'); 
+            const finalScore = score / 2; // Score out of 10 (20 questions * 0.5 points per question)
+            document.getElementById('final-score').textContent = `${finalScore}/10`; 
+            const resultData = { date: serverTimestamp(), subject: selectedSubject, grade: selectedGrade, semester: selectedSemester, score: finalScore }; 
+            saveResult(resultData); 
+            const finalMessage = document.getElementById('final-message'); 
+            const percentage = (score / currentQuestions.length) * 100; 
+            if (percentage === 100) { 
+                finalMessage.textContent = "Xuất sắc! Bé thật là giỏi!"; 
+            } else if (percentage >= 70) { 
+                finalMessage.textContent = "Giỏi lắm! Cố gắng thêm chút nữa nhé!"; 
+            } else if (percentage >= 50) { 
+                finalMessage.textContent = "Làm tốt lắm! Tiếp tục luyện tập nhé!"; 
+            } else { 
+                finalMessage.textContent = "Đừng buồn, lần sau sẽ tốt hơn!"; 
+            } 
+        }
+        function resetGame() { 
+            resultsScreen.classList.add('hidden'); 
+            selectionScreen.classList.remove('hidden'); 
+            selectedSubject = null; 
+            selectedGrade = null; 
+            selectedSemester = null; 
+            subjectBtns.forEach(btn => btn.classList.remove('selected')); 
+            gradeBtns.forEach(btn => btn.classList.remove('selected')); 
+            semesterBtns.forEach(btn => btn.classList.remove('selected')); 
+            updateStartButtonState(); 
+        }
 
         // --- HÀM XỬ LÝ CHO ADMIN ---
         function showLoginModal() { loginModal.classList.remove('hidden'); setTimeout(() => loginModal.classList.remove('opacity-0'), 10); }
         function hideLoginModal() { loginModal.classList.add('opacity-0'); setTimeout(() => loginModal.classList.add('hidden'), 300); loginError.textContent = ''; loginForm.reset(); }
-        function handleLogin(event) { event.preventDefault(); const username = loginForm.username.value; const password = loginForm.password.value; if (username === 'admin' && password === 'admin') { hideLoginModal(); selectionScreen.classList.add('hidden'); adminPanel.classList.remove('hidden'); } else { loginError.textContent = 'Tên đăng nhập hoặc mật khẩu không đúng.'; } }
+        function handleLogin(event) { 
+            event.preventDefault(); 
+            const username = loginForm.username.value; 
+            const password = loginForm.password.value; 
+            if (username === 'admin' && password === 'admin') { /* Cảnh báo: Hardcoded credentials! */
+                hideLoginModal(); 
+                selectionScreen.classList.add('hidden'); 
+                adminPanel.classList.remove('hidden'); 
+            } else { 
+                loginError.textContent = 'Tên đăng nhập hoặc mật khẩu không đúng.'; 
+            } 
+        }
         function handleLogout() { adminPanel.classList.add('hidden'); selectionScreen.classList.remove('hidden'); resetGame(); }
 
         // --- GẮN SỰ KIỆN ---
