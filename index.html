@@ -1,1 +1,351 @@
-xin chao
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trò Chơi Học Tập Vui</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(to right top, #6d8cf0, #8d8de0, #a98fcb, #be93b6, #ce99a6);
+        }
+        .glass-container {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glass-btn {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.2s ease-in-out;
+        }
+        .choice-btn.selected {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+            border-width: 2px;
+            border-color: rgba(255, 255, 255, 0.7);
+        }
+        .answer-option.correct {
+            background-color: rgba(34, 197, 94, 0.7) !important;
+            border-color: rgba(22, 163, 74, 0.8);
+        }
+        .answer-option.incorrect {
+            background-color: rgba(239, 68, 68, 0.7) !important;
+            border-color: rgba(220, 38, 38, 0.8);
+        }
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-3xl mx-auto glass-container rounded-3xl shadow-2xl p-4 md:p-8 relative">
+
+        <!-- Màn hình lựa chọn -->
+        <div id="selection-screen">
+            <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-2">Trò Chơi Học Tập</h1>
+            <p class="text-center text-gray-700 mb-8">Cùng bé vừa học vừa chơi!</p>
+
+            <!-- Chọn Môn học -->
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold mb-3 text-gray-700">1. Chọn Môn Học</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <button data-subject="toan" class="choice-btn glass-btn bg-sky-500/40 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-sky-500/60">🔢 Toán Học</button>
+                    <button data-subject="tiengviet" class="choice-btn glass-btn bg-emerald-500/40 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-emerald-500/60">✍️ Tiếng Việt</button>
+                </div>
+            </div>
+
+            <!-- Chọn Lớp -->
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold mb-3 text-gray-700">2. Chọn Lớp</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <button data-grade="lop1" class="choice-btn glass-btn bg-amber-500/40 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-amber-500/60">Lớp 1</button>
+                    <button data-grade="lop2" class="choice-btn glass-btn bg-rose-500/40 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-rose-500/60">Lớp 2</button>
+                </div>
+            </div>
+
+            <!-- Chọn Học Kỳ -->
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold mb-3 text-gray-700">3. Chọn Học Kỳ</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <button data-semester="hocky1" class="choice-btn glass-btn bg-purple-500/40 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-purple-500/60">Học Kỳ 1</button>
+                    <button data-semester="hocky2" class="choice-btn glass-btn bg-pink-500/40 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-pink-500/60">Học Kỳ 2</button>
+                </div>
+            </div>
+
+            <button id="start-btn" class="w-full glass-btn bg-gray-500/50 text-white font-bold py-4 rounded-2xl text-xl shadow-lg cursor-not-allowed" disabled>Bắt đầu!</button>
+            <div class="text-right mt-4"><button id="admin-login-btn" class="text-sm text-gray-200 hover:text-white font-semibold">Quản trị viên</button></div>
+        </div>
+
+        <!-- Màn hình trò chơi -->
+        <div id="game-screen" class="hidden">
+            <div class="flex justify-between items-center mb-4 text-white">
+                <div id="progress-text" class="font-semibold">Câu 1/20</div>
+                <div id="score-text" class="font-bold text-lg">Điểm: 0</div>
+            </div>
+            <div id="question-container" class="bg-black/10 p-6 rounded-2xl text-center mb-6 min-h-[100px] flex items-center justify-center">
+                <p class="text-xl md:text-2xl font-semibold text-white"></p>
+            </div>
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            <div id="feedback-container" class="text-center mt-4 font-bold text-2xl h-8 text-white"></div>
+            <button id="next-btn" class="hidden w-full mt-4 glass-btn bg-blue-500/60 text-white font-bold py-3 rounded-2xl shadow-lg hover:bg-blue-500/80">Câu tiếp theo</button>
+        </div>
+
+        <!-- Màn hình kết quả -->
+        <div id="results-screen" class="hidden text-center">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">Hoàn thành!</h2>
+            <p id="final-score-text" class="text-xl text-gray-700 mb-2">Bé đã đạt được</p>
+            <p id="final-score" class="text-6xl font-bold text-blue-600 mb-6">0/10</p>
+            <p id="final-message" class="text-lg text-gray-600 mb-8">Cố gắng lên ở lần sau nhé!</p>
+            <button id="play-again-btn" class="w-full glass-btn bg-green-500/60 text-white font-bold py-4 rounded-2xl text-xl shadow-lg hover:bg-green-500/80">Chơi lại</button>
+        </div>
+        
+        <!-- Màn hình Admin -->
+        <div id="admin-panel" class="hidden">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Bảng điều khiển Admin</h2>
+            <div class="space-y-4">
+                 <button id="view-history-btn" class="w-full glass-btn bg-indigo-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-indigo-500/80">Xem Lịch Sử Thi</button>
+                 <button id="logout-btn" class="w-full glass-btn bg-red-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-500/80">Đăng xuất</button>
+            </div>
+        </div>
+        
+        <!-- Màn hình Lịch sử thi -->
+        <div id="history-panel" class="hidden">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Lịch Sử Làm Bài</h2>
+            <div id="history-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4">
+                <!-- Bảng lịch sử sẽ được chèn vào đây -->
+            </div>
+            <button id="back-to-admin-btn" class="w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
+        </div>
+
+    </div>
+
+    <!-- Modal Đăng nhập Admin -->
+    <div id="login-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0">
+        <div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Đăng Nhập Admin</h2>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="username" class="block text-gray-700 font-semibold mb-2">Tên đăng nhập</label>
+                    <input type="text" id="username" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-6">
+                    <label for="password" class="block text-gray-700 font-semibold mb-2">Mật khẩu</label>
+                    <input type="password" id="password" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <p id="login-error" class="text-red-500 text-center text-sm h-4 mb-4"></p>
+                <button type="submit" class="w-full glass-btn bg-blue-600/70 text-white font-bold py-3 rounded-2xl hover:bg-blue-600/90">Đăng nhập</button>
+            </form>
+            <button id="close-modal-btn" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl">&times;</button>
+        </div>
+    </div>
+
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- NGÂN HÀNG CÂU HỎI LỚN (Giữ nguyên) ---
+        const questions = {
+             toan: {
+                lop1: {
+                    hocky1: [ { question: "5 + 4 = ?", options: [8, 9, 10, 7], answer: 9 }, { question: "8 - 3 = ?", options: [4, 5, 6, 7], answer: 5 }, { question: "Số liền sau của 9 là?", options: [8, 10, 11, 7], answer: 10 }, { question: "Có mấy hình tròn: 🔵 🔺 🔵 ⬜", options: [1, 2, 3, 4], answer: 2 }, { question: "2 + 6 = ?", options: [7, 8, 9, 10], answer: 8 }, { question: "Số liền trước của 15 là?", options: [13, 14, 16, 17], answer: 14 }, { question: "Hình vuông có mấy cạnh?", options: [2, 3, 4, 5], answer: 4 }, { question: "Điền dấu: 5 + 3 ... 8", options: ["<", ">", "="], answer: "=" }, { question: "7 + ... = 10", options: [1, 2, 3, 4], answer: 3 }, { question: "Số bé nhất trong các số: 9, 3, 7, 5 là?", options: [9, 3, 7, 5], answer: 3 }, { question: "6 + 1 = ?", options: [5, 6, 7, 8], answer: 7 }, { question: "10 - 10 = ?", options: [0, 1, 10, 20], answer: 0 }, { question: "Số lớn nhất trong các số: 1, 8, 4, 6 là?", options: [1, 8, 4, 6], answer: 8 }, { question: "3 + ... = 9", options: [5, 6, 7, 8], answer: 6 }, { question: "Có mấy hình vuông: ⬜ ⬜ 🔵 ⬜", options: [1, 2, 3, 4], answer: 3 }, { question: "9 - 7 = ?", options: [1, 2, 3, 16], answer: 2 }, { question: "Số liền sau của 0 là?", options: [0, 1, 2, -1], answer: 1 }, { question: "4 + 4 = ?", options: [6, 7, 8, 9], answer: 8 }, { question: "Điền dấu: 10 ... 5 + 6", options: ["<", ">", "="], answer: "<" }, { question: "Trong các số 2, 8, 5, 1, số nào nhỏ nhất?", options: [2, 8, 5, 1], answer: 1 } ],
+                    hocky2: [ { question: "10 + 6 = ?", options: [15, 16, 17, 18], answer: 16 }, { question: "18 - 5 = ?", options: [12, 13, 14, 15], answer: 13 }, { question: "Số gồm 1 chục và 7 đơn vị là?", options: [10, 7, 17, 71], answer: 17 }, { question: "Hôm nay là thứ Hai, ngày mai là thứ mấy?", options: ["Chủ Nhật", "Thứ Ba", "Thứ Tư"], answer: "Thứ Ba" }, { question: "Lan có 8 kẹo, mẹ cho thêm 5. Lan có tất cả...cái kẹo?", options: [12, 13, 14, 3], answer: 13 }, { question: "Số lớn nhất có hai chữ số là?", options: [10, 90, 99, 100], answer: 99 }, { question: "15 + 4 = ?", options: [18, 19, 20, 21], answer: 19 }, { question: "Trên cành có 12 con chim, bay đi 4 con. Còn lại...con chim?", options: [7, 8, 9, 16], answer: 8 }, { question: "Số 50 còn được gọi là?", options: ["Năm mươi", "Năm chục", "Cả hai đều đúng"], answer: "Cả hai đều đúng" }, { question: "Điền số: 20, 30, ..., 50", options: [35, 40, 45, 60], answer: 40 }, { question: "30 + 40 = ?", options: [60, 70, 80, 10], answer: 70 }, { question: "90 - 20 = ?", options: [60, 70, 80, 110], answer: 70 }, { question: "Số gồm 8 chục và 1 đơn vị là?", options: [80, 18, 81, 9], answer: 81 }, { question: "Số bé nhất có hai chữ số giống nhau là?", options: [10, 11, 12, 22], answer: 11 }, { question: "An có 19 viên bi, An cho Bình 7 viên. An còn lại...viên bi?", options: [11, 12, 13, 26], answer: 12 }, { question: "1 tuần có mấy ngày?", options: [5, 6, 7, 8], answer: 7 }, { question: "Số liền trước của 100 là?", options: [90, 98, 99, 101], answer: 99 }, { question: "Điền dấu: 45 ... 54", options: ["<", ">", "="], answer: "<" }, { question: "50 + 50 = ?", options: [90, 100, 10, 0], answer: 100 }, { question: "Số tròn chục lớn nhất có hai chữ số là?", options: [10, 80, 90, 99], answer: 90 } ]
+                },
+                lop2: {
+                    hocky1: [ { question: "Phép tính '3 + 3 + 3 + 3' được viết thành?", options: ["3 x 3", "3 x 4", "4 x 3", "3 + 4"], answer: "3 x 4" }, { question: "2 x 8 = ?", options: [10, 14, 16, 18], answer: 16 }, { question: "15 : 3 = ?", options: [3, 4, 5, 6], answer: 5 }, { question: "Một giờ có bao nhiêu phút?", options: [30, 60, 90, 100], answer: 60 }, { question: "Tìm x, biết x + 15 = 40", options: [25, 35, 55, 15], answer: 25 }, { question: "Số liền sau của 99 là?", options: [98, 100, 101, 90], answer: 100 }, { question: "Đồng hồ chỉ 3 giờ đúng, kim ngắn chỉ số mấy?", options: [12, 3, 6, 9], answer: 3 }, { question: "5 x 7 = ?", options: [12, 30, 35, 40], answer: 35 }, { question: "Có 10 cái bánh chia đều cho 2 bạn. Mỗi bạn có...cái bánh?", options: [4, 5, 8, 12], answer: 5 }, { question: "Tìm hiệu của 50 và 20", options: [30, 70, 25, 35], answer: 30 }, { question: "4 x 6 = ?", options: [20, 22, 24, 26], answer: 24 }, { question: "20 : 5 = ?", options: [3, 4, 5, 6], answer: 4 }, { question: "Tìm x, biết x - 10 = 30", options: [10, 20, 30, 40], answer: 40 }, { question: "Mỗi chuồng có 5 con gà. 4 chuồng như vậy có...con gà?", options: [9, 15, 20, 25], answer: 20 }, { question: "Số 18 gồm mấy chục và mấy đơn vị?", options: ["1 chục và 8 đơn vị", "8 chục và 1 đơn vị", "10 chục và 8 đơn vị"], answer: "1 chục và 8 đơn vị" }, { question: "Tìm tổng của 35 và 25", options: [50, 55, 60, 65], answer: 60 }, { question: "2 x 1 = ?", options: [1, 2, 3, 0], answer: 2 }, { question: "30 : 3 = ?", options: [3, 10, 33, 27], answer: 10 }, { question: "Số liền trước của 200 là?", options: [100, 190, 199, 201], answer: 199 }, { question: "Trong phép chia 14 : 2 = 7, số 14 được gọi là gì?", options: ["Số bị chia", "Số chia", "Thương"], answer: "Số bị chia" } ],
+                    hocky2: [ { question: "56 + 28 = ?", options: [74, 84, 94, 78], answer: 84 }, { question: "81 - 34 = ?", options: [47, 57, 53, 43], answer: 47 }, { question: "1km bằng bao nhiêu mét?", options: [10, 100, 1000, 10000], answer: 1000 }, { question: "Số lớn nhất có ba chữ số là?", options: [100, 987, 999, 990], answer: 999 }, { question: "Tìm y, biết y x 4 = 36", options: [7, 8, 9, 10], answer: 9 }, { question: "Số gồm 5 trăm, 0 chục, 8 đơn vị là?", options: [508, 580, 805, 850], answer: 508 }, { question: "Thùng thứ nhất có 150l dầu, thùng thứ hai nhiều hơn 25l. Thùng thứ hai có...lít dầu?", options: [125, 175, 25, 165], answer: 175 }, { question: "Một phần ba của 27 là?", options: [3, 7, 8, 9], answer: 9 }, { question: "1 mét bằng bao nhiêu centimet?", options: [10, 50, 100, 1000], answer: 100 }, { question: "Có 5 túi kẹo, mỗi túi 8 cái. Tổng cộng có...cái kẹo?", options: [13, 35, 40, 45], answer: 40 }, { question: "7 x 8 = ?", options: [54, 56, 63, 64], answer: 56 }, { question: "48 : 6 = ?", options: [6, 7, 8, 9], answer: 8 }, { question: "Tìm y, biết 50 : y = 5", options: [5, 10, 25, 45], answer: 10 }, { question: "Số bé nhất có ba chữ số khác nhau là?", options: [100, 101, 102, 123], answer: 102 }, { question: "Một hình tam giác có các cạnh là 10cm, 12cm, 15cm. Chu vi hình tam giác là?", options: ["37cm", "27cm", "35cm", "40cm"], answer: "37cm" }, { question: "Số 609 đọc là?", options: ["Sáu trăm chín", "Sáu trăm linh chín", "Sáu chín không"], answer: "Sáu trăm linh chín" }, { question: "1000 - 500 = ?", options: [400, 500, 600, 1500], answer: 500 }, { question: "Một năm (không nhuận) có bao nhiêu ngày?", options: [360, 365, 366, 370], answer: 365 }, { question: "Tìm x, biết x : 7 = 6", options: [13, 1, 42, 49], answer: 42 }, { question: "So sánh: 456 ... 465", options: ["<", ">", "="], answer: "<" } ]
+                }
+            },
+            tiengviet: {
+                lop1: {
+                    hocky1: [ { question: "Tìm từ có vần 'a'", options: ["nhà", "bê", "sách", "bi"], answer: "nhà" }, { question: "Tiếng 'bà' có âm đầu là gì?", options: ["a", "b", "huyền", "ab"], answer: "b" }, { question: "Điền 'c' hay 'k': ...on ...iến", options: ["c, k", "k, c", "c, c", "k, k"], answer: "c, k" }, { question: "Đâu là tên một con vật?", options: ["bàn", "ghế", "mèo", "sông"], answer: "mèo" }, { question: "Điền 'g' hay 'gh': ...à trống", options: ["g", "gh"], answer: "g" }, { question: "Sắp xếp: mẹ, yêu, em", options: ["Em yêu mẹ", "Mẹ yêu em", "Yêu mẹ em"], answer: "Em yêu mẹ" }, { question: "Điền 's' hay 'x': ...e đạp", options: ["s", "x"], answer: "x" }, { question: "Trong từ 'cái ca', tiếng nào có thanh ngang?", options: ["cái", "ca", "cả hai", "không có"], answer: "ca" }, { question: "Tìm từ có vần 'oi'", options: ["cái nơ", "ngôi nhà", "bút", "cá"], answer: "ngôi nhà" }, { question: "Điền 'ng' hay 'ngh': ...ủ", options: ["ng", "ngh"], answer: "ng" }, { question: "Tiếng 'phố' có âm đầu là gì?", options: ["ph", "ô", "p", "h"], answer: "ph" }, { question: "Tìm từ có vần 'ê'", options: ["quả lê", "cái lá", "con bò", "cái ô"], answer: "quả lê" }, { question: "Điền 'd' hay 'gi': ...ày dép", options: ["d", "gi"], answer: "d" }, { question: "Sắp xếp: cá, rô, kho", options: ["Cá kho rô", "Kho cá rô", "Rô kho cá"], answer: "Kho cá rô" }, { question: "Từ nào chỉ đồ vật?", options: ["chạy", "nhảy", "cái bút", "xanh"], answer: "cái bút" }, { question: "Điền 'gh' hay 'g': ...ế", options: ["gh", "g"], answer: "gh" }, { question: "Tiếng 'nhà' có vần gì?", options: ["a", "nh", "ha", "nha"], answer: "a" }, { question: "Câu 'Bé đi học.' có mấy tiếng?", options: [2, 3, 4, 5], answer: 3 }, { question: "Tìm từ có thanh hỏi", options: ["bà", "bả", "bá", "bạ"], answer: "bả" }, { question: "Điền 'qu' hay 'c': ...ả ...ất", options: ["qu, c", "c, qu", "qu, qu", "c, c"], answer: "qu, c" } ],
+                    hocky2: [ { question: "Tìm từ có vần 'at'", options: ["nhà", "bài hát", "sách", "vở"], answer: "bài hát" }, { question: "Điền 'ch' hoặc 'tr': cây ...e", options: ["ch", "tr"], answer: "tr" }, { question: "Sắp xếp: xanh, bầu, trời", options: ["Xanh bầu trời", "Bầu trời xanh", "Trời xanh bầu"], answer: "Bầu trời xanh" }, { question: "Từ nào chỉ hoạt động?", options: ["cái cặp", "ngôi sao", "xinh đẹp", "múa hát"], answer: "múa hát" }, { question: "Câu 'Con mèo trèo cây cau.' có mấy tiếng?", options: [5, 6, 7, 8], answer: 6 }, { question: "Câu 'Bố là trụ cột của gia đình.' kết thúc bằng dấu gì?", options: [".", "?", "!", ","], answer: "." }, { question: "Từ nào viết đúng chính tả?", options: ["quả chanh", "qủa chanh", "quả tranh"], answer: "quả chanh" }, { question: "Tìm từ có vần 'oan'", options: ["cái bảng", "toán", "lan", "sách"], answer: "toán" }, { question: "Điền 'd', 'gi' hay 'r': ...a đình", options: ["d", "gi", "r"], answer: "gi" }, { question: "Từ nào chỉ đồ vật trong nhà?", options: ["công viên", "cái giường", "con đường", "cánh đồng"], answer: "cái giường" }, { question: "Tìm từ có vần 'iên'", options: ["cô tiên", "cái chiêng", "con kiến", "viên bi"], answer: "cô tiên" }, { question: "Điền 'l' hay 'n': ...o ...ê", options: ["l, n", "n, l", "l, l", "n, n"], answer: "n, l" }, { question: "Sắp xếp: hoa, hồng, nở", options: ["Nở hoa hồng", "Hồng hoa nở", "Hoa hồng nở"], answer: "Hoa hồng nở" }, { question: "Từ nào chỉ màu sắc?", options: ["cái cây", "chạy bộ", "vàng tươi", "ngọt ngào"], answer: "vàng tươi" }, { question: "Câu 'Trời mưa to.' thuộc mẫu câu nào?", options: ["Ai là gì?", "Ai làm gì?", "Ai thế nào?"], answer: "Ai thế nào?" }, { question: "Từ nào viết sai chính tả?", options: ["gieo hạt", "reo vui", "dao kéo", "rao bán"], answer: "reo vui" }, { question: "Tìm từ có vần 'ươu'", options: ["con hươu", "con cừu", "trái lựu", "dòng mương"], answer: "con hươu" }, { question: "Điền dấu hỏi hay dấu ngã: chia se...", options: ["hỏi", "ngã"], answer: "ngã" }, { question: "Từ 'trường học' có mấy tiếng?", options: [1, 2, 3, 4], answer: 2 }, { question: "Câu nào dùng để hỏi?", options: ["Mẹ đang nấu cơm.", "Mẹ nấu cơm chưa ạ?", "Mẹ nấu cơm ngon quá!"], answer: "Mẹ nấu cơm chưa ạ?" } ]
+                },
+                lop2: {
+                    hocky1: [ { question: "Từ nào không cùng nhóm: bút, thước, sách, hoa", options: ["bút", "thước", "sách", "hoa"], answer: "hoa" }, { question: "Tìm từ trái nghĩa với 'nhanh'", options: ["vội", "gấp", "chậm", "mau"], answer: "chậm" }, { question: "Dấu câu nào dùng để kết thúc một câu hỏi?", options: [".", "?", "!", ","], answer: "?" }, { question: "Từ nào viết đúng chính tả?", options: ["ngon nghẻo", "ngoằn ngoèo", "ngon ngoeo"], answer: "ngoằn ngoèo" }, { question: "Từ nào chỉ đặc điểm?", options: ["bơi", "tím", "ngủ", "cái nhà"], answer: "tím" }, { question: "Từ nào viết sai chính tả?", options: ["sản xuất", "xuất sắc", "dản dị", "dịu dàng"], answer: "dản dị" }, { question: "Từ trái nghĩa với 'khỏe mạnh' là?", options: ["cường tráng", "dũng cảm", "yếu ớt", "to lớn"], answer: "yếu ớt" }, { question: "Dòng nào gồm các từ chỉ sự vật?", options: ["đẹp, xấu, tốt", "thầy giáo, cây cối, dòng sông", "đi, đứng, nằm"], answer: "thầy giáo, cây cối, dòng sông" }, { question: "Tìm từ đồng nghĩa với 'to lớn'", options: ["nhỏ bé", "chật hẹp", "khổng lồ", "thấp"], answer: "khổng lồ" }, { question: "Từ nào viết đúng chính tả?", options: ["lắng lo", "nắng no", "lo lắng", "no nắng"], answer: "lo lắng" }, { question: "Từ 'chăm chỉ' là từ chỉ gì?", options: ["Sự vật", "Hoạt động", "Đặc điểm"], answer: "Đặc điểm" }, { question: "Tìm từ có chứa vần 'oanh'", options: ["doanh trại", "oan ức", "loay hoay", "khoanh tay"], answer: "doanh trại" }, { question: "Câu 'Con ngựa phi nhanh như bay.' sử dụng biện pháp tu từ gì?", options: ["Nhân hóa", "So sánh", "Ẩn dụ"], answer: "So sánh" }, { question: "Từ nào viết sai chính tả?", options: ["cái chổi", "cây chôi", "chôi nổi"], answer: "cây chôi" }, { question: "Bộ phận gạch chân trong câu 'Em **rất yêu quý** mẹ.' trả lời câu hỏi nào?", options: ["Là gì?", "Làm gì?", "Thế nào?"], answer: "Thế nào?" }, { question: "Từ đồng nghĩa với 'siêng năng'?", options: ["lười biếng", "cần cù", "thông minh", "nhanh nhẹn"], answer: "cần cù" }, { question: "Trong các từ sau, từ nào là từ láy: xinh xắn, tươi tốt, bàn ghế, sách vở", options: ["xinh xắn", "tươi tốt", "bàn ghế", "sách vở"], answer: "xinh xắn" }, { question: "Dấu hai chấm trong câu 'Mẹ bảo: \"Con đi học về phải rửa tay nhé!\"' có tác dụng gì?", options: ["Báo hiệu lời nói trực tiếp", "Kết thúc câu", "Ngăn cách các ý"], answer: "Báo hiệu lời nói trực tiếp" }, { question: "Từ nào chỉ hoạt động của học sinh?", options: ["cô giáo", "bảng đen", "học bài", "sân trường"], answer: "học bài" }, { question: "Tìm từ trái nghĩa với 'đoàn kết'", options: ["chia rẽ", "yêu thương", "đùm bọc", "gắn bó"], answer: "chia rẽ" } ],
+                    hocky2: [ { question: "Câu 'Ai thế nào?':", options: ["Em đang học bài.", "Bông hoa này rất đẹp.", "Bố em là bác sĩ."], answer: "Bông hoa này rất đẹp." }, { question: "Đặt câu hỏi cho bộ phận gạch chân: '**Bác nông dân** đang cày ruộng.'", options: ["Ai?", "Làm gì?", "Thế nào?"], answer: "Ai?" }, { question: "Câu 'Những chú chim đang hót trên cành.' thuộc mẫu câu nào?", options: ["Ai là gì?", "Ai làm gì?", "Ai thế nào?"], answer: "Ai làm gì?" }, { question: "Trong câu 'Mặt biển phẳng lặng và rộng mênh mông.', từ chỉ đặc điểm là?", options: ["Mặt biển", "phẳng lặng, rộng mênh mông", "và"], answer: "phẳng lặng, rộng mênh mông" }, { question: "Bộ phận trả lời câu hỏi 'Khi nào?' trong câu: '**Mùa hè**, hoa phượng nở đỏ rực.'", options: ["Mùa hè", "hoa phượng", "nở đỏ rực"], answer: "Mùa hè" }, { question: "Câu 'Ôi, bạn giỏi quá!' là loại câu gì?", options: ["Câu kể", "Câu hỏi", "Câu cảm"], answer: "Câu cảm" }, { question: "Tìm từ có hai tiếng đều bắt đầu bằng 'ch'", options: ["chăm chỉ", "trung thực", "chắc chắn", "chóng vánh"], answer: "chăm chỉ" }, { question: "Dấu phẩy trong câu 'Em thích học Toán, Tiếng Việt và Âm nhạc.' có tác dụng gì?", options: ["Ngăn cách các bộ phận cùng chức vụ", "Kết thúc câu", "Bắt đầu câu"], answer: "Ngăn cách các bộ phận cùng chức vụ" }, { question: "Từ 'hiền lành' là từ chỉ ...", options: ["Hoạt động", "Đặc điểm", "Sự vật"], answer: "Đặc điểm" }, { question: "Bộ phận trả lời câu hỏi 'Vì sao?' trong câu: 'Bạn Nam được cô giáo khen **vì bạn ấy học giỏi**.'", options: ["Bạn Nam", "được cô giáo khen", "vì bạn ấy học giỏi"], answer: "vì bạn ấy học giỏi" }, { question: "Từ nào là từ ghép: xe đạp, xinh xắn, đi đứng, lung linh", options: ["xe đạp", "xinh xắn", "đi đứng", "lung linh"], answer: "xe đạp" }, { question: "Câu 'Chú bộ đội canh giữ đất trời.' có bộ phận vị ngữ là?", options: ["Chú bộ đội", "canh giữ đất trời", "đất trời"], answer: "canh giữ đất trời" }, { question: "Từ nào sau đây viết đúng chính tả: chia sẻ, chia xẻ, xẻ chia", options: ["chia sẻ", "chia xẻ", "xẻ chia"], answer: "chia sẻ" }, { question: "Đặt câu hỏi cho bộ phận gạch chân: 'Hoa phượng nở đỏ rực **trên sân trường**.'", options: ["Khi nào?", "Ở đâu?", "Vì sao?"], answer: "Ở đâu?" }, { question: "Từ 'dũng cảm' đồng nghĩa với từ nào?", options: ["nhút nhát", "gan dạ", "hiền lành", "thật thà"], answer: "gan dạ" }, { question: "Câu 'Mùa xuân, cây cối đâm chồi nảy lộc.' có mấy từ chỉ sự vật?", options: [2, 3, 4, 5], answer: 3 }, { question: "Từ nào không phải là từ chỉ người?", options: ["bác sĩ", "giáo viên", "kỹ sư", "bệnh viện"], answer: "bệnh viện" }, { question: "Dấu chấm than (!) thường được dùng ở cuối câu nào?", options: ["Câu kể", "Câu hỏi", "Câu cảm"], answer: "Câu cảm" }, { question: "Trong các từ sau, từ nào là từ Hán Việt: núi sông, đất nước, giang sơn, non nước", options: ["núi sông", "đất nước", "giang sơn", "non nước"], answer: "giang sơn" }, { question: "Bộ phận chủ ngữ trong câu 'Những bông hoa đua nhau khoe sắc.' là?", options: ["Những bông hoa", "đua nhau khoe sắc", "khoe sắc"], answer: "Những bông hoa" } ]
+                }
+            }
+        };
+
+        // --- BIẾN TRẠNG THÁI ---
+        let selectedSubject = null, selectedGrade = null, selectedSemester = null;
+        let currentQuestions = [], currentQuestionIndex = 0, score = 0;
+        const NUM_OF_QUESTIONS_PER_GAME = 20;
+
+        // --- BIẾN FIREBASE ---
+        let db, auth;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        // --- LẤY CÁC PHẦN TỬ DOM ---
+        const selectionScreen = document.getElementById('selection-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const startBtn = document.getElementById('start-btn');
+        const subjectBtns = document.querySelectorAll('[data-subject]');
+        const gradeBtns = document.querySelectorAll('[data-grade]');
+        const semesterBtns = document.querySelectorAll('[data-semester]');
+        
+        // DOM CHO ADMIN
+        const adminPanel = document.getElementById('admin-panel');
+        const adminLoginBtn = document.getElementById('admin-login-btn');
+        const loginModal = document.getElementById('login-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const loginForm = document.getElementById('login-form');
+        const logoutBtn = document.getElementById('logout-btn');
+        const loginError = document.getElementById('login-error');
+        const viewHistoryBtn = document.getElementById('view-history-btn');
+        const historyPanel = document.getElementById('history-panel');
+        const backToAdminBtn = document.getElementById('back-to-admin-btn');
+        const historyTableContainer = document.getElementById('history-table-container');
+
+        // --- HÀM KHỞI TẠO FIREBASE VÀ XÁC THỰC ---
+        async function initializeFirebase() {
+            try {
+                const firebaseConfig = JSON.parse(window.__firebase_config || '{}');
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                
+                // Sign in anonymously to get permissions
+                onAuthStateChanged(auth, user => {
+                    if (!user) {
+                        signInAnonymously(auth).catch(error => {
+                            console.error("Anonymous sign-in error:", error);
+                        });
+                    }
+                });
+            } catch (error) {
+                console.error("Firebase config error:", error);
+                alert("Không thể kết nối đến cơ sở dữ liệu. Vui lòng kiểm tra lại cấu hình.");
+            }
+        }
+        
+        // --- HÀM LƯU VÀ HIỂN THỊ LỊCH SỬ (DÙNG FIRESTORE) ---
+        async function saveResult(resultData) {
+            if (!db) {
+                console.error("DB not connected.");
+                return;
+            }
+            try {
+                // FIX: Simplified the collection path to avoid permission issues with complex paths.
+                const historyCollectionRef = collection(db, `artifacts/${appId}/public/quizResults`);
+                await addDoc(historyCollectionRef, resultData);
+            } catch (e) {
+                console.error("Error writing result to Firestore:", e);
+            }
+        }
+
+        async function displayHistory() {
+            adminPanel.classList.add('hidden');
+            historyPanel.classList.remove('hidden');
+            
+            if (!db) {
+                historyTableContainer.innerHTML = '<p class="text-center text-gray-500">Lỗi kết nối CSDL.</p>';
+                return;
+            }
+            
+            historyTableContainer.innerHTML = '<p class="text-center text-gray-500">Đang tải lịch sử...</p>';
+
+            try {
+                // FIX: Reading from the simplified collection path.
+                const historyCollectionRef = collection(db, `artifacts/${appId}/public/quizResults`);
+                const q = query(historyCollectionRef, orderBy("date", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                historyTableContainer.innerHTML = '';
+                if (querySnapshot.empty) {
+                    historyTableContainer.innerHTML = '<p class="text-center text-gray-500">Chưa có lịch sử làm bài.</p>';
+                    return;
+                }
+
+                const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
+                const table = document.createElement('table');
+                table.id = 'history-table';
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Ngày Giờ</th>
+                            <th>Môn</th>
+                            <th>Lớp</th>
+                            <th>Học Kỳ</th>
+                            <th>Điểm</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                `;
+                const tbody = table.querySelector('tbody');
+
+                querySnapshot.forEach((doc) => {
+                    const result = doc.data();
+                    const row = tbody.insertRow();
+                    // Firestore timestamp needs to be converted to a Date object
+                    const date = result.date.toDate ? result.date.toDate() : new Date(result.date);
+                    const formattedDate = date.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    row.innerHTML = `
+                        <td>${formattedDate}</td>
+                        <td>${nameMap[result.subject] || result.subject}</td>
+                        <td>${nameMap[result.grade] || result.grade}</td>
+                        <td>${nameMap[result.semester] || result.semester}</td>
+                        <td class="font-bold">${result.score}/10</td>
+                    `;
+                });
+                historyTableContainer.appendChild(table);
+
+            } catch (e) {
+                console.error("Error fetching history from Firestore:", e);
+                historyTableContainer.innerHTML = '<p class="text-center text-red-500">Không thể tải lịch sử. Lỗi quyền truy cập.</p>';
+            }
+        }
+        
+        function hideHistory() {
+            historyPanel.classList.add('hidden');
+            adminPanel.classList.remove('hidden');
+        }
+
+        // --- CÁC HÀM LOGIC GAME (Giữ nguyên) ---
+        function updateStartButtonState() { if (selectedSubject && selectedGrade && selectedSemester) { startBtn.disabled = false; startBtn.classList.remove('bg-gray-400', 'cursor-not-allowed'); startBtn.classList.add('bg-blue-600/70', 'hover:bg-blue-600/90'); startBtn.classList.add('glass-btn'); } else { startBtn.disabled = true; startBtn.classList.add('bg-gray-500/50'); startBtn.classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90'); } }
+        function startGame() { let allQuestions = questions[selectedSubject][selectedGrade][selectedSemester]; currentQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, NUM_OF_QUESTIONS_PER_GAME); currentQuestionIndex = 0; score = 0; selectionScreen.classList.add('hidden'); gameScreen.classList.remove('hidden'); resultsScreen.classList.add('hidden'); displayQuestion(); }
+        function displayQuestion() { document.getElementById('feedback-container').innerHTML = ''; document.getElementById('next-btn').classList.add('hidden'); const questionData = currentQuestions[currentQuestionIndex]; document.getElementById('question-container').querySelector('p').textContent = questionData.question; const optionsContainer = document.getElementById('options-container'); optionsContainer.innerHTML = ''; const shuffledOptions = [...questionData.options].sort(() => Math.random() - 0.5); shuffledOptions.forEach(option => { const button = document.createElement('button'); button.textContent = option; button.classList.add('answer-option', 'w-full', 'p-4', 'rounded-2xl', 'font-semibold', 'text-white', 'glass-btn', 'bg-white/20', 'hover:bg-white/40'); button.onclick = (e) => checkAnswer(e.target, questionData.answer); optionsContainer.appendChild(button); }); document.getElementById('progress-text').textContent = `Câu ${currentQuestionIndex + 1}/${currentQuestions.length}`; document.getElementById('score-text').textContent = `Điểm: ${score * 0.5}`; }
+        function checkAnswer(selectedButton, correctAnswer) { const allOptions = document.querySelectorAll('.answer-option'); allOptions.forEach(btn => btn.disabled = true); const feedbackContainer = document.getElementById('feedback-container'); if (selectedButton.textContent == correctAnswer) { score++; selectedButton.classList.add('correct'); feedbackContainer.textContent = '🎉 Đúng rồi!'; } else { selectedButton.classList.add('incorrect'); feedbackContainer.textContent = '😥 Sai rồi!'; allOptions.forEach(btn => { if (btn.textContent == correctAnswer) { btn.classList.add('correct'); } }); } document.getElementById('score-text').textContent = `Điểm: ${score * 0.5}`; document.getElementById('next-btn').classList.remove('hidden'); }
+        function nextQuestion() { currentQuestionIndex++; if (currentQuestionIndex < currentQuestions.length) { displayQuestion(); } else { showResults(); } }
+        function showResults() { gameScreen.classList.add('hidden'); resultsScreen.classList.remove('hidden'); const finalScore = score * 0.5; document.getElementById('final-score').textContent = `${finalScore}/10`; const resultData = { date: serverTimestamp(), subject: selectedSubject, grade: selectedGrade, semester: selectedSemester, score: finalScore }; saveResult(resultData); const finalMessage = document.getElementById('final-message'); const percentage = (score / currentQuestions.length) * 100; if (percentage === 100) { finalMessage.textContent = "Xuất sắc! Bé thật là giỏi!"; } else if (percentage >= 70) { finalMessage.textContent = "Giỏi lắm! Cố gắng thêm chút nữa nhé!"; } else if (percentage >= 50) { finalMessage.textContent = "Làm tốt lắm! Tiếp tục luyện tập nhé!"; } else { finalMessage.textContent = "Đừng buồn, lần sau sẽ tốt hơn!"; } }
+        function resetGame() { resultsScreen.classList.add('hidden'); selectionScreen.classList.remove('hidden'); selectedSubject = null; selectedGrade = null; selectedSemester = null; subjectBtns.forEach(btn => btn.classList.remove('selected')); gradeBtns.forEach(btn => btn.classList.remove('selected')); semesterBtns.forEach(btn => btn.classList.remove('selected')); updateStartButtonState(); }
+
+        // --- HÀM XỬ LÝ CHO ADMIN ---
+        function showLoginModal() { loginModal.classList.remove('hidden'); setTimeout(() => loginModal.classList.remove('opacity-0'), 10); }
+        function hideLoginModal() { loginModal.classList.add('opacity-0'); setTimeout(() => loginModal.classList.add('hidden'), 300); loginError.textContent = ''; loginForm.reset(); }
+        function handleLogin(event) { event.preventDefault(); const username = loginForm.username.value; const password = loginForm.password.value; if (username === 'admin' && password === 'admin') { hideLoginModal(); selectionScreen.classList.add('hidden'); adminPanel.classList.remove('hidden'); } else { loginError.textContent = 'Tên đăng nhập hoặc mật khẩu không đúng.'; } }
+        function handleLogout() { adminPanel.classList.add('hidden'); selectionScreen.classList.remove('hidden'); resetGame(); }
+
+        // --- GẮN SỰ KIỆN ---
+        subjectBtns.forEach(btn => btn.addEventListener('click', () => { selectedSubject = btn.dataset.subject; subjectBtns.forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); updateStartButtonState(); }));
+        gradeBtns.forEach(btn => btn.addEventListener('click', () => { selectedGrade = btn.dataset.grade; gradeBtns.forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); updateStartButtonState(); }));
+        semesterBtns.forEach(btn => btn.addEventListener('click', () => { selectedSemester = btn.dataset.semester; semesterBtns.forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); updateStartButtonState(); }));
+        startBtn.addEventListener('click', () => { if (!startBtn.disabled) startGame(); });
+        document.getElementById('next-btn').addEventListener('click', nextQuestion);
+        document.getElementById('play-again-btn').addEventListener('click', resetGame);
+        adminLoginBtn.addEventListener('click', showLoginModal);
+        closeModalBtn.addEventListener('click', hideLoginModal);
+        loginModal.addEventListener('click', (e) => { if (e.target === loginModal) hideLoginModal(); });
+        loginForm.addEventListener('submit', handleLogin);
+        logoutBtn.addEventListener('click', handleLogout);
+        viewHistoryBtn.addEventListener('click', displayHistory);
+        backToAdminBtn.addEventListener('click', hideHistory);
+        
+        // --- KHỞI CHẠY ỨNG DỤNG ---
+        initializeFirebase();
+
+    </script>
+</body>
+</html>
