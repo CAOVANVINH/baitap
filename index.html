@@ -122,32 +122,40 @@
         <!-- Selection Screen: Where users choose subject, grade, and semester -->
         <div id="selection-screen">
             <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-2">Trò Chơi Học Tập</h1>
-            <p class="text-center text-gray-700 mb-8">Cùng bé vừa học vừa chơi!</p>
-
-            <!-- Subject Selection -->
-            <div class="mb-6">
-                <h2 class="text-xl font-semibold mb-3 text-gray-700">1. Chọn Môn Học</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <button data-subject="toan" class="choice-btn glass-btn bg-sky-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-sky-500/60">🔢 Toán Học</button>
-                    <button data-subject="tiengviet" class="choice-btn glass-btn bg-emerald-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-emerald-500/60">✍️ Tiếng Việt</button>
-                </div>
+            <p class="text-center text-gray-700 mb-6">Cùng bé vừa học vừa chơi!</p>
+            
+            <!-- Loading indicator for questions -->
+            <div id="loading-questions" class="text-center text-gray-600 font-semibold mb-4">
+                <p>Đang tải dữ liệu, vui lòng chờ...</p>
             </div>
 
-            <!-- Grade Selection -->
-            <div class="mb-6">
-                <h2 class="text-xl font-semibold mb-3 text-gray-700">2. Chọn Lớp</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <button data-grade="lop1" class="choice-btn glass-btn bg-amber-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-amber-500/60">Lớp 1</button>
-                    <button data-grade="lop2" class="choice-btn glass-btn bg-rose-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-rose-500/60">Lớp 2</button>
+            <!-- Selections container (initially hidden until questions are loaded) -->
+            <div id="selections-container" class="hidden">
+                <!-- Subject Selection -->
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold mb-3 text-gray-700">1. Chọn Môn Học</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button data-subject="toan" class="choice-btn glass-btn bg-sky-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-sky-500/60">🔢 Toán Học</button>
+                        <button data-subject="tiengviet" class="choice-btn glass-btn bg-emerald-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-emerald-500/60">✍️ Tiếng Việt</button>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Semester Selection -->
-            <div class="mb-8">
-                <h2 class="text-xl font-semibold mb-3 text-gray-700">3. Chọn Học Kỳ</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <button data-semester="hocky1" class="choice-btn glass-btn bg-purple-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-purple-500/60">Học Kỳ 1</button>
-                    <button data-semester="hocky2" class="choice-btn glass-btn bg-pink-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-pink-500/60">Học Kỳ 2</button>
+                <!-- Grade Selection -->
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold mb-3 text-gray-700">2. Chọn Lớp</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button data-grade="lop1" class="choice-btn glass-btn bg-amber-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-amber-500/60">Lớp 1</button>
+                        <button data-grade="lop2" class="choice-btn glass-btn bg-rose-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-rose-500/60">Lớp 2</button>
+                    </div>
+                </div>
+
+                <!-- Semester Selection -->
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold mb-3 text-gray-700">3. Chọn Học Kỳ</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button data-semester="hocky1" class="choice-btn glass-btn bg-purple-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-purple-500/60">Học Kỳ 1</button>
+                        <button data-semester="hocky2" class="choice-btn glass-btn bg-pink-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-pink-500/60">Học Kỳ 2</button>
+                    </div>
                 </div>
             </div>
 
@@ -232,130 +240,46 @@
         // Import necessary Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- LARGE QUESTION BANK (Updated with Vietnamese data) ---
-        // This object holds all the questions categorized by subject, grade, and semester.
-        const questions = {
+        // --- LOCAL QUESTION SEED DATA ---
+        // This object is now used as a fallback to seed the database if it's empty.
+        // It's no longer the primary source of questions for the game.
+        const localQuestionSeedData = {
             toan: {
                 lop1: {
                     hocky1: [ { question: "5 + 4 = ?", options: [8, 9, 10, 7], answer: 9 }, { question: "8 - 3 = ?", options: [4, 5, 6, 7], answer: 5 }, { question: "Số liền sau của 9 là?", options: [8, 10, 11, 7], answer: 10 }, { question: "Có mấy hình tròn: 🔵 🔺 🔵 ⬜", options: [1, 2, 3, 4], answer: 2 }, { question: "2 + 6 = ?", options: [7, 8, 9, 10], answer: 8 }, { question: "Số liền trước của 15 là?", options: [13, 14, 16, 17], answer: 14 }, { question: "Hình vuông có mấy cạnh?", options: [2, 3, 4, 5], answer: 4 }, { question: "Điền dấu: 5 + 3 ... 8", options: ["<", ">", "="], answer: "=" }, { question: "7 + ... = 10", options: [1, 2, 3, 4], answer: 3 }, { question: "Số bé nhất trong các số: 9, 3, 7, 5 là?", options: [9, 3, 7, 5], answer: 3 }, { question: "6 + 1 = ?", options: [5, 6, 7, 8], answer: 7 }, { question: "10 - 10 = ?", options: [0, 1, 10, 20], answer: 0 }, { question: "Số lớn nhất trong các số: 1, 8, 4, 6 là?", options: [1, 8, 4, 6], answer: 8 }, { question: "3 + ... = 9", options: [5, 6, 7, 8], answer: 6 }, { question: "Có mấy hình vuông: ⬜ ⬜ 🔵 ⬜", options: [1, 2, 3, 4], answer: 3 }, { question: "9 - 7 = ?", options: [1, 2, 3, 16], answer: 2 }, { question: "Số liền sau của 0 là?", options: [0, 1, 2, -1], answer: 1 }, { question: "4 + 4 = ?", options: [6, 7, 8, 9], answer: 8 }, { question: "Điền dấu: 10 ... 5 + 6", options: ["<", ">", "="], answer: "<" }, { question: "Trong các số 2, 8, 5, 1, số nào nhỏ nhất?", options: [2, 8, 5, 1], answer: 1 } ],
                     hocky2: [ { question: "10 + 6 = ?", options: [15, 16, 17, 18], answer: 16 }, { question: "18 - 5 = ?", options: [12, 13, 14, 15], answer: 13 }, { question: "Số gồm 1 chục và 7 đơn vị là?", options: [10, 7, 17, 71], answer: 17 }, { question: "Hôm nay là thứ Hai, ngày mai là thứ mấy?", options: ["Chủ Nhật", "Thứ Ba", "Thứ Tư"], answer: "Thứ Ba" }, { question: "Lan có 8 kẹo, mẹ cho thêm 5. Lan có tất cả...cái kẹo?", options: [12, 13, 14, 3], answer: 13 }, { question: "Số lớn nhất có hai chữ số là?", options: [10, 90, 99, 100], answer: 99 }, { question: "15 + 4 = ?", options: [18, 19, 20, 21], answer: 19 }, { question: "Trên cành có 12 con chim, bay đi 4 con. Còn lại...con chim?", options: [7, 8, 9, 16], answer: 8 }, { question: "Số 50 còn được gọi là?", options: ["Năm mươi", "Năm chục", "Cả hai đều đúng"], answer: "Cả hai đều đúng" }, { question: "Điền số: 20, 30, ..., 50", options: [35, 40, 45, 60], answer: 40 }, { question: "30 + 40 = ?", options: [60, 70, 80, 10], answer: 70 }, { question: "90 - 20 = ?", options: [60, 70, 80, 110], answer: 70 }, { question: "Số gồm 8 chục và 1 đơn vị là?", options: [80, 18, 81, 9], answer: 81 }, { question: "Số bé nhất có hai chữ số giống nhau là?", options: [10, 11, 12, 22], answer: 11 }, { question: "An có 19 viên bi, An cho Bình 7 viên. An còn lại...viên bi?", options: [11, 12, 13, 26], answer: 12 }, { question: "1 tuần có mấy ngày?", options: [5, 6, 7, 8], answer: 7 }, { question: "Số liền trước của 100 là?", options: [90, 98, 99, 101], answer: 99 }, { question: "Điền dấu: 45 ... 54", options: ["<", ">", "="], answer: "<" }, { question: "50 + 50 = ?", options: [90, 100, 10, 0], answer: 100 }, { question: "Số tròn chục lớn nhất có hai chữ số là?", options: [10, 80, 90, 99], answer: 90 } ]
                 }
             },
-            tiengviet: { // Added Vietnamese subject data
+            tiengviet: {
                 lop1: {
-                    hocky1: [
-                        { question: "Chữ cái nào đứng sau 'A' trong bảng chữ cái?", options: ["C", "B", "D", "E"], answer: "B" },
-                        { question: "Từ nào chỉ hoạt động 'ăn'?", options: ["Ngủ", "Chơi", "Ăn", "Học"], answer: "Ăn" },
-                        { question: "Điền từ còn thiếu: 'Con ... đang bơi.'", options: ["chim", "cá", "mèo", "chó"], answer: "cá" },
-                        { question: "Từ nào có vần 'ai'?", options: ["Cái", "Con", "Sách", "Bút"], answer: "Cái" },
-                        { question: "Chữ cái nào đứng trước 'D' trong bảng chữ cái?", options: ["C", "E", "F", "B"], answer: "C" },
-                        { question: "Từ nào là tên một loài hoa?", options: ["Bàn", "Ghế", "Hoa hồng", "Cây"], answer: "Hoa hồng" },
-                        { question: "Điền từ còn thiếu: 'Mẹ ... cơm.'", options: ["chơi", "nấu", "ngủ", "đọc"], answer: "nấu" },
-                        { question: "Từ nào có vần 'eo'?", options: ["Mèo", "Chó", "Gà", "Vịt"], answer: "Mèo" },
-                        { question: "Từ nào chỉ đồ vật dùng để viết?", options: ["Sách", "Bút", "Tẩy", "Thước"], answer: "Bút" },
-                        { question: "Chữ cái nào là nguyên âm?", options: ["B", "C", "A", "D"], answer: "A" },
-                        { question: "Từ nào có nghĩa là 'nhỏ bé'?", options: ["Lớn", "To", "Bé", "Dài"], answer: "Bé" },
-                        { question: "Điền từ còn thiếu: 'Ông bà ... cháu.'", options: ["chơi", "yêu", "đọc", "viết"], answer: "yêu" },
-                        { question: "Từ nào có vần 'iu'?", options: ["Hiu", "Hươu", "Siu", "Ciu"], answer: "Hiu" },
-                        { question: "Từ nào là tên một loại quả?", options: ["Cà rốt", "Táo", "Bông cải", "Khoai tây"], answer: "Táo" },
-                        { question: "Chữ cái nào là phụ âm?", options: ["O", "U", "E", "K"], answer: "K" },
-                        { question: "Từ nào chỉ màu sắc?", options: ["Bàn", "Đỏ", "Sách", "Cây"], answer: "Đỏ" },
-                        { question: "Điền từ còn thiếu: 'Con chó đang ...'", options: ["bay", "sủa", "bơi", "hót"], answer: "sủa" },
-                        { question: "Từ nào có vần 'ay'?", options: ["Tay", "Chân", "Mắt", "Mũi"], answer: "Tay" },
-                        { question: "Từ nào là tên một con vật nuôi trong nhà?", options: ["Hổ", "Sư tử", "Mèo", "Gấu"], answer: "Mèo" },
-                        { question: "Từ nào chỉ hành động 'nghe'?", options: ["Nhìn", "Nghe", "Nói", "Viết"], answer: "Nghe" }
-                    ],
-                    hocky2: [
-                        { question: "Từ nào có tiếng 'sách'?", options: ["Quyển vở", "Bút chì", "Sách giáo khoa", "Cái bàn"], answer: "Sách giáo khoa" },
-                        { question: "Từ nào đồng nghĩa với 'vui vẻ'?", options: ["Buồn bã", "Hạnh phúc", "Tức giận", "Sợ hãi"], answer: "Hạnh phúc" },
-                        { question: "Điền từ còn thiếu: 'Bầu trời ...'", options: ["xanh", "đỏ", "vàng", "đen"], answer: "xanh" },
-                        { question: "Từ nào có vần 'anh'?", options: ["Chanh", "Cam", "Quýt", "Bưởi"], answer: "Chanh" },
-                        { question: "Từ nào trái nghĩa với 'cao'?", options: ["Dài", "Ngắn", "Thấp", "Rộng"], answer: "Thấp" },
-                        { question: "Tìm từ chỉ hoạt động 'đọc'?", options: ["Viết bài", "Nghe nhạc", "Đọc sách", "Chơi game"], answer: "Đọc sách" },
-                        { question: "Điền từ còn thiếu: 'Con gà ... thóc.'", options: ["uống", "mổ", "ngủ", "bay"], answer: "mổ" },
-                        { question: "Từ nào có vần 'inh'?", options: ["Xinh", "Xanh", "Đỏ", "Vàng"], answer: "Xinh" },
-                        { question: "Từ nào là tên một loại phương tiện giao thông?", options: ["Nhà", "Cây", "Xe đạp", "Sông"], answer: "Xe đạp" },
-                        { question: "Từ nào chỉ cảm xúc 'yêu thương'?", options: ["Ghét bỏ", "Thích thú", "Yêu quý", "Giận dữ"], answer: "Yêu quý" },
-                        { question: "Từ nào có tiếng 'học'?", options: ["Chơi đùa", "Học bài", "Ăn uống", "Ngủ nghỉ"], answer: "Học bài" },
-                        { question: "Điền từ còn thiếu: 'Mặt trời ...'", options: ["lặn", "mọc", "bay", "chạy"], answer: "mọc" },
-                        { question: "Từ nào có vần 'oan'?", options: ["Toán", "Loan", "Hoàn", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" },
-                        { question: "Từ nào là tên một nghề nghiệp?", options: ["Bác sĩ", "Học sinh", "Trẻ em", "Người lớn"], answer: "Bác sĩ" },
-                        { question: "Từ nào trái nghĩa với 'sáng'?", options: ["Tối", "Trong", "Đục", "Nhanh"], answer: "Tối" },
-                        { question: "Tìm từ chỉ đồ dùng học tập?", options: ["Bát", "Đũa", "Cặp sách", "Chén"], answer: "Cặp sách" },
-                        { question: "Điền từ còn thiếu: 'Con mèo ... chuột.'", options: ["bắt", "thả", "ngắm", "đuổi"], answer: "bắt" },
-                        { question: "Từ nào có vần 'ươi'?", options: ["Tươi", "Cười", "Mười", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" },
-                        { question: "Từ nào là tên một bộ phận trên cơ thể người?", options: ["Áo", "Quần", "Mắt", "Giày"], answer: "Mắt" },
-                        { question: "Từ nào chỉ hành động 'nhảy'?", options: ["Đi bộ", "Chạy nhanh", "Nhảy dây", "Ngồi yên"], answer: "Nhảy dây" }
-                    ]
+                    hocky1: [ { question: "Chữ cái nào đứng sau 'A' trong bảng chữ cái?", options: ["C", "B", "D", "E"], answer: "B" }, { question: "Từ nào chỉ hoạt động 'ăn'?", options: ["Ngủ", "Chơi", "Ăn", "Học"], answer: "Ăn" }, { question: "Điền từ còn thiếu: 'Con ... đang bơi.'", options: ["chim", "cá", "mèo", "chó"], answer: "cá" }, { question: "Từ nào có vần 'ai'?", options: ["Cái", "Con", "Sách", "Bút"], answer: "Cái" }, { question: "Chữ cái nào đứng trước 'D' trong bảng chữ cái?", options: ["C", "E", "F", "B"], answer: "C" }, { question: "Từ nào là tên một loài hoa?", options: ["Bàn", "Ghế", "Hoa hồng", "Cây"], answer: "Hoa hồng" }, { question: "Điền từ còn thiếu: 'Mẹ ... cơm.'", options: ["chơi", "nấu", "ngủ", "đọc"], answer: "nấu" }, { question: "Từ nào có vần 'eo'?", options: ["Mèo", "Chó", "Gà", "Vịt"], answer: "Mèo" }, { question: "Từ nào chỉ đồ vật dùng để viết?", options: ["Sách", "Bút", "Tẩy", "Thước"], answer: "Bút" }, { question: "Chữ cái nào là nguyên âm?", options: ["B", "C", "A", "D"], answer: "A" }, { question: "Từ nào có nghĩa là 'nhỏ bé'?", options: ["Lớn", "To", "Bé", "Dài"], answer: "Bé" }, { question: "Điền từ còn thiếu: 'Ông bà ... cháu.'", options: ["chơi", "yêu", "đọc", "viết"], answer: "yêu" }, { question: "Từ nào có vần 'iu'?", options: ["Hiu", "Hươu", "Siu", "Ciu"], answer: "Hiu" }, { question: "Từ nào là tên một loại quả?", options: ["Cà rốt", "Táo", "Bông cải", "Khoai tây"], answer: "Táo" }, { question: "Chữ cái nào là phụ âm?", options: ["O", "U", "E", "K"], answer: "K" }, { question: "Từ nào chỉ màu sắc?", options: ["Bàn", "Đỏ", "Sách", "Cây"], answer: "Đỏ" }, { question: "Điền từ còn thiếu: 'Con chó đang ...'", options: ["bay", "sủa", "bơi", "hót"], answer: "sủa" }, { question: "Từ nào có vần 'ay'?", options: ["Tay", "Chân", "Mắt", "Mũi"], answer: "Tay" }, { question: "Từ nào là tên một con vật nuôi trong nhà?", options: ["Hổ", "Sư tử", "Mèo", "Gấu"], answer: "Mèo" }, { question: "Từ nào chỉ hành động 'nghe'?", options: ["Nhìn", "Nghe", "Nói", "Viết"], answer: "Nghe" } ],
+                    hocky2: [ { question: "Từ nào có tiếng 'sách'?", options: ["Quyển vở", "Bút chì", "Sách giáo khoa", "Cái bàn"], answer: "Sách giáo khoa" }, { question: "Từ nào đồng nghĩa với 'vui vẻ'?", options: ["Buồn bã", "Hạnh phúc", "Tức giận", "Sợ hãi"], answer: "Hạnh phúc" }, { question: "Điền từ còn thiếu: 'Bầu trời ...'", options: ["xanh", "đỏ", "vàng", "đen"], answer: "xanh" }, { question: "Từ nào có vần 'anh'?", options: ["Chanh", "Cam", "Quýt", "Bưởi"], answer: "Chanh" }, { question: "Từ nào trái nghĩa với 'cao'?", options: ["Dài", "Ngắn", "Thấp", "Rộng"], answer: "Thấp" }, { question: "Tìm từ chỉ hoạt động 'đọc'?", options: ["Viết bài", "Nghe nhạc", "Đọc sách", "Chơi game"], answer: "Đọc sách" }, { question: "Điền từ còn thiếu: 'Con gà ... thóc.'", options: ["uống", "mổ", "ngủ", "bay"], answer: "mổ" }, { question: "Từ nào có vần 'inh'?", options: ["Xinh", "Xanh", "Đỏ", "Vàng"], answer: "Xinh" }, { question: "Từ nào là tên một loại phương tiện giao thông?", options: ["Nhà", "Cây", "Xe đạp", "Sông"], answer: "Xe đạp" }, { question: "Từ nào chỉ cảm xúc 'yêu thương'?", options: ["Ghét bỏ", "Thích thú", "Yêu quý", "Giận dữ"], answer: "Yêu quý" }, { question: "Từ nào có tiếng 'học'?", options: ["Chơi đùa", "Học bài", "Ăn uống", "Ngủ nghỉ"], answer: "Học bài" }, { question: "Điền từ còn thiếu: 'Mặt trời ...'", options: ["lặn", "mọc", "bay", "chạy"], answer: "mọc" }, { question: "Từ nào có vần 'oan'?", options: ["Toán", "Loan", "Hoàn", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" }, { question: "Từ nào là tên một nghề nghiệp?", options: ["Bác sĩ", "Học sinh", "Trẻ em", "Người lớn"], answer: "Bác sĩ" }, { question: "Từ nào trái nghĩa với 'sáng'?", options: ["Tối", "Trong", "Đục", "Nhanh"], answer: "Tối" }, { question: "Tìm từ chỉ đồ dùng học tập?", options: ["Bát", "Đũa", "Cặp sách", "Chén"], answer: "Cặp sách" }, { question: "Điền từ còn thiếu: 'Con mèo ... chuột.'", options: ["bắt", "thả", "ngắm", "đuổi"], answer: "bắt" }, { question: "Từ nào có vần 'ươi'?", options: ["Tươi", "Cười", "Mười", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" }, { question: "Từ nào là tên một bộ phận trên cơ thể người?", options: ["Áo", "Quần", "Mắt", "Giày"], answer: "Mắt" }, { question: "Từ nào chỉ hành động 'nhảy'?", options: ["Đi bộ", "Chạy nhanh", "Nhảy dây", "Ngồi yên"], answer: "Nhảy dây" } ]
                 },
                 lop2: {
-                    hocky1: [
-                        { question: "Từ nào là từ chỉ sự vật?", options: ["Chạy", "Đẹp", "Cái bàn", "Vui"], answer: "Cái bàn" },
-                        { question: "Từ nào là từ chỉ hoạt động?", options: ["Con mèo", "Đọc sách", "Màu xanh", "Cao lớn"], answer: "Đọc sách" },
-                        { question: "Điền từ còn thiếu: 'Dòng sông ...'", options: ["chảy", "đứng", "ngủ", "bay"], answer: "chảy" },
-                        { question: "Từ nào có vần 'iêng'?", options: ["Tiếng", "Miếng", "Chiêng", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" },
-                        { question: "Từ nào là từ chỉ đặc điểm?", options: ["Con chó", "Cái kéo", "Xinh đẹp", "Ngủ"], answer: "Xinh đẹp" },
-                        { question: "Tìm từ trái nghĩa với 'nhanh'?", options: ["Chậm", "Vội", "Gấp", "Nhanh nhẹn"], answer: "Chậm" },
-                        { question: "Điền từ còn thiếu: 'Bông hoa ...'", options: ["nở", "tàn", "rụng", "héo"], answer: "nở" },
-                        { question: "Từ nào có vần 'uôn'?", options: ["Buồn", "Vui", "Sướng", "Khổ"], answer: "Buồn" },
-                        { question: "Từ nào là tên một mùa trong năm?", options: ["Tháng", "Tuần", "Mùa hè", "Ngày"], answer: "Mùa hè" },
-                        { question: "Từ nào là từ láy?", options: ["Xanh", "Xanh xanh", "Đỏ", "Trắng"], answer: "Xanh xanh" },
-                        { question: "Từ nào là từ ghép?", options: ["Đi", "Học", "Sách vở", "Ăn"], answer: "Sách vở" },
-                        { question: "Điền từ còn thiếu: 'Chim hót ...'", options: ["líu lo", "gâu gâu", "meo meo", "quác quác"], answer: "líu lo" },
-                        { question: "Từ nào có vần 'ươn'?", options: ["Vườn", "Trường", "Đường", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" },
-                        { question: "Từ nào là tên một loại nhạc cụ?", options: ["Bóng đá", "Đàn piano", "Vẽ tranh", "Hát"], answer: "Đàn piano" },
-                        { question: "Từ nào trái nghĩa với 'lên'?", options: ["Xuống", "Trong", "Ngoài", "Trên"], answer: "Xuống" },
-                        { question: "Tìm từ chỉ tình cảm gia đình?", options: ["Bạn bè", "Tình yêu", "Tình bạn", "Tình cảm"], answer: "Tình yêu" },
-                        { question: "Điền từ còn thiếu: 'Mặt trăng ...'", options: ["tròn", "vuông", "dài", "ngắn"], answer: "tròn" },
-                        { question: "Từ nào có vần 'oai'?", options: ["Khoai", "Ngoại", "Thoải mái", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" },
-                        { question: "Từ nào là tên một loại rau củ?", options: ["Thịt", "Cá", "Cà chua", "Trứng"], answer: "Cà chua" },
-                        { question: "Từ nào là từ đồng âm khác nghĩa?", options: ["Đường (đi) - Đường (ăn)", "Bàn (ghế) - Bàn (luận)", "Cả hai đáp án trên", "Không có"], answer: "Cả hai đáp án trên" }
-                    ],
-                    hocky2: [
-                        { question: "Từ nào là từ chỉ số lượng?", options: ["Nhanh", "Đẹp", "Năm", "Ăn"], answer: "Năm" },
-                        { question: "Từ nào là từ chỉ thời gian?", options: ["Hôm nay", "Sách", "Bút", "Cái ghế"], answer: "Hôm nay" },
-                        { question: "Điền từ còn thiếu: 'Con sông ... ra biển.'", options: ["chảy", "đứng", "ngủ", "bay"], answer: "chảy" },
-                        { question: "Từ nào có vần 'uyên'?", options: ["Quyển", "Huyền", "Xuyên", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" },
-                        { question: "Từ nào là từ chỉ màu sắc?", options: ["Vui", "Buồn", "Tím", "Chạy"], answer: "Tím" },
-                        { question: "Tìm từ trái nghĩa với 'mở'?", options: ["Đóng", "Mở ra", "Mở cửa", "Mở sách"], answer: "Đóng" },
-                        { question: "Điền từ còn thiếu: 'Cây cối ... lá.'", options: ["rụng", "mọc", "nở", "héo"], answer: "rụng" },
-                        { question: "Từ nào có vần 'ươi'?", options: ["Tươi", "Cười", "Mười", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" },
-                        { question: "Từ nào là tên một loại động vật hoang dã?", options: ["Chó", "Mèo", "Hổ", "Gà"], answer: "Hổ" },
-                        { question: "Từ nào là từ tượng thanh?", options: ["Xinh đẹp", "Lấp lánh", "Kêu meo meo", "Buồn bã"], answer: "Kêu meo meo" },
-                        { question: "Từ nào là từ láy vần?", options: ["Lấp lánh", "Xanh xanh", "Đỏ đỏ", "Trắng tinh"], answer: "Lấp lánh" },
-                        { question: "Điền từ còn thiếu: 'Gió ...'", options: ["thổi", "chạy", "ngủ", "ăn"], answer: "thổi" },
-                        { question: "Từ nào có vần 'iêu'?", options: ["Yêu", "Kiêu", "Hiểu", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" },
-                        { question: "Từ nào là tên một loại đồ uống?", options: ["Cơm", "Phở", "Nước cam", "Bánh mì"], answer: "Nước cam" },
-                        { question: "Từ nào trái nghĩa với 'vào'?", options: ["Ra", "Trong", "Ngoài", "Trên"], answer: "Ra" },
-                        { question: "Tìm từ chỉ hoạt động 'vẽ'?", options: ["Hát", "Nhảy", "Vẽ tranh", "Chơi đàn"], answer: "Vẽ tranh" },
-                        { question: "Điền từ còn thiếu: 'Con chim ... trên cành.'", options: ["bơi", "bay", "đi", "ngủ"], answer: "bay" },
-                        { question: "Từ nào có vần 'uýt'?", options: ["Quýt", "Ngọt", "Chua", "Đắng"], answer: "Quýt" },
-                        { question: "Từ nào là tên một loại cây ăn quả?", options: ["Cây bàng", "Cây xoài", "Cây phượng", "Cây tre"], answer: "Cây xoài" },
-                        { question: "Từ nào là từ Hán Việt?", options: ["Sông", "Núi", "Giang sơn", "Đất"], answer: "Giang sơn" }
-                    ]
+                    hocky1: [ { question: "Từ nào là từ chỉ sự vật?", options: ["Chạy", "Đẹp", "Cái bàn", "Vui"], answer: "Cái bàn" }, { question: "Từ nào là từ chỉ hoạt động?", options: ["Con mèo", "Đọc sách", "Màu xanh", "Cao lớn"], answer: "Đọc sách" }, { question: "Điền từ còn thiếu: 'Dòng sông ...'", options: ["chảy", "đứng", "ngủ", "bay"], answer: "chảy" }, { question: "Từ nào có vần 'iêng'?", options: ["Tiếng", "Miếng", "Chiêng", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" }, { question: "Từ nào là từ chỉ đặc điểm?", options: ["Con chó", "Cái kéo", "Xinh đẹp", "Ngủ"], answer: "Xinh đẹp" }, { question: "Tìm từ trái nghĩa với 'nhanh'?", options: ["Chậm", "Vội", "Gấp", "Nhanh nhẹn"], answer: "Chậm" }, { question: "Điền từ còn thiếu: 'Bông hoa ...'", options: ["nở", "tàn", "rụng", "héo"], answer: "nở" }, { question: "Từ nào có vần 'uôn'?", options: ["Buồn", "Vui", "Sướng", "Khổ"], answer: "Buồn" }, { question: "Từ nào là tên một mùa trong năm?", options: ["Tháng", "Tuần", "Mùa hè", "Ngày"], answer: "Mùa hè" }, { question: "Từ nào là từ láy?", options: ["Xanh", "Xanh xanh", "Đỏ", "Trắng"], answer: "Xanh xanh" }, { question: "Từ nào là từ ghép?", options: ["Đi", "Học", "Sách vở", "Ăn"], answer: "Sách vở" }, { question: "Điền từ còn thiếu: 'Chim hót ...'", options: ["líu lo", "gâu gâu", "meo meo", "quác quác"], answer: "líu lo" }, { question: "Từ nào có vần 'ươn'?", options: ["Vườn", "Trường", "Đường", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" }, { question: "Từ nào là tên một loại nhạc cụ?", options: ["Bóng đá", "Đàn piano", "Vẽ tranh", "Hát"], answer: "Đàn piano" }, { question: "Từ nào trái nghĩa với 'lên'?", options: ["Xuống", "Trong", "Ngoài", "Trên"], answer: "Xuống" }, { question: "Tìm từ chỉ tình cảm gia đình?", options: ["Bạn bè", "Tình yêu", "Tình bạn", "Tình cảm"], answer: "Tình yêu" }, { question: "Điền từ còn thiếu: 'Mặt trăng ...'", options: ["tròn", "vuông", "dài", "ngắn"], answer: "tròn" }, { question: "Từ nào có vần 'oai'?", options: ["Khoai", "Ngoại", "Thoải mái", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" }, { question: "Từ nào là tên một loại rau củ?", options: ["Thịt", "Cá", "Cà chua", "Trứng"], answer: "Cà chua" }, { question: "Từ nào là từ đồng âm khác nghĩa?", options: ["Đường (đi) - Đường (ăn)", "Bàn (ghế) - Bàn (luận)", "Cả hai đáp án trên", "Không có"], answer: "Không có" } ],
+                    hocky2: [ { question: "Từ nào là từ chỉ số lượng?", options: ["Nhanh", "Đẹp", "Năm", "Ăn"], answer: "Năm" }, { question: "Từ nào là từ chỉ thời gian?", options: ["Hôm nay", "Sách", "Bút", "Cái ghế"], answer: "Hôm nay" }, { question: "Điền từ còn thiếu: 'Con sông ... ra biển.'", options: ["chảy", "đứng", "ngủ", "bay"], answer: "chảy" }, { question: "Từ nào có vần 'uyên'?", options: ["Quyển", "Huyền", "Xuyên", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" }, { question: "Từ nào là từ chỉ màu sắc?", options: ["Vui", "Buồn", "Tím", "Chạy"], answer: "Tím" }, { question: "Tìm từ trái nghĩa với 'mở'?", options: ["Đóng", "Mở ra", "Mở cửa", "Mở sách"], answer: "Đóng" }, { question: "Điền từ còn thiếu: 'Cây cối ... lá.'", options: ["rụng", "mọc", "nở", "héo"], answer: "rụng" }, { question: "Từ nào có vần 'ươi'?", options: ["Tươi", "Cười", "Mười", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" }, { question: "Từ nào là tên một loại động vật hoang dã?", options: ["Chó", "Mèo", "Hổ", "Gà"], answer: "Hổ" }, { question: "Từ nào là từ tượng thanh?", options: ["Xinh đẹp", "Lấp lánh", "Kêu meo meo", "Buồn bã"], answer: "Kêu meo meo" }, { question: "Từ nào là từ láy vần?", options: ["Lấp lánh", "Xanh xanh", "Đỏ đỏ", "Trắng tinh"], answer: "Lấp lánh" }, { question: "Điền từ còn thiếu: 'Gió ...'", options: ["thổi", "chạy", "ngủ", "ăn"], answer: "thổi" }, { question: "Từ nào có vần 'iêu'?", options: ["Yêu", "Kiêu", "Hiểu", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" }, { question: "Từ nào là tên một loại đồ uống?", options: ["Cơm", "Phở", "Nước cam", "Bánh mì"], answer: "Nước cam" }, { question: "Từ nào trái nghĩa với 'vào'?", options: ["Ra", "Trong", "Ngoài", "Trên"], answer: "Ra" }, { question: "Tìm từ chỉ hoạt động 'vẽ'?", options: ["Hát", "Nhảy", "Vẽ tranh", "Chơi đàn"], answer: "Vẽ tranh" }, { question: "Điền từ còn thiếu: 'Con chim ... trên cành.'", options: ["bơi", "bay", "đi", "ngủ"], answer: "bay" }, { question: "Từ nào có vần 'uýt'?", options: ["Quýt", "Ngọt", "Chua", "Đắng"], answer: "Quýt" }, { question: "Từ nào là tên một loại cây ăn quả?", options: ["Cây bàng", "Cây xoài", "Cây phượng", "Cây tre"], answer: "Cây xoài" }, { question: "Từ nào là từ Hán Việt?", options: ["Sông", "Núi", "Giang sơn", "Đất"], answer: "Giang sơn" } ]
                 }
             }
         };
 
         // --- STATE VARIABLES ---
-        // These variables hold the current state of the game and user selections.
+        let questionBank = null; // Will hold questions from Firestore. Null until loaded.
         let selectedSubject = null;
         let selectedGrade = null;
         let selectedSemester = null;
-        let currentQuestions = []; // Array to hold questions for the current game session
-        let currentQuestionIndex = 0; // Index of the current question
-        let score = 0; // Player's score (raw, will be divided by 2 for final display)
-        const NUM_OF_QUESTIONS_PER_GAME = 20; // Maximum number of questions per game
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        const NUM_OF_QUESTIONS_PER_GAME = 20;
 
         // --- FIREBASE VARIABLES ---
-        let db; // Firestore database instance
-        let auth; // Firebase Auth instance
-        let appId; // Application ID, derived from the environment or config
+        let db;
+        let auth;
+        let appId;
 
         // --- GET DOM ELEMENTS ---
-        // Cache references to frequently used DOM elements for efficiency.
         const selectionScreen = document.getElementById('selection-screen');
         const gameScreen = document.getElementById('game-screen');
         const resultsScreen = document.getElementById('results-screen');
@@ -363,166 +287,142 @@
         const subjectBtns = document.querySelectorAll('[data-subject]');
         const gradeBtns = document.querySelectorAll('[data-grade]');
         const semesterBtns = document.querySelectorAll('[data-semester]');
+        const loadingQuestionsIndicator = document.getElementById('loading-questions');
+        const selectionsContainer = document.getElementById('selections-container');
         
-        // DOM Elements for Admin Panel
         const adminPanel = document.getElementById('admin-panel');
         const adminLoginBtn = document.getElementById('admin-login-btn');
         const loginModal = document.getElementById('login-modal');
         const closeModalBtn = document.getElementById('close-modal-btn');
         const loginForm = document.getElementById('login-form');
         const logoutBtn = document.getElementById('logout-btn');
-        const loginError = document.getElementById('login-error'); // For displaying login errors
+        const loginError = document.getElementById('login-error');
         const viewHistoryBtn = document.getElementById('view-history-btn');
         const historyPanel = document.getElementById('history-panel');
         const backToAdminBtn = document.getElementById('back-to-admin-btn');
         const historyTableContainer = document.getElementById('history-table-container');
 
-        // New DOM element for the speaker button (renamed to reflect its original purpose)
         const readQuestionBtn = document.getElementById('read-question-btn');
 
-
-        // --- FIREBASE INITIALIZATION AND AUTHENTICATION ---
-        // This function initializes Firebase and handles user authentication.
+        // --- FIREBASE AND DATA LOADING ---
+        // Initializes Firebase and then loads the question data.
         async function initializeFirebase() {
             try {
                 let firebaseConfig;
-                let currentAppId;
-
-                // Attempt to use global __firebase_config and __app_id provided by the Canvas environment.
                 if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-                    try {
-                        firebaseConfig = JSON.parse(__firebase_config);
-                    } catch (e) {
-                        console.error("Error parsing __firebase_config:", e);
-                        // Fallback to a hardcoded config if parsing fails, for development/testing
-                        firebaseConfig = {
-                             apiKey: "AIzaSyDJBY6U0LUtmnk4PrfNeA7UE7qq1FZ84X8",
-                              authDomain: "data-chung-a62ee.firebaseapp.com",
-                              projectId: "data-chung-a62ee",
-                              storageBucket: "data-chung-a62ee.firebasestorage.app",
-                              messagingSenderId: "453115303161",
-                              appId: "1:453115303161:web:c885f876f4914829863e28",
-                              measurementId: "G-QB6WP4SP09"
-                        };
-                    }
-                    // Prioritize __app_id if available, otherwise use appId from firebaseConfig
-                    currentAppId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.appId;
+                    firebaseConfig = JSON.parse(__firebase_config);
+                    appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.appId;
                 } else {
-                    // Fallback to hardcoded config if no global config is provided at all
-                    console.warn("No __firebase_config found. Using hardcoded fallback Firebase configuration.");
+                    console.warn("Using hardcoded fallback Firebase config.");
                     firebaseConfig = {
-                        apiKey: "YOUR_FALLBACK_API_KEY", // Replace with a valid fallback API key if needed
-                        authDomain: "YOUR_FALLBACK_AUTH_DOMAIN",
-                        projectId: "YOUR_FALLBACK_PROJECT_ID",
-                        storageBucket: "YOUR_FALLBACK_STORAGE_BUCKET",
-                        messagingSenderId: "YOUR_FALLBACK_MESSAGING_SENDER_ID",
-                        appId: "YOUR_FALLBACK_APP_ID",
-                        measurementId: "YOUR_FALLBACK_MEASUREMENT_ID"
+                        apiKey: "AIzaSyDJBY6U0LUtmnk4PrfNeA7UE7qq1FZ84X8",
+                        authDomain: "data-chung-a62ee.firebaseapp.com",
+                        projectId: "data-chung-a62ee",
+                        storageBucket: "data-chung-a62ee.appspot.com",
+                        messagingSenderId: "453115303161",
+                        appId: "1:453115303161:web:c885f876f4914829863e28"
                     };
-                    currentAppId = firebaseConfig.appId; // Use appId from the hardcoded config
+                    appId = firebaseConfig.appId;
                 }
 
-                // Basic validation for Firebase config
-                if (!firebaseConfig.projectId || !firebaseConfig.apiKey) {
-                    console.error("Firebase config is missing projectId or apiKey. Please check your Firebase setup.");
-                    document.getElementById('feedback-container').textContent = "Lỗi: Cấu hình Firebase không hợp lệ. Vui lòng kiểm tra lại.";
-                    return;
+                if (!firebaseConfig.projectId) {
+                    throw new Error("Firebase config is missing projectId.");
                 }
 
-                // Initialize Firebase app
                 const app = initializeApp(firebaseConfig);
-                auth = getAuth(app); // Get Auth instance
-                db = getFirestore(app); // Get Firestore instance
-                appId = currentAppId; // Set the global appId variable for Firestore paths
+                auth = getAuth(app);
+                db = getFirestore(app);
 
-                // Authenticate user using __initial_auth_token or anonymously
-                // This ensures the user is authenticated before any Firestore operations.
+                // Authenticate user
                 if (typeof __initial_auth_token !== 'undefined') {
-                    await signInWithCustomToken(auth, __initial_auth_token).catch(error => {
-                        console.error("Custom token sign-in error:", error);
-                        // Fallback to anonymous sign-in if custom token fails
-                        signInAnonymously(auth).catch(anonError => {
-                            console.error("Anonymous sign-in fallback error:", anonError);
-                        });
-                    });
+                    await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
-                    // Sign in anonymously if no custom token is provided
-                    signInAnonymously(auth).catch(error => {
-                        console.error("Anonymous sign-in error:", error);
-                    });
+                    await signInAnonymously(auth);
                 }
 
-                // Optional: Listen for auth state changes (useful for debugging or dynamic UI based on auth)
+                // Once authenticated, load the questions
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
-                        console.log("User is signed in:", user.uid);
-                    } else {
-                        console.log("No user is signed in.");
+                        console.log("User authenticated, loading questions...");
+                        loadAndSeedQuestions();
                     }
                 });
 
             } catch (error) {
                 console.error("Firebase initialization error:", error);
-                document.getElementById('feedback-container').textContent = "Lỗi: Không thể kết nối đến cơ sở dữ liệu. Vui lòng kiểm tra lại cấu hình Firebase của bạn.";
+                loadingQuestionsIndicator.textContent = "Lỗi kết nối đến cơ sở dữ liệu.";
+                loadingQuestionsIndicator.classList.add('text-red-500');
+            }
+        }
+
+        // Loads questions from Firestore, or seeds them if they don't exist.
+        async function loadAndSeedQuestions() {
+            if (!db || !appId) {
+                console.error("Firestore DB or App ID not initialized.");
+                loadingQuestionsIndicator.textContent = "Lỗi: CSDL chưa sẵn sàng.";
+                return;
+            }
+
+            // Path to the single document holding the entire question bank
+            const questionBankRef = doc(db, `artifacts/${appId}/public/data/questions`, 'mainBank');
+
+            try {
+                const docSnap = await getDoc(questionBankRef);
+
+                if (docSnap.exists()) {
+                    // If document exists, use it as the question bank
+                    console.log("Question bank loaded from Firestore.");
+                    questionBank = docSnap.data();
+                } else {
+                    // If document doesn't exist, seed it from local data
+                    console.log("No question bank found in Firestore. Seeding from local data...");
+                    await setDoc(questionBankRef, localQuestionSeedData);
+                    console.log("Seeding successful!");
+                    questionBank = localQuestionSeedData;
+                }
+
+                // Once questions are loaded (either from DB or after seeding), update the UI
+                loadingQuestionsIndicator.classList.add('hidden');
+                selectionsContainer.classList.remove('hidden');
+                updateStartButtonState(); // Check if selections are already made
+
+            } catch (error) {
+                console.error("Error loading or seeding questions:", error);
+                loadingQuestionsIndicator.textContent = "Lỗi khi tải câu hỏi.";
+                loadingQuestionsIndicator.classList.add('text-red-500');
             }
         }
         
         // --- SAVE AND DISPLAY HISTORY (USING FIRESTORE) ---
-        // Saves the quiz result to Firestore.
         async function saveResult(resultData) {
-            // Ensure db and appId are initialized before attempting to save
-            if (!db || !appId) {
-                console.error("Firestore DB or App ID not initialized. Cannot save result.");
+            if (!db || !appId || !auth.currentUser) {
+                console.error("Firestore not ready or user not authenticated. Cannot save result.");
                 return;
             }
             try {
-                // Ensure user is authenticated before saving.
-                // This check is crucial for Firestore security rules.
-                if (!auth.currentUser) {
-                    console.warn("User not authenticated. Attempting anonymous sign-in before saving.");
-                    await signInAnonymously(auth);
-                }
-                
-                // Firestore collection path for public data: /artifacts/{appId}/public/data/quizResults
                 const historyCollectionRef = collection(db, `artifacts/${appId}/public/data/quizResults`);
                 await addDoc(historyCollectionRef, resultData);
                 console.log("Quiz result saved successfully!");
             } catch (e) {
                 console.error("Error writing result to Firestore:", e);
-                document.getElementById('feedback-container').textContent = "Lỗi khi lưu kết quả. Vui lòng thử lại.";
             }
         }
 
-        // Fetches and displays the quiz history from Firestore.
         async function displayHistory() {
             adminPanel.classList.add('hidden');
             historyPanel.classList.remove('hidden');
-            
-            // Display loading message while fetching data
             historyTableContainer.innerHTML = '<p class="text-center text-gray-500">Đang tải lịch sử...</p>';
 
-            // Ensure db and appId are initialized
-            if (!db || !appId) {
-                historyTableContainer.innerHTML = '<p class="text-center text-red-500">Lỗi kết nối CSDL hoặc App ID chưa được thiết lập.</p>';
-                console.error("DB or appId not initialized. Cannot display history.");
+            if (!db || !appId || !auth.currentUser) {
+                historyTableContainer.innerHTML = '<p class="text-center text-red-500">Lỗi kết nối CSDL hoặc chưa xác thực.</p>';
                 return;
             }
             
             try {
-                // Ensure user is authenticated before fetching history.
-                if (!auth.currentUser) {
-                    console.warn("User not authenticated. Attempting anonymous sign-in before fetching history.");
-                    await signInAnonymously(auth);
-                }
-
-                // Firestore collection path for public data
                 const historyCollectionRef = collection(db, `artifacts/${appId}/public/data/quizResults`);
-                // Fetch documents from the collection.
-                // IMPORTANT: orderBy() is avoided as per instructions to prevent index missing errors.
-                // Sorting will be done in memory using JavaScript.
                 const querySnapshot = await getDocs(historyCollectionRef);
                 
-                historyTableContainer.innerHTML = ''; // Clear loading message
+                historyTableContainer.innerHTML = '';
 
                 if (querySnapshot.empty) {
                     historyTableContainer.innerHTML = '<p class="text-center text-gray-500">Chưa có lịch sử làm bài.</p>';
@@ -530,24 +430,13 @@
                 }
 
                 const results = [];
-                querySnapshot.forEach((doc) => {
-                    results.push(doc.data());
-                });
+                querySnapshot.forEach((doc) => results.push(doc.data()));
+                results.sort((a, b) => (b.date?.toDate() || 0) - (a.date?.toDate() || 0));
 
-                // Sort results by date in descending order (newest first) in JavaScript memory.
-                results.sort((a, b) => {
-                    // Handle both Firestore Timestamp objects and plain Date strings/objects
-                    const dateA = a.date && a.date.toDate ? a.date.toDate().getTime() : new Date(a.date).getTime();
-                    const dateB = b.date && b.date.toDate ? b.date.toDate().getTime() : new Date(b.date).getTime();
-                    return dateB - dateA; // Descending order
-                });
-
-                // Mapping for display names
                 const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
                 
-                // Create the history table HTML
                 const table = document.createElement('table');
-                table.classList.add('min-w-full', 'divide-y', 'divide-gray-200', 'rounded-lg', 'overflow-hidden');
+                table.className = 'min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden';
                 table.innerHTML = `
                     <thead class="bg-gray-100/50">
                         <tr>
@@ -562,14 +451,11 @@
                 `;
                 const tbody = table.querySelector('tbody');
 
-                // Populate the table with fetched results
                 results.forEach((result) => {
                     const row = tbody.insertRow();
-                    // Convert Firestore Timestamp to a readable Date string
-                    const date = result.date && result.date.toDate ? result.date.toDate() : new Date(result.date);
-                    const formattedDate = date.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    const date = result.date?.toDate() ? result.date.toDate().toLocaleString('vi-VN') : 'N/A';
                     row.innerHTML = `
-                        <td class="px-3 py-2 whitespace-nowrap text-sm">${formattedDate}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-sm">${date}</td>
                         <td class="px-3 py-2 whitespace-nowrap text-sm">${nameMap[result.subject] || result.subject}</td>
                         <td class="px-3 py-2 whitespace-nowrap text-sm">${nameMap[result.grade] || result.grade}</td>
                         <td class="px-3 py-2 whitespace-nowrap text-sm">${nameMap[result.semester] || result.semester}</td>
@@ -579,21 +465,20 @@
                 historyTableContainer.appendChild(table);
 
             } catch (e) {
-                console.error("Error fetching history from Firestore:", e);
-                historyTableContainer.innerHTML = '<p class="text-center text-red-500">Không thể tải lịch sử. Lỗi quyền truy cập hoặc kết nối.</p>';
+                console.error("Error fetching history:", e);
+                historyTableContainer.innerHTML = '<p class="text-center text-red-500">Không thể tải lịch sử.</p>';
             }
         }
         
-        // Hides the history panel and shows the admin panel.
         function hideHistory() {
             historyPanel.classList.add('hidden');
             adminPanel.classList.remove('hidden');
         }
 
         // --- GAME LOGIC FUNCTIONS ---
-        // Updates the state of the "Start" button based on selections.
         function updateStartButtonState() { 
-            if (selectedSubject && selectedGrade && selectedSemester) { 
+            // Button is enabled only if all selections are made AND questions are loaded.
+            if (selectedSubject && selectedGrade && selectedSemester && questionBank) { 
                 startBtn.disabled = false; 
                 startBtn.classList.remove('bg-gray-500/50', 'cursor-not-allowed'); 
                 startBtn.classList.add('bg-blue-600/70', 'hover:bg-blue-600/90'); 
@@ -604,101 +489,84 @@
             } 
         }
 
-        // Initiates the game, shuffles questions, and displays the first one.
         function startGame() { 
-            // Validate that questions exist for the selected criteria
-            if (!questions[selectedSubject] || !questions[selectedSubject][selectedGrade] || !questions[selectedSubject][selectedGrade][selectedSemester]) {
-                console.error("No questions found for the selected criteria:", selectedSubject, selectedGrade, selectedSemester);
-                // Provide user feedback instead of an alert
-                document.getElementById('feedback-container').textContent = 'Không có câu hỏi cho lựa chọn này. Vui lòng chọn lại.';
-                // Optionally, reset the selection screen or keep it for user to re-select
+            // Use the globally loaded questionBank
+            if (!questionBank || !questionBank[selectedSubject] || !questionBank[selectedSubject][selectedGrade] || !questionBank[selectedSubject][selectedGrade][selectedSemester]) {
+                console.error("Question data is not available for the selection.");
+                // This should ideally not happen if the UI is controlled properly
                 return; 
             }
 
-            let allQuestions = questions[selectedSubject][selectedGrade][selectedSemester]; 
-            // Shuffle questions and select the first NUM_OF_QUESTIONS_PER_GAME
+            let allQuestions = questionBank[selectedSubject][selectedGrade][selectedSemester]; 
             currentQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, NUM_OF_QUESTIONS_PER_GAME); 
             currentQuestionIndex = 0; 
             score = 0; 
 
-            // Transition to game screen
             selectionScreen.classList.add('hidden'); 
             gameScreen.classList.remove('hidden'); 
             resultsScreen.classList.add('hidden'); 
-            adminPanel.classList.add('hidden'); // Ensure admin panel is hidden
-            historyPanel.classList.add('hidden'); // Ensure history panel is hidden
+            adminPanel.classList.add('hidden');
+            historyPanel.classList.add('hidden');
 
-            displayQuestion(); // Display the first question
+            displayQuestion();
         }
 
-        // Displays the current question and its options.
         function displayQuestion() { 
-            document.getElementById('feedback-container').innerHTML = ''; // Clear previous feedback
-            document.getElementById('next-btn').classList.add('hidden'); // Hide next button until answer is checked
+            document.getElementById('feedback-container').innerHTML = '';
+            document.getElementById('next-btn').classList.add('hidden');
 
             const questionData = currentQuestions[currentQuestionIndex]; 
             const questionTextElement = document.getElementById('question-container').querySelector('p');
             questionTextElement.textContent = questionData.question; 
 
             const optionsContainer = document.getElementById('options-container'); 
-            optionsContainer.innerHTML = ''; // Clear previous options
+            optionsContainer.innerHTML = '';
 
-            // Shuffle options for the current question
             const shuffledOptions = [...questionData.options].sort(() => Math.random() - 0.5); 
             shuffledOptions.forEach(option => { 
                 const button = document.createElement('button'); 
                 button.textContent = option; 
-                // Add Tailwind classes and event listener
-                button.classList.add('answer-option', 'w-full', 'p-4', 'rounded-2xl', 'font-semibold', 'glass-btn', 'bg-white/20', 'hover:bg-white/40', 'text-gray-800');
+                button.className = 'answer-option w-full p-4 rounded-2xl font-semibold glass-btn bg-white/20 hover:bg-white/40 text-gray-800';
                 button.onclick = (e) => checkAnswer(e.target, questionData.answer); 
                 optionsContainer.appendChild(button); 
             }); 
 
-            // Update progress and score display
             document.getElementById('progress-text').textContent = `Câu ${currentQuestionIndex + 1}/${currentQuestions.length}`; 
-            // Score is divided by 2 because each question contributes 0.5 points to a total of 10 points.
             document.getElementById('score-text').textContent = `Điểm: ${score / 2}/10`; 
 
-            // Show speaker button on game screen and set its click handler
             if (readQuestionBtn) {
-                readQuestionBtn.style.display = 'block'; // Ensure it's visible
-                readQuestionBtn.onclick = () => speakText(questionData.question); // Call speakText for the question
+                readQuestionBtn.style.display = 'block';
+                readQuestionBtn.onclick = () => speakText(questionData.question);
             }
         }
 
-        // Checks the selected answer and provides feedback.
         function checkAnswer(selectedButton, correctAnswer) { 
             const allOptions = document.querySelectorAll('.answer-option'); 
-            // Disable all options after an answer is selected
             allOptions.forEach(btn => btn.disabled = true); 
 
             const feedbackContainer = document.getElementById('feedback-container'); 
 
             if (selectedButton.textContent == correctAnswer) { 
-                score++; // Increment raw score
-                selectedButton.classList.add('correct'); // Highlight correct answer
+                score++;
+                selectedButton.classList.add('correct');
                 feedbackContainer.textContent = '🎉 Đúng rồi!'; 
             } else { 
-                selectedButton.classList.add('incorrect'); // Highlight incorrect answer
+                selectedButton.classList.add('incorrect');
                 feedbackContainer.textContent = '😥 Sai rồi!'; 
-                // Also highlight the correct answer if the user chose incorrectly
                 allOptions.forEach(btn => { 
                     if (btn.textContent == correctAnswer) { 
                         btn.classList.add('correct'); 
                     } 
                 }); 
             } 
-            // Update score display immediately after checking answer
             document.getElementById('score-text').textContent = `Điểm: ${score / 2}/10`; 
-            document.getElementById('next-btn').classList.remove('hidden'); // Show next button
+            document.getElementById('next-btn').classList.remove('hidden');
             
-            // Stop any ongoing speech when an answer is selected
             if (speechSynthesis.speaking) {
                 speechSynthesis.cancel();
             }
         }
 
-        // Moves to the next question or shows results if all questions are answered.
         function nextQuestion() { 
             currentQuestionIndex++; 
             if (currentQuestionIndex < currentQuestions.length) { 
@@ -708,25 +576,22 @@
             } 
         }
 
-        // Displays the final results screen and saves the score.
         function showResults() { 
             gameScreen.classList.add('hidden'); 
             resultsScreen.classList.remove('hidden'); 
 
-            const finalScore = score / 2; // Calculate final score out of 10
+            const finalScore = score / 2;
             document.getElementById('final-score').textContent = `${finalScore}/10`; 
 
-            // Prepare result data for saving to Firestore
             const resultData = { 
-                date: serverTimestamp(), // Use Firestore's server timestamp for accurate time
+                date: serverTimestamp(),
                 subject: selectedSubject, 
                 grade: selectedGrade, 
                 semester: selectedSemester, 
                 score: finalScore 
             }; 
-            saveResult(resultData); // Save the result asynchronously
+            saveResult(resultData);
 
-            // Provide a motivational message based on performance
             const finalMessageElement = document.getElementById('final-message'); 
             const percentage = (score / currentQuestions.length) * 100; 
             if (percentage === 100) { 
@@ -739,137 +604,97 @@
                 finalMessageElement.textContent = "Đừng buồn, lần sau sẽ tốt hơn!"; 
             } 
             
-            // Hide speaker button on results screen (as it's for questions)
             if (readQuestionBtn) {
                 readQuestionBtn.style.display = 'none';
             }
-            // If you want a speaker for results, you would add a new button on the results screen
-            // and attach a speakText function to it.
         }
 
-        // Resets the game to the initial selection screen.
         function resetGame() { 
             resultsScreen.classList.add('hidden'); 
             selectionScreen.classList.remove('hidden'); 
-            // Reset all selections
+            
+            // Show the loading/selections container structure again
+            selectionsContainer.classList.remove('hidden');
+            loadingQuestionsIndicator.classList.add('hidden'); // Should already be hidden
+
             selectedSubject = null; 
             selectedGrade = null; 
             selectedSemester = null; 
-            // Remove 'selected' class from all choice buttons
+            
             subjectBtns.forEach(btn => btn.classList.remove('selected')); 
             gradeBtns.forEach(btn => btn.classList.remove('selected')); 
             semesterBtns.forEach(btn => btn.classList.remove('selected')); 
-            updateStartButtonState(); // Update start button state
+            updateStartButtonState();
 
-            // Hide speaker button on selection screen
             if (readQuestionBtn) {
                 readQuestionBtn.style.display = 'none';
             }
         }
 
         // --- ADMIN FUNCTIONS ---
-        // Shows the admin login modal.
         function showLoginModal() { 
             loginModal.classList.remove('hidden'); 
-            // Add a slight delay for the opacity transition to work
             setTimeout(() => loginModal.classList.remove('opacity-0'), 10); 
         }
 
-        // Hides the admin login modal and clears any error messages.
         function hideLoginModal() { 
             loginModal.classList.add('opacity-0'); 
-            // Add a slight delay for the opacity transition before hiding completely
             setTimeout(() => loginModal.classList.add('hidden'), 300); 
-            loginError.textContent = ''; // Clear any previous error messages
-            loginForm.reset(); // Reset form fields
+            loginError.textContent = '';
+            loginForm.reset();
         }
 
-        // Handles the admin login attempt.
         function handleLogin(event) { 
-            event.preventDefault(); // Prevent default form submission
+            event.preventDefault();
             const username = loginForm.username.value; 
             const password = loginForm.password.value; 
             
-            // WARNING: Admin credentials are hardcoded for demonstration purposes.
-            // In a production application, you MUST implement a secure authentication system
-            // (e.g., using Firebase Authentication with user accounts and roles)
-            // instead of hardcoding credentials.
             if (username === 'admin' && password === 'admin') { 
                 hideLoginModal(); 
-                selectionScreen.classList.add('hidden'); // Hide selection screen
-                adminPanel.classList.remove('hidden'); // Show admin panel
+                selectionScreen.classList.add('hidden');
+                adminPanel.classList.remove('hidden');
             } else { 
-                loginError.textContent = 'Tên đăng nhập hoặc mật khẩu không đúng.'; // Display error message
+                loginError.textContent = 'Tên đăng nhập hoặc mật khẩu không đúng.';
             } 
         }
 
-        // Handles admin logout, returning to the main selection screen.
         function handleLogout() { 
-            adminPanel.classList.add('hidden'); // Hide admin panel
-            selectionScreen.classList.remove('hidden'); // Show selection screen
-            resetGame(); // Reset game state (clear selections)
+            adminPanel.classList.add('hidden');
+            selectionScreen.classList.remove('hidden');
+            resetGame();
         }
 
         // --- TEXT-TO-SPEECH FUNCTIONALITY ---
         let vietnamVoice = null;
         let voicesLoaded = false;
 
-        // Function to find a Vietnamese voice
         function findVietnameseVoice() {
-            if (vietnamVoice) return vietnamVoice; // Return if already found
-
+            if (vietnamVoice) return vietnamVoice;
             const voices = speechSynthesis.getVoices();
-            // Try to find a Vietnamese voice first (vi-VN is the most specific)
-            vietnamVoice = voices.find(voice => voice.lang === 'vi-VN');
-            
-            if (!vietnamVoice) {
-                // Fallback to any Vietnamese voice if specific 'vi-VN' not found but a 'vi' exists
-                vietnamVoice = voices.find(voice => voice.lang.startsWith('vi'));
-            }
-
-            if (!vietnamVoice) {
-                console.warn("Không tìm thấy giọng đọc tiếng Việt. Trình duyệt sẽ sử dụng giọng mặc định. Vui lòng kiểm tra cài đặt ngôn ngữ và giọng nói trên hệ điều hành của bạn.");
-            }
+            vietnamVoice = voices.find(voice => voice.lang === 'vi-VN') || voices.find(voice => voice.lang.startsWith('vi'));
+            if (!vietnamVoice) console.warn("Không tìm thấy giọng đọc tiếng Việt.");
             return vietnamVoice;
         }
 
-        // Event listener for when voices are loaded
         speechSynthesis.onvoiceschanged = () => {
             if (!voicesLoaded) {
-                findVietnameseVoice(); // Try to find voice once voices are loaded
+                findVietnameseVoice();
                 voicesLoaded = true;
             }
         };
 
-        // Function to speak the given text
         function speakText(text) { 
-            if (!'speechSynthesis' in window) {
-                console.warn("API Chuyển văn bản thành giọng nói không được hỗ trợ trong trình duyệt này.");
-                return;
-            }
-
-            // Cancel any ongoing speech before starting a new one
-            if (speechSynthesis.speaking) {
-                speechSynthesis.cancel();
-            }
+            if (!'speechSynthesis' in window) return;
+            if (speechSynthesis.speaking) speechSynthesis.cancel();
 
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'vi-VN'; // Set language to Vietnamese
-
-            // Try to set a specific Vietnamese voice
+            utterance.lang = 'vi-VN';
             const voiceToUse = findVietnameseVoice();
-            if (voiceToUse) {
-                utterance.voice = voiceToUse;
-            } else {
-                // If no Vietnamese voice is found, it will use the default voice
-                console.warn("Không thể tìm thấy giọng đọc tiếng Việt cụ thể. Đang sử dụng giọng mặc định.");
-            }
-
+            if (voiceToUse) utterance.voice = voiceToUse;
             speechSynthesis.speak(utterance);
         }
 
         // --- EVENT LISTENERS ---
-        // Add event listeners to subject, grade, and semester selection buttons.
         subjectBtns.forEach(btn => btn.addEventListener('click', () => { 
             selectedSubject = btn.dataset.subject; 
             subjectBtns.forEach(b => b.classList.remove('selected')); 
@@ -891,17 +716,14 @@
             updateStartButtonState(); 
         }));
 
-        // Add event listeners for game flow buttons.
         startBtn.addEventListener('click', () => { 
             if (!startBtn.disabled) startGame(); 
         });
         document.getElementById('next-btn').addEventListener('click', nextQuestion);
         document.getElementById('play-again-btn').addEventListener('click', resetGame);
 
-        // Add event listeners for admin functionality.
         adminLoginBtn.addEventListener('click', showLoginModal);
         closeModalBtn.addEventListener('click', hideLoginModal);
-        // Close modal if clicking outside the modal content
         loginModal.addEventListener('click', (e) => { 
             if (e.target === loginModal) hideLoginModal(); 
         });
@@ -911,19 +733,18 @@
         backToAdminBtn.addEventListener('click', hideHistory);
         
         // --- INITIAL APPLICATION START ---
-        // Initialize Firebase when the script loads.
-        initializeFirebase();
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeFirebase();
 
-        // Initially hide the speaker button (it will be shown only on the game screen)
-        if (readQuestionBtn) {
-            readQuestionBtn.style.display = 'none';
-        }
+            if (readQuestionBtn) {
+                readQuestionBtn.style.display = 'none';
+            }
 
-        // Check if voices are already loaded (can happen if script loads late)
-        if (speechSynthesis.getVoices().length > 0) {
-            findVietnameseVoice();
-            voicesLoaded = true;
-        }
+            if (speechSynthesis.getVoices().length > 0) {
+                findVietnameseVoice();
+                voicesLoaded = true;
+            }
+        });
 
     </script>
 </body>
