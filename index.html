@@ -180,7 +180,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp, doc, getDoc, setDoc, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp, doc, getDoc, setDoc, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- SOUND EFFECTS SETUP ---
         let soundsEnabled = true;
@@ -202,8 +202,58 @@
             } catch (error) { console.error("Sound play error:", error); }
         }
 
-        // --- LOCAL QUESTION SEED DATA (unchanged) ---
-        const localQuestionSeedData = { toan: { lop1: { hocky1: [ { question: "5 + 4 = ?", options: [8, 9, 10, 7], answer: 9, explanation: "Vì 5 que tính thêm 4 que tính nữa là 9 que tính." }, { question: "8 - 3 = ?", options: [4, 5, 6, 7], answer: 5, explanation: "Vì có 8 cái kẹo, ăn hết 3 cái thì còn lại 5 cái." }, { question: "Số liền sau của 9 là?", options: [8, 10, 11, 7], answer: 10, explanation: "Số liền sau là số lớn hơn 1 đơn vị, nên sau số 9 là số 10." }, { question: "Có mấy hình tròn: 🔵 🔺 🔵 ⬜", options: [1, 2, 3, 4], answer: 2, explanation: "Bé hãy đếm các hình có dạng tròn nhé!" }, { question: "2 + 6 = ?", options: [7, 8, 9, 10], answer: 8 }, { question: "Số liền trước của 15 là?", options: [13, 14, 16, 17], answer: 14, explanation: "Số liền trước là số nhỏ hơn 1 đơn vị, nên trước số 15 là số 14." }, { question: "Hình vuông có mấy cạnh?", options: [2, 3, 4, 5], answer: 4, explanation: "Hình vuông là hình có 4 cạnh dài bằng nhau." }, { question: "Điền dấu: 5 + 3 ... 8", options: ["<", ">", "="], answer: "=" }, { question: "7 + ... = 10", options: [1, 2, 3, 4], answer: 3 }, { question: "Số bé nhất trong các số: 9, 3, 7, 5 là?", options: [9, 3, 7, 5], answer: 3 }, ], hocky2: [ { question: "10 + 6 = ?", options: [15, 16, 17, 18], answer: 16 }, { question: "18 - 5 = ?", options: [12, 13, 14, 15], answer: 13 }, { question: "Số gồm 1 chục và 7 đơn vị là?", options: [10, 7, 17, 71], answer: 17, explanation: "1 chục là 10, thêm 7 đơn vị nữa là 17." }, { question: "Hôm nay là thứ Hai, ngày mai là thứ mấy?", options: ["Chủ Nhật", "Thứ Ba", "Thứ Tư"], answer: "Thứ Ba", explanation: "Sau thứ Hai sẽ là thứ Ba." }, { question: "Lan có 8 kẹo, mẹ cho thêm 5. Lan có tất cả...cái kẹo?", options: [12, 13, 14, 3], answer: 13 }, ] } }, tiengviet: { lop1: { hocky1: [ { question: "Chữ cái nào đứng sau 'A' trong bảng chữ cái?", options: ["C", "B", "D", "E"], answer: "B", explanation: "Bảng chữ cái là A, B, C... nên sau A là B." }, { question: "Từ nào chỉ hoạt động 'ăn'?", options: ["Ngủ", "Chơi", "Ăn", "Học"], answer: "Ăn", explanation: "'Ăn' là hành động đưa thức ăn vào miệng để nuôi sống cơ thể." }, { question: "Điền từ còn thiếu: 'Con ... đang bơi.'", options: ["chim", "cá", "mèo", "chó"], answer: "cá", explanation: "Trong các con vật này, chỉ có 'cá' là sống dưới nước và biết bơi." }, { question: "Từ nào có vần 'ai'?", options: ["Cái", "Con", "Sách", "Bút"], answer: "Cái" }, { question: "Chữ cái nào đứng trước 'D' trong bảng chữ cái?", options: ["C", "E", "F", "B"], answer: "C" }, ], hocky2: [ { question: "Từ nào có tiếng 'sách'?", options: ["Quyển vở", "Bút chì", "Sách giáo khoa", "Cái bàn"], answer: "Sách giáo khoa" }, { question: "Từ nào đồng nghĩa với 'vui vẻ'?", options: ["Buồn bã", "Hạnh phúc", "Tức giận", "Sợ hãi"], answer: "Hạnh phúc", explanation: "'Vui vẻ' và 'hạnh phúc' đều chỉ cảm xúc tích cực, vui sướng." }, { question: "Điền từ còn thiếu: 'Bầu trời ...'", options: ["xanh", "đỏ", "vàng", "đen"], answer: "xanh", explanation: "Bầu trời ban ngày thường có màu xanh trong." }, ] }, lop2: { hocky1: [ { question: "Từ nào là từ chỉ sự vật?", options: ["Chạy", "Đẹp", "Cái bàn", "Vui"], answer: "Cái bàn", explanation: "Từ chỉ sự vật là từ gọi tên đồ vật, con vật, cây cối. 'Cái bàn' là một đồ vật." }, { question: "Từ nào là từ chỉ hoạt động?", options: ["Con mèo", "Đọc sách", "Màu xanh", "Cao lớn"], answer: "Đọc sách", explanation: "Từ chỉ hoạt động nói lên sự vận động, làm việc. 'Đọc sách' là một hoạt động." }, ], hocky2: [ { question: "Từ nào là từ chỉ số lượng?", options: ["Nhanh", "Đẹp", "Năm", "Ăn"], answer: "Năm", explanation: "'Năm' là một con số, dùng để đếm số lượng." }, { question: "Từ nào là từ chỉ thời gian?", options: ["Hôm nay", "Sách", "Bút", "Cái ghế"], answer: "Hôm nay", explanation: "'Hôm nay' là từ chỉ ngày hiện tại, thuộc về thời gian." }, ] } } };
+        // --- LOCAL QUESTION SEED DATA (Updated with more explanations) ---
+        const localQuestionSeedData = {
+            toan: {
+                lop1: {
+                    hocky1: [
+                        { question: "5 + 4 = ?", options: [8, 9, 10, 7], answer: 9, explanation: "Vì 5 que tính thêm 4 que tính nữa là 9 que tính." },
+                        { question: "8 - 3 = ?", options: [4, 5, 6, 7], answer: 5, explanation: "Vì có 8 cái kẹo, ăn hết 3 cái thì còn lại 5 cái." },
+                        { question: "Số liền sau của 9 là?", options: [8, 10, 11, 7], answer: 10, explanation: "Số liền sau là số lớn hơn 1 đơn vị, nên sau số 9 là số 10." },
+                        { question: "Có mấy hình tròn: 🔵 🔺 🔵 ⬜", options: [1, 2, 3, 4], answer: 2, explanation: "Bé hãy đếm các hình có dạng tròn nhé!" },
+                        { question: "2 + 6 = ?", options: [7, 8, 9, 10], answer: 8, explanation: "Bé hãy lấy 2 que tính, rồi lấy thêm 6 que tính nữa. Đếm tất cả sẽ có 8 que tính." },
+                        { question: "Số liền trước của 15 là?", options: [13, 14, 16, 17], answer: 14, explanation: "Số liền trước là số nhỏ hơn 1 đơn vị, nên trước số 15 là số 14." },
+                        { question: "Hình vuông có mấy cạnh?", options: [2, 3, 4, 5], answer: 4, explanation: "Hình vuông là hình có 4 cạnh dài bằng nhau." },
+                        { question: "Điền dấu: 5 + 3 ... 8", options: ["<", ">", "="], answer: "=", explanation: "Vì 5 cộng 3 bằng 8, nên dấu đúng là dấu bằng." },
+                        { question: "7 + ... = 10", options: [1, 2, 3, 4], answer: 3, explanation: "Ta lấy 10 trừ 7 còn 3. Vậy số cần điền là 3." },
+                        { question: "Số bé nhất trong các số: 9, 3, 7, 5 là?", options: [9, 3, 7, 5], answer: 3, explanation: "Trong các số đã cho, số 3 là số có giá trị nhỏ nhất." },
+                    ],
+                    hocky2: [
+                        { question: "10 + 6 = ?", options: [15, 16, 17, 18], answer: 16, explanation: "10 (một chục) cộng với 6 đơn vị là 16." },
+                        { question: "18 - 5 = ?", options: [12, 13, 14, 15], answer: 13, explanation: "Ta lấy 8 trừ 5 bằng 3, giữ nguyên 1 chục, được kết quả là 13." },
+                        { question: "Số gồm 1 chục và 7 đơn vị là?", options: [10, 7, 17, 71], answer: 17, explanation: "1 chục là 10, thêm 7 đơn vị nữa là 17." },
+                        { question: "Hôm nay là thứ Hai, ngày mai là thứ mấy?", options: ["Chủ Nhật", "Thứ Ba", "Thứ Tư"], answer: "Thứ Ba", explanation: "Sau thứ Hai sẽ là thứ Ba." },
+                        { question: "Lan có 8 kẹo, mẹ cho thêm 5. Lan có tất cả...cái kẹo?", options: [12, 13, 14, 3], answer: 13, explanation: "Đây là phép cộng. Ta lấy 8 cộng 5 bằng 13." },
+                    ]
+                }
+            },
+            tiengviet: {
+                lop1: {
+                    hocky1: [
+                        { question: "Chữ cái nào đứng sau 'A' trong bảng chữ cái?", options: ["C", "B", "D", "E"], answer: "B", explanation: "Bảng chữ cái là A, B, C... nên sau A là B." },
+                        { question: "Từ nào chỉ hoạt động 'ăn'?", options: ["Ngủ", "Chơi", "Ăn", "Học"], answer: "Ăn", explanation: "'Ăn' là hành động đưa thức ăn vào miệng để nuôi sống cơ thể." },
+                        { question: "Điền từ còn thiếu: 'Con ... đang bơi.'", options: ["chim", "cá", "mèo", "chó"], answer: "cá", explanation: "Trong các con vật này, chỉ có 'cá' là sống dưới nước và biết bơi." },
+                        { question: "Từ nào có vần 'ai'?", options: ["Cái", "Con", "Sách", "Bút"], answer: "Cái", explanation: "Trong các từ đã cho, chỉ có 'Cái' chứa vần 'ai'." },
+                        { question: "Chữ cái nào đứng trước 'D' trong bảng chữ cái?", options: ["C", "E", "F", "B"], answer: "C", explanation: "Bảng chữ cái là A, B, C, D... nên trước D là C." },
+                    ],
+                    hocky2: [
+                        { question: "Từ nào có tiếng 'sách'?", options: ["Quyển vở", "Bút chì", "Sách giáo khoa", "Cái bàn"], answer: "Sách giáo khoa", explanation: "Trong các đáp án, chỉ có 'Sách giáo khoa' là có chứa tiếng 'sách'." },
+                        { question: "Từ nào đồng nghĩa với 'vui vẻ'?", options: ["Buồn bã", "Hạnh phúc", "Tức giận", "Sợ hãi"], answer: "Hạnh phúc", explanation: "'Vui vẻ' và 'hạnh phúc' đều chỉ cảm xúc tích cực, vui sướng." },
+                        { question: "Điền từ còn thiếu: 'Bầu trời ...'", options: ["xanh", "đỏ", "vàng", "đen"], answer: "xanh", explanation: "Bầu trời ban ngày thường có màu xanh trong." },
+                    ]
+                },
+                lop2: {
+                    hocky1: [
+                        { question: "Từ nào là từ chỉ sự vật?", options: ["Chạy", "Đẹp", "Cái bàn", "Vui"], answer: "Cái bàn", explanation: "Từ chỉ sự vật là từ gọi tên đồ vật, con vật, cây cối. 'Cái bàn' là một đồ vật." },
+                        { question: "Từ nào là từ chỉ hoạt động?", options: ["Con mèo", "Đọc sách", "Màu xanh", "Cao lớn"], answer: "Đọc sách", explanation: "Từ chỉ hoạt động nói lên sự vận động, làm việc. 'Đọc sách' là một hoạt động." },
+                    ],
+                    hocky2: [
+                        { question: "Từ nào là từ chỉ số lượng?", options: ["Nhanh", "Đẹp", "Năm", "Ăn"], answer: "Năm", explanation: "'Năm' là một con số, dùng để đếm số lượng." },
+                        { question: "Từ nào là từ chỉ thời gian?", options: ["Hôm nay", "Sách", "Bút", "Cái ghế"], answer: "Hôm nay", explanation: "'Hôm nay' là từ chỉ ngày hiện tại, thuộc về thời gian." },
+                    ]
+                }
+            }
+        };
 
         // --- STATE & DOM VARIABLES ---
         let db, auth, appId, questionBank, selectedSubject, selectedGrade, selectedSemester;
@@ -253,19 +303,39 @@
             const container = document.getElementById('history-table-container');
             container.innerHTML = '<p class="text-center text-gray-500">Đang tải lịch sử...</p>';
             if (!db || !appId) { container.innerHTML = '<p class="text-center text-red-500">Lỗi CSDL.</p>'; return; }
-            const q = query(collection(db, `artifacts/${appId}/public/data/quizResults`), orderBy("date", "desc"));
-            const querySnapshot = await getDocs(q);
-             if (querySnapshot.empty) { container.innerHTML = '<p class="text-center text-gray-500">Chưa có lịch sử làm bài.</p>'; return; }
-            const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
-            let tableHTML = '<table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden"><thead class="bg-gray-100/50"><tr><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Ngày Giờ</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Môn</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Lớp</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th></tr></thead><tbody class="bg-white/30 divide-y divide-gray-200 text-gray-800">';
-            querySnapshot.forEach(doc => {
-                const r = doc.data();
-                const date = r.date?.toDate() ? r.date.toDate().toLocaleString('vi-VN') : 'N/A';
-                const scoreDisplay = `${r.score}/${r.totalQuestions || 10}`;
-                tableHTML += `<tr><td class="px-3 py-2 text-sm">${date}</td><td class="px-3 py-2 text-sm font-semibold">${r.name || 'Không lưu'}</td><td class="px-3 py-2 text-sm">${nameMap[r.subject] || r.subject}</td><td class="px-3 py-2 text-sm">${nameMap[r.grade] || r.grade}</td><td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td></tr>`;
-            });
-            tableHTML += '</tbody></table>';
-            container.innerHTML = tableHTML;
+            try {
+                const q = query(collection(db, `artifacts/${appId}/public/data/quizResults`));
+                const querySnapshot = await getDocs(q);
+                if (querySnapshot.empty) {
+                    container.innerHTML = '<p class="text-center text-gray-500">Chưa có lịch sử làm bài.</p>';
+                    return;
+                }
+                
+                const results = [];
+                querySnapshot.forEach(doc => results.push(doc.data()));
+                
+                // Sort results by date client-side (newest first)
+                results.sort((a, b) => {
+                    const dateA = a.date?.toDate() || new Date(0);
+                    const dateB = b.date?.toDate() || new Date(0);
+                    return dateB - dateA;
+                });
+
+                const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
+                let tableHTML = '<table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden"><thead class="bg-gray-100/50"><tr><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Ngày Giờ</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Môn</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Lớp</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th></tr></thead><tbody class="bg-white/30 divide-y divide-gray-200 text-gray-800">';
+                
+                results.forEach(r => {
+                    const date = r.date?.toDate() ? r.date.toDate().toLocaleString('vi-VN') : 'N/A';
+                    const scoreDisplay = `${r.score}/${r.totalQuestions || 10}`;
+                    tableHTML += `<tr><td class="px-3 py-2 text-sm">${date}</td><td class="px-3 py-2 text-sm font-semibold">${r.name || 'Không lưu'}</td><td class="px-3 py-2 text-sm">${nameMap[r.subject] || r.subject}</td><td class="px-3 py-2 text-sm">${nameMap[r.grade] || r.grade}</td><td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td></tr>`;
+                });
+
+                tableHTML += '</tbody></table>';
+                container.innerHTML = tableHTML;
+            } catch (error) {
+                console.error("Error fetching history:", error);
+                container.innerHTML = '<p class="text-center text-red-500">Không thể tải lịch sử.</p>';
+            }
         }
 
         async function displayLeaderboard() {
@@ -277,26 +347,50 @@
             const subjectFilter = leaderboardSubjectFilter.value;
             const gradeFilter = leaderboardGradeFilter.value;
 
-            let queryConstraints = [orderBy("score", "desc"), limit(10)];
-            if (subjectFilter !== 'all') queryConstraints.push(where("subject", "==", subjectFilter));
-            if (gradeFilter !== 'all') queryConstraints.push(where("grade", "==", gradeFilter));
-            
-            const q = query(collection(db, `artifacts/${appId}/public/data/leaderboard`), ...queryConstraints);
-            const querySnapshot = await getDocs(q);
+            try {
+                let queryConstraints = [];
+                if (subjectFilter !== 'all') queryConstraints.push(where("subject", "==", subjectFilter));
+                if (gradeFilter !== 'all') queryConstraints.push(where("grade", "==", gradeFilter));
+                
+                const q = query(collection(db, `artifacts/${appId}/public/data/leaderboard`), ...queryConstraints);
+                const querySnapshot = await getDocs(q);
 
-            if (querySnapshot.empty) { container.innerHTML = '<p class="text-center text-gray-500">Chưa có ai trên bảng xếp hạng cho mục này.</p>'; return; }
+                if (querySnapshot.empty) {
+                    container.innerHTML = '<p class="text-center text-gray-500">Chưa có ai trên bảng xếp hạng cho mục này.</p>';
+                    return;
+                }
 
-            let tableHTML = '<table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden"><thead class="bg-gray-100/50"><tr><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Hạng</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên Bé</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th></tr></thead><tbody class="bg-white/30 divide-y divide-gray-200 text-gray-800">';
-            let rank = 1;
-            querySnapshot.forEach(doc => {
-                const data = doc.data();
-                const scoreDisplay = `${data.score}/${data.totalQuestions || 10}`;
-                const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
-                tableHTML += `<tr><td class="px-3 py-2 text-center text-sm font-bold">${rankIcon}</td><td class="px-3 py-2 text-sm font-semibold">${data.name}</td><td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td></tr>`;
-                rank++;
-            });
-            tableHTML += '</tbody></table>';
-            container.innerHTML = tableHTML;
+                let results = [];
+                querySnapshot.forEach(doc => {
+                    results.push(doc.data());
+                });
+
+                // Sort by score (desc) and then by date (desc) as a tie-breaker, then slice for top 10
+                results.sort((a, b) => {
+                    if (b.score !== a.score) {
+                        return b.score - a.score;
+                    }
+                    const dateA = a.date?.toDate() || new Date(0);
+                    const dateB = b.date?.toDate() || new Date(0);
+                    return dateB - dateA; // Newest first for ties
+                });
+
+                const topResults = results.slice(0, 10);
+
+                let tableHTML = '<table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden"><thead class="bg-gray-100/50"><tr><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Hạng</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên Bé</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th></tr></thead><tbody class="bg-white/30 divide-y divide-gray-200 text-gray-800">';
+                let rank = 1;
+                topResults.forEach(data => {
+                    const scoreDisplay = `${data.score}/${data.totalQuestions || 10}`;
+                    const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+                    tableHTML += `<tr><td class="px-3 py-2 text-center text-sm font-bold">${rankIcon}</td><td class="px-3 py-2 text-sm font-semibold">${data.name}</td><td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td></tr>`;
+                    rank++;
+                });
+                tableHTML += '</tbody></table>';
+                container.innerHTML = tableHTML;
+            } catch (error) {
+                console.error("Error fetching leaderboard:", error);
+                container.innerHTML = '<p class="text-center text-red-500">Không thể tải bảng xếp hạng.</p>';
+            }
         }
         
         // --- GAME LOGIC ---
@@ -381,7 +475,7 @@
         function showScreen(screenName) { Object.values(screens).forEach(s => s.classList.add('hidden')); if (screens[screenName]) screens[screenName].classList.remove('hidden'); }
         function showModal(modalName) { if (modals[modalName]) { modals[modalName].classList.remove('hidden'); setTimeout(() => modals[modalName].classList.remove('opacity-0'), 10); } }
         function hideModal(modalName) { if (modals[modalName]) { modals[modalName].classList.add('opacity-0'); setTimeout(() => modals[modalName].classList.add('hidden'), 300); } }
-        function speakText(text) { if (!'speechSynthesis' in window) return; if (speechSynthesis.speaking) speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'vi-VN'; const voice = speechSynthesis.getVoices().find(v => v.lang === 'vi-VN'); if (voice) utterance.voice = voice; speechSynthesis.speak(utterance); }
+        function speakText(text) { if (!'speechSynthesis' in window) { console.warn("Speech synthesis not supported."); return; } if (speechSynthesis.speaking) speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'vi-VN'; const voice = speechSynthesis.getVoices().find(v => v.lang === 'vi-VN'); if (voice) utterance.voice = voice; speechSynthesis.speak(utterance); }
         
         // --- EVENT LISTENERS ---
         document.addEventListener('DOMContentLoaded', async () => {
@@ -421,7 +515,7 @@
         leaderboardGradeFilter.addEventListener('change', displayLeaderboard);
         
         // Admin
-        document.getElementById('admin-login-btn').addEventListener('click', () => { playSound('click'); showModal('login'); });
+        document.getElementById('admin-login-btn').addEventListener('click',_=> { playSound('click'); showModal('login'); });
         document.getElementById('close-modal-btn').addEventListener('click', () => hideModal('login'));
         document.getElementById('login-form').addEventListener('submit', (e) => { e.preventDefault(); playSound('click'); const u = document.getElementById('username').value; const p = document.getElementById('password').value; if (u === 'admin' && p === 'admin') { hideModal('login'); showScreen('admin'); } else { document.getElementById('login-error').textContent = 'Tên đăng nhập hoặc mật khẩu không đúng.'; } });
         document.getElementById('logout-btn').addEventListener('click', () => { playSound('click'); showScreen('selection'); });
