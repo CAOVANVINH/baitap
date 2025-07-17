@@ -202,54 +202,87 @@
             } catch (error) { console.error("Sound play error:", error); }
         }
 
-        // --- LOCAL QUESTION SEED DATA (Updated with more explanations) ---
+        // --- LOCAL QUESTION SEED DATA (Expanded to ensure >= 10 questions per category) ---
         const localQuestionSeedData = {
             toan: {
                 lop1: {
                     hocky1: [
-                        { question: "5 + 4 = ?", options: [8, 9, 10, 7], answer: 9, explanation: "Vì 5 que tính thêm 4 que tính nữa là 9 que tính." },
-                        { question: "8 - 3 = ?", options: [4, 5, 6, 7], answer: 5, explanation: "Vì có 8 cái kẹo, ăn hết 3 cái thì còn lại 5 cái." },
-                        { question: "Số liền sau của 9 là?", options: [8, 10, 11, 7], answer: 10, explanation: "Số liền sau là số lớn hơn 1 đơn vị, nên sau số 9 là số 10." },
-                        { question: "Có mấy hình tròn: 🔵 🔺 🔵 ⬜", options: [1, 2, 3, 4], answer: 2, explanation: "Bé hãy đếm các hình có dạng tròn nhé!" },
-                        { question: "2 + 6 = ?", options: [7, 8, 9, 10], answer: 8, explanation: "Bé hãy lấy 2 que tính, rồi lấy thêm 6 que tính nữa. Đếm tất cả sẽ có 8 que tính." },
-                        { question: "Số liền trước của 15 là?", options: [13, 14, 16, 17], answer: 14, explanation: "Số liền trước là số nhỏ hơn 1 đơn vị, nên trước số 15 là số 14." },
-                        { question: "Hình vuông có mấy cạnh?", options: [2, 3, 4, 5], answer: 4, explanation: "Hình vuông là hình có 4 cạnh dài bằng nhau." },
-                        { question: "Điền dấu: 5 + 3 ... 8", options: ["<", ">", "="], answer: "=", explanation: "Vì 5 cộng 3 bằng 8, nên dấu đúng là dấu bằng." },
-                        { question: "7 + ... = 10", options: [1, 2, 3, 4], answer: 3, explanation: "Ta lấy 10 trừ 7 còn 3. Vậy số cần điền là 3." },
-                        { question: "Số bé nhất trong các số: 9, 3, 7, 5 là?", options: [9, 3, 7, 5], answer: 3, explanation: "Trong các số đã cho, số 3 là số có giá trị nhỏ nhất." },
+                        { question: "5 + 4 = ?", options: [8, 9, 10, 7], answer: 9 },
+                        { question: "8 - 3 = ?", options: [4, 5, 6, 7], answer: 5 },
+                        { question: "Số liền sau của 9 là?", options: [8, 10, 11, 7], answer: 10 },
+                        { question: "Có mấy hình tròn: 🔵 🔺 🔵 ⬜", options: [1, 2, 3, 4], answer: 2 },
+                        { question: "2 + 6 = ?", options: [7, 8, 9, 10], answer: 8 },
+                        { question: "Số liền trước của 15 là?", options: [13, 14, 16, 17], answer: 14 },
+                        { question: "Hình vuông có mấy cạnh?", options: [2, 3, 4, 5], answer: 4 },
+                        { question: "Điền dấu: 5 + 3 ... 8", options: ["<", ">", "="], answer: "=" },
+                        { question: "7 + ... = 10", options: [1, 2, 3, 4], answer: 3 },
+                        { question: "Số bé nhất trong các số: 9, 3, 7, 5 là?", options: [9, 3, 7, 5], answer: 3 },
                     ],
                     hocky2: [
-                        { question: "10 + 6 = ?", options: [15, 16, 17, 18], answer: 16, explanation: "10 (một chục) cộng với 6 đơn vị là 16." },
-                        { question: "18 - 5 = ?", options: [12, 13, 14, 15], answer: 13, explanation: "Ta lấy 8 trừ 5 bằng 3, giữ nguyên 1 chục, được kết quả là 13." },
-                        { question: "Số gồm 1 chục và 7 đơn vị là?", options: [10, 7, 17, 71], answer: 17, explanation: "1 chục là 10, thêm 7 đơn vị nữa là 17." },
-                        { question: "Hôm nay là thứ Hai, ngày mai là thứ mấy?", options: ["Chủ Nhật", "Thứ Ba", "Thứ Tư"], answer: "Thứ Ba", explanation: "Sau thứ Hai sẽ là thứ Ba." },
-                        { question: "Lan có 8 kẹo, mẹ cho thêm 5. Lan có tất cả...cái kẹo?", options: [12, 13, 14, 3], answer: 13, explanation: "Đây là phép cộng. Ta lấy 8 cộng 5 bằng 13." },
+                        { question: "10 + 6 = ?", options: [15, 16, 17, 18], answer: 16 },
+                        { question: "18 - 5 = ?", options: [12, 13, 14, 15], answer: 13 },
+                        { question: "Số gồm 1 chục và 7 đơn vị là?", options: [10, 7, 17, 71], answer: 17 },
+                        { question: "Hôm nay là thứ Hai, ngày mai là thứ mấy?", options: ["Chủ Nhật", "Thứ Ba", "Thứ Tư"], answer: "Thứ Ba" },
+                        { question: "Lan có 8 kẹo, mẹ cho thêm 5. Lan có tất cả...cái kẹo?", options: [12, 13, 14, 3], answer: 13 },
+                        { question: "15 - 7 = ?", options: [6, 7, 8, 9], answer: 8 },
+                        { question: "Kim ngắn chỉ số 3, kim dài chỉ số 12. Là mấy giờ?", options: ["12 giờ 3 phút", "3 giờ 12 phút", "3 giờ đúng", "12 giờ 15 phút"], answer: "3 giờ đúng" },
+                        { question: "An có 12 viên bi, An cho Bình 5 viên. Hỏi An còn lại mấy viên bi?", options: [17, 7, 8, 6], answer: "7" },
+                        { question: "Điền dấu thích hợp vào chỗ chấm: 19 ... 16", options: ["<", ">", "="], answer: ">" },
+                        { question: "Số 14 gồm mấy chục và mấy đơn vị?", options: ["4 chục 1 đơn vị", "1 chục 4 đơn vị", "10 chục 4 đơn vị"], answer: "1 chục 4 đơn vị" },
                     ]
                 }
             },
             tiengviet: {
                 lop1: {
                     hocky1: [
-                        { question: "Chữ cái nào đứng sau 'A' trong bảng chữ cái?", options: ["C", "B", "D", "E"], answer: "B", explanation: "Bảng chữ cái là A, B, C... nên sau A là B." },
-                        { question: "Từ nào chỉ hoạt động 'ăn'?", options: ["Ngủ", "Chơi", "Ăn", "Học"], answer: "Ăn", explanation: "'Ăn' là hành động đưa thức ăn vào miệng để nuôi sống cơ thể." },
-                        { question: "Điền từ còn thiếu: 'Con ... đang bơi.'", options: ["chim", "cá", "mèo", "chó"], answer: "cá", explanation: "Trong các con vật này, chỉ có 'cá' là sống dưới nước và biết bơi." },
-                        { question: "Từ nào có vần 'ai'?", options: ["Cái", "Con", "Sách", "Bút"], answer: "Cái", explanation: "Trong các từ đã cho, chỉ có 'Cái' chứa vần 'ai'." },
-                        { question: "Chữ cái nào đứng trước 'D' trong bảng chữ cái?", options: ["C", "E", "F", "B"], answer: "C", explanation: "Bảng chữ cái là A, B, C, D... nên trước D là C." },
+                        { question: "Chữ cái nào đứng sau 'A' trong bảng chữ cái?", options: ["C", "B", "D", "E"], answer: "B" },
+                        { question: "Từ nào chỉ hoạt động 'ăn'?", options: ["Ngủ", "Chơi", "Ăn", "Học"], answer: "Ăn" },
+                        { question: "Điền từ còn thiếu: 'Con ... đang bơi.'", options: ["chim", "cá", "mèo", "chó"], answer: "cá" },
+                        { question: "Từ nào có vần 'ai'?", options: ["Cái", "Con", "Sách", "Bút"], answer: "Cái" },
+                        { question: "Chữ cái nào đứng trước 'D' trong bảng chữ cái?", options: ["C", "E", "F", "B"], answer: "C" },
+                        { question: "Ghép âm 'nh' và vần 'a' ta được tiếng gì?", options: ["nha", "anh", "nha", "han"], answer: "nha" },
+                        { question: "Tìm từ có vần 'ươn'.", options: ["Vườn", "Cơm", "Cam", "Bánh"], answer: "Vườn" },
+                        { question: "Điền vào chỗ trống: '...à nội em hiền.'", options: ["Bà", "Bò", "Ba"], answer: "Bà" },
+                        { question: "Sắp xếp các từ 'sàn', 'nhà', 'em', 'ở' thành câu có nghĩa.", options: ["Em ở nhà sàn.", "Nhà em ở sàn.", "Sàn nhà em ở."], answer: "Em ở nhà sàn." },
+                        { question: "Trong câu 'Nhà bà có gà. Gà có lông vàng.', gà có lông màu gì?", options: ["Vàng", "Nâu", "Đen"], answer: "Vàng" },
                     ],
                     hocky2: [
-                        { question: "Từ nào có tiếng 'sách'?", options: ["Quyển vở", "Bút chì", "Sách giáo khoa", "Cái bàn"], answer: "Sách giáo khoa", explanation: "Trong các đáp án, chỉ có 'Sách giáo khoa' là có chứa tiếng 'sách'." },
-                        { question: "Từ nào đồng nghĩa với 'vui vẻ'?", options: ["Buồn bã", "Hạnh phúc", "Tức giận", "Sợ hãi"], answer: "Hạnh phúc", explanation: "'Vui vẻ' và 'hạnh phúc' đều chỉ cảm xúc tích cực, vui sướng." },
-                        { question: "Điền từ còn thiếu: 'Bầu trời ...'", options: ["xanh", "đỏ", "vàng", "đen"], answer: "xanh", explanation: "Bầu trời ban ngày thường có màu xanh trong." },
+                        { question: "Từ nào có tiếng 'sách'?", options: ["Quyển vở", "Bút chì", "Sách giáo khoa", "Cái bàn"], answer: "Sách giáo khoa" },
+                        { question: "Từ nào đồng nghĩa với 'vui vẻ'?", options: ["Buồn bã", "Hạnh phúc", "Tức giận", "Sợ hãi"], answer: "Hạnh phúc" },
+                        { question: "Điền từ còn thiếu: 'Bầu trời ...'", options: ["xanh", "đỏ", "vàng", "đen"], answer: "xanh" },
+                        { question: "Đặt câu với từ 'trường học'.", options: ["Em đi học.", "Trường học của em rất đẹp.", "Cây phượng nở hoa."], answer: "Trường học của em rất đẹp." },
+                        { question: "Từ nào trái nghĩa với 'sạch sẽ'?", options: ["Ngăn nắp", "Gọn gàng", "Bẩn thỉu"], answer: "Bẩn thỉu" },
+                        { question: "Điền dấu câu thích hợp: 'Mẹ em là cô giáo_'", options: [".", "?", "!"], answer: "." },
+                        { question: "Trong câu 'Bông hoa hồng rất đẹp', từ nào chỉ đặc điểm?", options: ["Bông hoa", "hồng", "đẹp"], answer: "đẹp" },
+                        { question: "Đồ vật nào sau đây có trong lớp học?", options: ["Cái giường", "Cái bàn", "Cái tủ lạnh"], answer: "Cái bàn" },
+                        { question: "Điền 'ch' hay 'tr' vào chỗ trống: '...ăm học'", options: ["ch", "tr"], answer: "ch" },
+                        { question: "Từ nào chỉ một loài cây?", options: ["Con chó", "Cây bàng", "Cái nhà"], answer: "Cây bàng" },
                     ]
                 },
                 lop2: {
                     hocky1: [
-                        { question: "Từ nào là từ chỉ sự vật?", options: ["Chạy", "Đẹp", "Cái bàn", "Vui"], answer: "Cái bàn", explanation: "Từ chỉ sự vật là từ gọi tên đồ vật, con vật, cây cối. 'Cái bàn' là một đồ vật." },
-                        { question: "Từ nào là từ chỉ hoạt động?", options: ["Con mèo", "Đọc sách", "Màu xanh", "Cao lớn"], answer: "Đọc sách", explanation: "Từ chỉ hoạt động nói lên sự vận động, làm việc. 'Đọc sách' là một hoạt động." },
+                        { question: "Từ nào là từ chỉ sự vật?", options: ["Chạy", "Đẹp", "Cái bàn", "Vui"], answer: "Cái bàn" },
+                        { question: "Từ nào là từ chỉ hoạt động?", options: ["Con mèo", "Đọc sách", "Màu xanh", "Cao lớn"], answer: "Đọc sách" },
+                        { question: "Từ nào không cùng nhóm với các từ còn lại: 'bút, thước, sách, đi'?", options: ["bút", "thước", "sách", "đi"], answer: "đi" },
+                        { question: "Tìm 2 từ chỉ người trong gia đình.", options: ["Thầy cô, bạn bè", "Ông bà, bố mẹ", "Bác sĩ, y tá"], answer: "Ông bà, bố mẹ" },
+                        { question: "Câu 'Mẹ em là giáo viên.' thuộc mẫu câu nào?", options: ["Ai là gì?", "Ai làm gì?", "Ai thế nào?"], answer: "Ai là gì?" },
+                        { question: "Tìm từ đồng nghĩa với 'siêng năng'.", options: ["Lười biếng", "Chăm chỉ", "Thông minh"], answer: "Chăm chỉ" },
+                        { question: "Điền 'l' hay 'n' vào chỗ trống: '...o lắng'", options: ["l", "n"], answer: "l" },
+                        { question: "Điền 's' hay 'x' vào chỗ trống: '...inh đẹp'", options: ["s", "x"], answer: "x" },
+                        { question: "Đặt câu hỏi cho bộ phận được gạch chân: '<u>Bạn Lan</u> là một học sinh giỏi.'", options: ["Ai là một học sinh giỏi?", "Bạn Lan là gì?", "Bạn Lan thế nào?"], answer: "Ai là một học sinh giỏi?" },
+                        { question: "Trong câu 'Trên cành cây, chim hót líu lo.', dấu phẩy dùng để làm gì?", options: ["Kết thúc câu", "Ngăn cách trạng ngữ với nòng cốt câu", "Liệt kê"], answer: "Ngăn cách trạng ngữ với nòng cốt câu" },
                     ],
                     hocky2: [
-                        { question: "Từ nào là từ chỉ số lượng?", options: ["Nhanh", "Đẹp", "Năm", "Ăn"], answer: "Năm", explanation: "'Năm' là một con số, dùng để đếm số lượng." },
-                        { question: "Từ nào là từ chỉ thời gian?", options: ["Hôm nay", "Sách", "Bút", "Cái ghế"], answer: "Hôm nay", explanation: "'Hôm nay' là từ chỉ ngày hiện tại, thuộc về thời gian." },
+                        { question: "Từ nào là từ chỉ số lượng?", options: ["Nhanh", "Đẹp", "Năm", "Ăn"], answer: "Năm" },
+                        { question: "Từ nào là từ chỉ thời gian?", options: ["Hôm nay", "Sách", "Bút", "Cái ghế"], answer: "Hôm nay" },
+                        { question: "Câu 'Ông mặt trời thức dậy' sử dụng biện pháp nghệ thuật gì?", options: ["So sánh", "Nhân hóa", "Ẩn dụ"], answer: "Nhân hóa" },
+                        { question: "Tìm từ trái nghĩa với 'dũng cảm'.", options: ["Gan dạ", "Anh hùng", "Nhút nhát"], answer: "Nhút nhát" },
+                        { question: "Câu 'Đàn bò đang gặm cỏ.' thuộc mẫu câu nào?", options: ["Ai là gì?", "Ai làm gì?", "Ai thế nào?"], answer: "Ai làm gì?" },
+                        { question: "Kể tên 2 loài hoa.", options: ["Chó, mèo", "Hồng, cúc", "Bàn, ghế"], answer: "Hồng, cúc" },
+                        { question: "Điền 'r', 'd' hay 'gi' vào chỗ trống: '...ao hàng'", options: ["r", "d", "gi"], answer: "gi" },
+                        { question: "Đặt câu hỏi cho câu: 'Vì trời mưa to, em phải nghỉ học.'", options: ["Khi nào em nghỉ học?", "Em nghỉ học ở đâu?", "Vì sao em phải nghỉ học?"], answer: "Vì sao em phải nghỉ học?" },
+                        { question: "Dấu hai chấm trong câu 'Bà kể: Ngày xưa có một nàng công chúa.' dùng để làm gì?", options: ["Kết thúc câu", "Báo hiệu lời nói trực tiếp của nhân vật", "Ngắt nghỉ"], answer: "Báo hiệu lời nói trực tiếp của nhân vật" },
+                        { question: "Tìm từ chỉ đặc điểm trong câu: 'Mặt biển xanh biếc.'", options: ["Mặt biển", "xanh biếc", "biển"], answer: "xanh biếc" },
                     ]
                 }
             }
@@ -280,149 +313,94 @@
         async function initializeFirebase() { try { let firebaseConfig; if (typeof __firebase_config !== 'undefined' && __firebase_config) { firebaseConfig = JSON.parse(__firebase_config); appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.appId; } else { console.warn("Using hardcoded fallback Firebase config."); firebaseConfig = { apiKey: "AIzaSyDJBY6U0LUtmnk4PrfNeA7UE7qq1FZ84X8", authDomain: "data-chung-a62ee.firebaseapp.com", projectId: "data-chung-a62ee", storageBucket: "data-chung-a62ee.appspot.com", messagingSenderId: "453115303161", appId: "1:453115303161:web:c885f876f4914829863e28" }; appId = firebaseConfig.appId; } if (!firebaseConfig.projectId) throw new Error("Firebase config is missing projectId."); const app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app); if (typeof __initial_auth_token !== 'undefined') { await signInWithCustomToken(auth, __initial_auth_token); } else { await signInAnonymously(auth); } onAuthStateChanged(auth, (user) => { if (user) { console.log("User authenticated, loading questions..."); loadAndSeedQuestions(); } }); } catch (error) { console.error("Firebase initialization error:", error); document.getElementById('loading-questions').textContent = "Lỗi kết nối đến cơ sở dữ liệu."; } }
         async function loadAndSeedQuestions() { if (!db || !appId) { console.error("Firestore DB or App ID not initialized."); return; } const questionBankRef = doc(db, `artifacts/${appId}/public/data/questions`, 'mainBank'); try { const docSnap = await getDoc(questionBankRef); if (docSnap.exists() && docSnap.data().toan) { questionBank = docSnap.data(); } else { await setDoc(questionBankRef, localQuestionSeedData); questionBank = localQuestionSeedData; } document.getElementById('loading-questions').classList.add('hidden'); document.getElementById('selections-container').classList.remove('hidden'); updateStartButtonState(); } catch (error) { console.error("Error loading or seeding questions:", error); document.getElementById('loading-questions').textContent = "Lỗi khi tải câu hỏi."; } }
         
+        // --- AI EXPLANATION WITH CACHING ---
+        async function getExplanationFromAI(question, answer, grade) {
+            const explanationContainer = document.getElementById('explanation-container');
+            const explanationTextEl = document.getElementById('explanation-text');
+            const readExplanationBtn = document.getElementById('read-explanation-btn');
+
+            // Show initial loading state
+            explanationTextEl.textContent = 'Đang tìm giải thích...';
+            readExplanationBtn.style.display = 'none';
+            explanationContainer.classList.remove('hidden');
+
+            // 1. Create a unique, safe ID for the explanation document
+            const explanationId = btoa(encodeURIComponent(`${grade}-${question}`)).replace(/[^a-zA-Z0-9]/g, '');
+            const explanationRef = doc(db, `artifacts/${appId}/public/data/explanations`, explanationId);
+
+            try {
+                // 2. Check for a cached explanation in Firestore
+                const docSnap = await getDoc(explanationRef);
+
+                if (docSnap.exists()) {
+                    // 3a. If cached, use it immediately
+                    const cachedExplanation = docSnap.data().text;
+                    explanationTextEl.textContent = `💡 Giải thích: ${cachedExplanation}`;
+                    readExplanationBtn.onclick = () => speakText(cachedExplanation);
+                    readExplanationBtn.style.display = 'block';
+                    console.log("Loaded explanation from cache.");
+                    return; // Finished
+                }
+
+                // 3b. If not cached, show generating state and call AI
+                console.log("Cache miss. Generating new explanation from AI.");
+                explanationTextEl.textContent = 'Đang tạo giải thích mới...';
+
+                const gradeMap = { lop1: "lớp 1", lop2: "lớp 2" };
+                const gradeText = gradeMap[grade] || "học sinh tiểu học"; // Fallback
+
+                const prompt = `Hãy giải thích đáp án cho câu hỏi sau một cách thật ngắn gọn và dễ hiểu, phù hợp với trình độ của học sinh ${gradeText}. Câu hỏi: "${question}" Đáp án đúng là: "${answer}".`;
+
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                const apiKey = ""; // This is handled by the execution environment
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error(`API call failed with status: ${response.status}`);
+                
+                const result = await response.json();
+                const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (generatedText) {
+                    // Display the new explanation
+                    explanationTextEl.textContent = `💡 Giải thích: ${generatedText}`;
+                    readExplanationBtn.onclick = () => speakText(generatedText);
+                    readExplanationBtn.style.display = 'block';
+
+                    // 4. Asynchronously save the new explanation to the cache for next time
+                    await setDoc(explanationRef, {
+                        text: generatedText,
+                        question: question,
+                        grade: grade,
+                        createdAt: serverTimestamp()
+                    });
+                    console.log("Saved new explanation to cache.");
+                } else {
+                    throw new Error("Invalid response structure from API.");
+                }
+            } catch (error) {
+                console.error("Error in explanation process:", error);
+                explanationTextEl.textContent = 'Không thể tạo giải thích lúc này.';
+                readExplanationBtn.style.display = 'none';
+            }
+        }
+
+
         // --- HISTORY & LEADERBOARD FUNCTIONS ---
-        async function saveResult(resultData, playerName = null) {
-            if (!db || !appId || !auth.currentUser) return;
-            const dataToSave = { ...resultData, name: playerName };
-            if (playerName) {
-                try {
-                    const leaderboardCollectionRef = collection(db, `artifacts/${appId}/public/data/leaderboard`);
-                    await addDoc(leaderboardCollectionRef, dataToSave);
-                    console.log("Score saved to leaderboard!");
-                } catch (e) { console.error("Error writing to leaderboard:", e); }
-            }
-            try {
-                const historyCollectionRef = collection(db, `artifacts/${appId}/public/data/quizResults`);
-                await addDoc(historyCollectionRef, dataToSave);
-                console.log("Quiz result saved to history!");
-            } catch (e) { console.error("Error writing to history:", e); }
-        }
-
-        async function displayHistory() {
-            showScreen('history');
-            const container = document.getElementById('history-table-container');
-            container.innerHTML = '<p class="text-center text-gray-500">Đang tải lịch sử...</p>';
-            if (!db || !appId) { container.innerHTML = '<p class="text-center text-red-500">Lỗi CSDL.</p>'; return; }
-            try {
-                const q = query(collection(db, `artifacts/${appId}/public/data/quizResults`));
-                const querySnapshot = await getDocs(q);
-                if (querySnapshot.empty) {
-                    container.innerHTML = '<p class="text-center text-gray-500">Chưa có lịch sử làm bài.</p>';
-                    return;
-                }
-                
-                const results = [];
-                querySnapshot.forEach(doc => results.push(doc.data()));
-                
-                // Sort results by date client-side (newest first)
-                results.sort((a, b) => {
-                    const dateA = a.date?.toDate() || new Date(0);
-                    const dateB = b.date?.toDate() || new Date(0);
-                    return dateB - dateA;
-                });
-
-                const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
-                let tableHTML = '<table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden"><thead class="bg-gray-100/50"><tr><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Ngày Giờ</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Môn</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Lớp</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th></tr></thead><tbody class="bg-white/30 divide-y divide-gray-200 text-gray-800">';
-                
-                results.forEach(r => {
-                    const date = r.date?.toDate() ? r.date.toDate().toLocaleString('vi-VN') : 'N/A';
-                    const scoreDisplay = `${r.score}/${r.totalQuestions || 10}`;
-                    tableHTML += `<tr><td class="px-3 py-2 text-sm">${date}</td><td class="px-3 py-2 text-sm font-semibold">${r.name || 'Không lưu'}</td><td class="px-3 py-2 text-sm">${nameMap[r.subject] || r.subject}</td><td class="px-3 py-2 text-sm">${nameMap[r.grade] || r.grade}</td><td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td></tr>`;
-                });
-
-                tableHTML += '</tbody></table>';
-                container.innerHTML = tableHTML;
-            } catch (error) {
-                console.error("Error fetching history:", error);
-                container.innerHTML = '<p class="text-center text-red-500">Không thể tải lịch sử.</p>';
-            }
-        }
-
-        async function displayLeaderboard() {
-            showScreen('leaderboard');
-            const container = document.getElementById('leaderboard-table-container');
-            container.innerHTML = '<p class="text-center text-gray-500">Đang tải bảng xếp hạng...</p>';
-            if (!db || !appId) { container.innerHTML = '<p class="text-center text-red-500">Lỗi CSDL.</p>'; return; }
-
-            const subjectFilter = leaderboardSubjectFilter.value;
-            const gradeFilter = leaderboardGradeFilter.value;
-
-            try {
-                let queryConstraints = [];
-                if (subjectFilter !== 'all') queryConstraints.push(where("subject", "==", subjectFilter));
-                if (gradeFilter !== 'all') queryConstraints.push(where("grade", "==", gradeFilter));
-                
-                const q = query(collection(db, `artifacts/${appId}/public/data/leaderboard`), ...queryConstraints);
-                const querySnapshot = await getDocs(q);
-
-                if (querySnapshot.empty) {
-                    container.innerHTML = '<p class="text-center text-gray-500">Chưa có ai trên bảng xếp hạng cho mục này.</p>';
-                    return;
-                }
-
-                let results = [];
-                querySnapshot.forEach(doc => {
-                    results.push(doc.data());
-                });
-
-                // Sort by score (desc) and then by date (desc) as a tie-breaker, then slice for top 10
-                results.sort((a, b) => {
-                    if (b.score !== a.score) {
-                        return b.score - a.score;
-                    }
-                    const dateA = a.date?.toDate() || new Date(0);
-                    const dateB = b.date?.toDate() || new Date(0);
-                    return dateB - dateA; // Newest first for ties
-                });
-
-                const topResults = results.slice(0, 10);
-
-                let tableHTML = '<table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden"><thead class="bg-gray-100/50"><tr><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Hạng</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên Bé</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th></tr></thead><tbody class="bg-white/30 divide-y divide-gray-200 text-gray-800">';
-                let rank = 1;
-                topResults.forEach(data => {
-                    const scoreDisplay = `${data.score}/${data.totalQuestions || 10}`;
-                    const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
-                    tableHTML += `<tr><td class="px-3 py-2 text-center text-sm font-bold">${rankIcon}</td><td class="px-3 py-2 text-sm font-semibold">${data.name}</td><td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td></tr>`;
-                    rank++;
-                });
-                tableHTML += '</tbody></table>';
-                container.innerHTML = tableHTML;
-            } catch (error) {
-                console.error("Error fetching leaderboard:", error);
-                container.innerHTML = '<p class="text-center text-red-500">Không thể tải bảng xếp hạng.</p>';
-            }
-        }
+        async function saveResult(resultData, playerName = null) { if (!db || !appId || !auth.currentUser) return; const dataToSave = { ...resultData, name: playerName }; if (playerName) { try { const leaderboardCollectionRef = collection(db, `artifacts/${appId}/public/data/leaderboard`); await addDoc(leaderboardCollectionRef, dataToSave); console.log("Score saved to leaderboard!"); } catch (e) { console.error("Error writing to leaderboard:", e); } } try { const historyCollectionRef = collection(db, `artifacts/${appId}/public/data/quizResults`); await addDoc(historyCollectionRef, dataToSave); console.log("Quiz result saved to history!"); } catch (e) { console.error("Error writing to history:", e); } }
+        async function displayHistory() { showScreen('history'); const container = document.getElementById('history-table-container'); container.innerHTML = '<p class="text-center text-gray-500">Đang tải lịch sử...</p>'; if (!db || !appId) { container.innerHTML = '<p class="text-center text-red-500">Lỗi CSDL.</p>'; return; } try { const q = query(collection(db, `artifacts/${appId}/public/data/quizResults`)); const querySnapshot = await getDocs(q); if (querySnapshot.empty) { container.innerHTML = '<p class="text-center text-gray-500">Chưa có lịch sử làm bài.</p>'; return; } const results = []; querySnapshot.forEach(doc => results.push(doc.data())); results.sort((a, b) => { const dateA = a.date?.toDate() || new Date(0); const dateB = b.date?.toDate() || new Date(0); return dateB - dateA; }); const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' }; let tableHTML = '<table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden"><thead class="bg-gray-100/50"><tr><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Ngày Giờ</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Môn</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Lớp</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th></tr></thead><tbody class="bg-white/30 divide-y divide-gray-200 text-gray-800">'; results.forEach(r => { const date = r.date?.toDate() ? r.date.toDate().toLocaleString('vi-VN') : 'N/A'; const scoreDisplay = `${r.score}/${r.totalQuestions || 10}`; tableHTML += `<tr><td class="px-3 py-2 text-sm">${date}</td><td class="px-3 py-2 text-sm font-semibold">${r.name || 'Không lưu'}</td><td class="px-3 py-2 text-sm">${nameMap[r.subject] || r.subject}</td><td class="px-3 py-2 text-sm">${nameMap[r.grade] || r.grade}</td><td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td></tr>`; }); tableHTML += '</tbody></table>'; container.innerHTML = tableHTML; } catch (error) { console.error("Error fetching history:", error); container.innerHTML = '<p class="text-center text-red-500">Không thể tải lịch sử.</p>'; } }
+        async function displayLeaderboard() { showScreen('leaderboard'); const container = document.getElementById('leaderboard-table-container'); container.innerHTML = '<p class="text-center text-gray-500">Đang tải bảng xếp hạng...</p>'; if (!db || !appId) { container.innerHTML = '<p class="text-center text-red-500">Lỗi CSDL.</p>'; return; } const subjectFilter = leaderboardSubjectFilter.value; const gradeFilter = leaderboardGradeFilter.value; try { let queryConstraints = []; if (subjectFilter !== 'all') queryConstraints.push(where("subject", "==", subjectFilter)); if (gradeFilter !== 'all') queryConstraints.push(where("grade", "==", gradeFilter)); const q = query(collection(db, `artifacts/${appId}/public/data/leaderboard`), ...queryConstraints); const querySnapshot = await getDocs(q); if (querySnapshot.empty) { container.innerHTML = '<p class="text-center text-gray-500">Chưa có ai trên bảng xếp hạng cho mục này.</p>'; return; } let results = []; querySnapshot.forEach(doc => { results.push(doc.data()); }); results.sort((a, b) => { if (b.score !== a.score) { return b.score - a.score; } const dateA = a.date?.toDate() || new Date(0); const dateB = b.date?.toDate() || new Date(0); return dateB - dateA; }); const topResults = results.slice(0, 10); let tableHTML = '<table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden"><thead class="bg-gray-100/50"><tr><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Hạng</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên Bé</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th></tr></thead><tbody class="bg-white/30 divide-y divide-gray-200 text-gray-800">'; let rank = 1; topResults.forEach(data => { const scoreDisplay = `${data.score}/${data.totalQuestions || 10}`; const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank; tableHTML += `<tr><td class="px-3 py-2 text-center text-sm font-bold">${rankIcon}</td><td class="px-3 py-2 text-sm font-semibold">${data.name}</td><td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td></tr>`; rank++; }); tableHTML += '</tbody></table>'; container.innerHTML = tableHTML; } catch (error) { console.error("Error fetching leaderboard:", error); container.innerHTML = '<p class="text-center text-red-500">Không thể tải bảng xếp hạng.</p>'; } }
         
         // --- GAME LOGIC ---
         function updateStartButtonState() { if (selectedSubject && selectedGrade && selectedSemester && questionBank) { document.getElementById('start-btn').disabled = false; document.getElementById('start-btn').classList.remove('bg-gray-500/50', 'cursor-not-allowed'); document.getElementById('start-btn').classList.add('bg-blue-600/70', 'hover:bg-blue-600/90'); } else { document.getElementById('start-btn').disabled = true; document.getElementById('start-btn').classList.add('bg-gray-500/50', 'cursor-not-allowed'); document.getElementById('start-btn').classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90'); } }
-        function startGame() {
-            if (!questionBank || !questionBank[selectedSubject] || !questionBank[selectedSubject][selectedGrade] || !questionBank[selectedSubject][selectedGrade][selectedSemester]) return;
-            let allQuestions = questionBank[selectedSubject][selectedGrade][selectedSemester];
-            currentQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, NUM_OF_QUESTIONS_PER_GAME);
-            currentQuestionIndex = 0; score = 0;
-            showScreen('game');
-            displayQuestion();
-        }
-        function displayQuestion() {
-            document.getElementById('feedback-container').innerHTML = '';
-            document.getElementById('explanation-container').classList.add('hidden');
-            document.getElementById('next-btn').classList.add('hidden');
-            const questionData = currentQuestions[currentQuestionIndex];
-            document.getElementById('question-container').querySelector('p').textContent = questionData.question;
-            const optionsContainer = document.getElementById('options-container');
-            optionsContainer.innerHTML = '';
-            const shuffledOptions = [...questionData.options].sort(() => Math.random() - 0.5);
-            shuffledOptions.forEach(option => {
-                const button = document.createElement('button');
-                button.textContent = option;
-                button.className = 'answer-option w-full p-4 rounded-2xl font-semibold glass-btn bg-white/20 hover:bg-white/40 text-gray-800';
-                button.onclick = (e) => { playSound('click'); checkAnswer(e.target, questionData.answer); };
-                optionsContainer.appendChild(button);
-            });
-            document.getElementById('progress-text').textContent = `Câu ${currentQuestionIndex + 1}/${currentQuestions.length}`;
-            document.getElementById('score-text').textContent = `Điểm: ${score}`;
-            document.getElementById('read-question-btn').onclick = () => speakText(questionData.question);
-        }
+        function startGame() { if (!questionBank || !questionBank[selectedSubject] || !questionBank[selectedSubject][selectedGrade] || !questionBank[selectedSubject][selectedGrade][selectedSemester]) return; let allQuestions = questionBank[selectedSubject][selectedGrade][selectedSemester]; currentQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, NUM_OF_QUESTIONS_PER_GAME); currentQuestionIndex = 0; score = 0; showScreen('game'); displayQuestion(); }
+        function displayQuestion() { document.getElementById('feedback-container').innerHTML = ''; document.getElementById('explanation-container').classList.add('hidden'); document.getElementById('next-btn').classList.add('hidden'); const questionData = currentQuestions[currentQuestionIndex]; document.getElementById('question-container').querySelector('p').textContent = questionData.question; const optionsContainer = document.getElementById('options-container'); optionsContainer.innerHTML = ''; const shuffledOptions = [...questionData.options].sort(() => Math.random() - 0.5); shuffledOptions.forEach(option => { const button = document.createElement('button'); button.textContent = option; button.className = 'answer-option w-full p-4 rounded-2xl font-semibold glass-btn bg-white/20 hover:bg-white/40 text-gray-800'; button.onclick = (e) => { playSound('click'); checkAnswer(e.target, questionData.answer); }; optionsContainer.appendChild(button); }); document.getElementById('progress-text').textContent = `Câu ${currentQuestionIndex + 1}/${currentQuestions.length}`; document.getElementById('score-text').textContent = `Điểm: ${score}`; document.getElementById('read-question-btn').onclick = () => speakText(questionData.question); }
+        
         function checkAnswer(selectedButton, correctAnswer) {
             document.querySelectorAll('.answer-option').forEach(btn => btn.disabled = true);
             const questionData = currentQuestions[currentQuestionIndex];
@@ -437,39 +415,18 @@
                 playSound('incorrect');
                 document.querySelectorAll('.answer-option').forEach(btn => { if (btn.textContent == correctAnswer) btn.classList.add('correct'); });
             }
-            if (questionData.explanation) {
-                document.getElementById('explanation-text').textContent = `💡 Giải thích: ${questionData.explanation}`;
-                document.getElementById('explanation-container').classList.remove('hidden');
-                document.getElementById('read-explanation-btn').onclick = () => speakText(questionData.explanation);
-            }
+            
+            // Call AI for explanation, passing the selected grade
+            getExplanationFromAI(questionData.question, questionData.answer, selectedGrade);
+
             document.getElementById('score-text').textContent = `Điểm: ${score}`;
             document.getElementById('next-btn').classList.remove('hidden');
             if (speechSynthesis.speaking) speechSynthesis.cancel();
         }
+
         function nextQuestion() { currentQuestionIndex++; if (currentQuestionIndex < currentQuestions.length) { displayQuestion(); } else { showResults(); } }
-        
-        function showResults() {
-            playSound('complete');
-            const finalScore = score;
-            const totalQuestions = currentQuestions.length;
-            
-            document.getElementById('modal-final-score').textContent = `${finalScore}/${totalQuestions}`;
-            const percentage = (finalScore / totalQuestions) * 100;
-            const finalMessageElement = document.getElementById('modal-final-message');
-            if (percentage === 100) finalMessageElement.textContent = "Xuất sắc! Bé thật là giỏi! Hãy chọn tên để lưu điểm nhé.";
-            else if (percentage >= 70) finalMessageElement.textContent = "Giỏi lắm! Hãy chọn tên để lưu điểm nhé.";
-            else if (percentage >= 50) finalMessageElement.textContent = "Làm tốt lắm! Hãy chọn tên để lưu điểm nhé.";
-            else finalMessageElement.textContent = "Cố gắng hơn lần sau nhé! Chọn tên để lưu điểm nào.";
-
-            showModal('nameSelection');
-        }
-
-        function resetGame() {
-            showScreen('selection');
-            selectedSubject = null; selectedGrade = null; selectedSemester = null;
-            document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('selected'));
-            updateStartButtonState();
-        }
+        function showResults() { playSound('complete'); const finalScore = score; const totalQuestions = currentQuestions.length; document.getElementById('modal-final-score').textContent = `${finalScore}/${totalQuestions}`; const percentage = (finalScore / totalQuestions) * 100; const finalMessageElement = document.getElementById('modal-final-message'); if (percentage === 100) finalMessageElement.textContent = "Xuất sắc! Bé thật là giỏi! Hãy chọn tên để lưu điểm nhé."; else if (percentage >= 70) finalMessageElement.textContent = "Giỏi lắm! Hãy chọn tên để lưu điểm nhé."; else if (percentage >= 50) finalMessageElement.textContent = "Làm tốt lắm! Hãy chọn tên để lưu điểm nhé."; else finalMessageElement.textContent = "Cố gắng hơn lần sau nhé! Chọn tên để lưu điểm nào."; showModal('nameSelection'); }
+        function resetGame() { showScreen('selection'); selectedSubject = null; selectedGrade = null; selectedSemester = null; document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('selected')); updateStartButtonState(); }
 
         // --- UI & MODAL MANAGEMENT ---
         function showScreen(screenName) { Object.values(screens).forEach(s => s.classList.add('hidden')); if (screens[screenName]) screens[screenName].classList.remove('hidden'); }
@@ -478,43 +435,17 @@
         function speakText(text) { if (!'speechSynthesis' in window) { console.warn("Speech synthesis not supported."); return; } if (speechSynthesis.speaking) speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'vi-VN'; const voice = speechSynthesis.getVoices().find(v => v.lang === 'vi-VN'); if (voice) utterance.voice = voice; speechSynthesis.speak(utterance); }
         
         // --- EVENT LISTENERS ---
-        document.addEventListener('DOMContentLoaded', async () => {
-            await initializeFirebase();
-            document.body.addEventListener('click', async () => { if (Tone.context.state !== 'running') { await Tone.start(); console.log('Audio context started'); } }, { once: true });
-        });
-        
+        document.addEventListener('DOMContentLoaded', async () => { await initializeFirebase(); document.body.addEventListener('click', async () => { if (Tone.context.state !== 'running') { await Tone.start(); console.log('Audio context started'); } }, { once: true }); });
         document.getElementById('sound-toggle-btn').addEventListener('click', () => { soundsEnabled = !soundsEnabled; document.getElementById('speaker-on-icon').classList.toggle('hidden', !soundsEnabled); document.getElementById('speaker-off-icon').classList.toggle('hidden', soundsEnabled); });
         document.querySelectorAll('.choice-btn').forEach(btn => btn.addEventListener('click', (e) => { playSound('click'); const type = Object.keys(e.target.dataset)[0]; const value = e.target.dataset[type]; if (type === 'subject') selectedSubject = value; if (type === 'grade') selectedGrade = value; if (type === 'semester') selectedSemester = value; document.querySelectorAll(`[data-${type}]`).forEach(b => b.classList.remove('selected')); e.target.classList.add('selected'); updateStartButtonState(); }));
         document.getElementById('start-btn').addEventListener('click', () => { if (!document.getElementById('start-btn').disabled) { playSound('click'); startGame(); } });
         document.getElementById('next-btn').addEventListener('click', () => { playSound('click'); nextQuestion(); });
-        
-        // Name selection modal
-        document.getElementById('name-selection-container').addEventListener('click', (e) => {
-            if (e.target.classList.contains('name-btn')) {
-                playSound('click');
-                const playerName = e.target.dataset.name;
-                const resultData = { date: serverTimestamp(), subject: selectedSubject, grade: selectedGrade, semester: selectedSemester, score: score, totalQuestions: currentQuestions.length };
-                saveResult(resultData, playerName);
-                hideModal('nameSelection');
-                displayLeaderboard();
-            }
-        });
-        document.getElementById('skip-and-play-again-btn').addEventListener('click', () => {
-            playSound('click');
-            // Save result without a name for admin history
-            const resultData = { date: serverTimestamp(), subject: selectedSubject, grade: selectedGrade, semester: selectedSemester, score: score, totalQuestions: currentQuestions.length };
-            saveResult(resultData, null); 
-            hideModal('nameSelection');
-            resetGame();
-        });
-
-        // Leaderboard
+        document.getElementById('name-selection-container').addEventListener('click', (e) => { if (e.target.classList.contains('name-btn')) { playSound('click'); const playerName = e.target.dataset.name; const resultData = { date: serverTimestamp(), subject: selectedSubject, grade: selectedGrade, semester: selectedSemester, score: score, totalQuestions: currentQuestions.length }; saveResult(resultData, playerName); hideModal('nameSelection'); displayLeaderboard(); } });
+        document.getElementById('skip-and-play-again-btn').addEventListener('click', () => { playSound('click'); const resultData = { date: serverTimestamp(), subject: selectedSubject, grade: selectedGrade, semester: selectedSemester, score: score, totalQuestions: currentQuestions.length }; saveResult(resultData, null); hideModal('nameSelection'); resetGame(); });
         leaderboardBtn.addEventListener('click', () => { playSound('click'); displayLeaderboard(); });
         backToMenuBtn.addEventListener('click', () => { playSound('click'); resetGame(); });
         leaderboardSubjectFilter.addEventListener('change', displayLeaderboard);
         leaderboardGradeFilter.addEventListener('change', displayLeaderboard);
-        
-        // Admin
         document.getElementById('admin-login-btn').addEventListener('click',_=> { playSound('click'); showModal('login'); });
         document.getElementById('close-modal-btn').addEventListener('click', () => hideModal('login'));
         document.getElementById('login-form').addEventListener('submit', (e) => { e.preventDefault(); playSound('click'); const u = document.getElementById('username').value; const p = document.getElementById('password').value; if (u === 'admin' && p === 'admin') { hideModal('login'); showScreen('admin'); } else { document.getElementById('login-error').textContent = 'Tên đăng nhập hoặc mật khẩu không đúng.'; } });
