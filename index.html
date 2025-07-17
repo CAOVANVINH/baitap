@@ -4,134 +4,86 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trò Chơi Học Tập Vui</title>
-    <!-- Tailwind CSS for utility-first styling -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts - Quicksand for a friendly look -->
+    <!-- Google Fonts - Quicksand -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tone.js for Sound Effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     <style>
-        /* Base font-family for the entire body */
         body {
             font-family: 'Quicksand', sans-serif;
-            /* Gradient background for a vibrant look */
             background: linear-gradient(to right top, #6d8cf0, #8d8de0, #a98fcb, #be93b6, #ce99a6);
         }
-        /* Glassmorphism effect for containers */
         .glass-container {
             background: rgba(255, 255, 255, 0.4);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        /* Glassmorphism effect for buttons */
         .glass-btn {
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.3);
             transition: all 0.2s ease-in-out;
-            /* Default text color for better contrast on glass background */
-            color: #2d3748; /* Dark gray for text */
+            color: #2d3748;
         }
-        /* Override text color for primary action buttons to ensure visibility */
-        #start-btn, #next-btn, #play-again-btn, #admin-login-btn, #logout-btn, #view-history-btn, #back-to-admin-btn {
-            color: white; /* White text for main action buttons */
+        #start-btn, #next-btn, #admin-login-btn, #logout-btn, #view-history-btn, #back-to-admin-btn, #leaderboard-btn, #back-to-menu-btn, .name-btn {
+            color: white;
         }
-        /* Specific color for admin login button on main screen */
-        #admin-login-btn {
-            color: #cbd5e0; /* Light gray for admin button */
+        #admin-login-btn, #leaderboard-btn {
+            color: #cbd5e0;
         }
-
-        /* Styling for selected choice buttons */
         .choice-btn.selected {
-            transform: scale(1.05); /* Slightly enlarge on selection */
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); /* Add a glow effect */
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
             border-width: 2px;
-            border-color: rgba(255, 255, 255, 0.7); /* Thicker, more visible border */
+            border-color: rgba(255, 255, 255, 0.7);
         }
-        /* Styling for correct answer option */
         .answer-option.correct {
-            background-color: rgba(34, 197, 94, 0.7) !important; /* Green background */
+            background-color: rgba(34, 197, 94, 0.7) !important;
             border-color: rgba(22, 163, 74, 0.8);
-            color: white !important; /* White text for contrast */
+            color: white !important;
         }
-        /* Styling for incorrect answer option */
         .answer-option.incorrect {
-            background-color: rgba(239, 68, 68, 0.7) !important; /* Red background */
+            background-color: rgba(239, 68, 68, 0.7) !important;
             border-color: rgba(220, 38, 38, 0.8);
-            color: white !important; /* White text for contrast */
+            color: white !important;
         }
-        /* Modal overlay transition for smooth appearance */
         .modal-overlay {
             transition: opacity 0.3s ease;
         }
-
-        /* Responsive adjustments for smaller screens (mobile first approach) */
-        @media (max-width: 768px) {
-            .glass-container {
-                padding: 1rem; /* Reduce padding on mobile */
-                margin: 0.5rem; /* Reduce margin on mobile */
-            }
-            h1 {
-                font-size: 2.25rem; /* Adjust main title size */
-            }
-            h2 {
-                font-size: 1.5rem; /* Adjust subtitle size */
-            }
-            .choice-btn, .answer-option, #start-btn, #next-btn, #play-again-btn {
-                font-size: 1rem; /* Adjust button text size */
-                padding: 0.8rem; /* Adjust button padding */
-            }
-            #progress-text, #score-text {
-                font-size: 0.9rem; /* Adjust progress/score text size */
-            }
-            #question-container p {
-                font-size: 1.1rem; /* Adjust question text size */
-            }
-            #final-score {
-                font-size: 4rem; /* Reduce final score size */
-            }
-            #login-modal .glass-container {
-                padding: 1.5rem; /* Adjust modal padding */
-            }
+        #history-table-container, #leaderboard-table-container {
+            max-height: 400px;
+            overflow-y: auto;
         }
-
-        /* Custom style for history table container to enable scrolling */
-        #history-table-container {
-            max-height: 400px; /* Set max height for scrollability */
-            overflow-y: auto; /* Enable vertical scrolling */
-        }
-
-        /* Style for the speaker icons */
-        .speaker-btn {
+        .speaker-btn, #sound-toggle-btn {
             cursor: pointer;
             transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
         }
-
-        .speaker-btn:hover {
+        .speaker-btn:hover, #sound-toggle-btn:hover {
             transform: scale(1.1);
-            color: #6366f1; /* Indigo-500 on hover */
+            color: #6366f1;
         }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
 
-    <!-- Main container for the game, styled with glassmorphism -->
     <div class="w-full max-w-3xl mx-auto glass-container rounded-3xl shadow-2xl p-4 md:p-8 relative">
+        <!-- Sound Toggle Button -->
+        <button id="sound-toggle-btn" class="absolute top-4 left-5 text-white focus:outline-none z-10">
+            <svg id="speaker-on-icon" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="currentColor"><path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 10v4h3l4 4V6l-4 4H5z"></path><path d="M16 8.5v7l-4-4H8V8.5h4l4-4zM19 12c0 2.8-1.56 5.28-3.8 6.5l1.2 1.5c2.95-1.7 5.1-4.86 5.1-8.5s-2.15-6.8-5.1-8.5L15.2 5.5C17.44 6.72 19 9.2 19 12z"></path></svg>
+            <svg id="speaker-off-icon" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 hidden" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"></path></svg>
+        </button>
 
-        <!-- Selection Screen: Where users choose subject, grade, and semester -->
+        <!-- Selection Screen -->
         <div id="selection-screen">
             <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-2">Trò Chơi Học Tập</h1>
             <p class="text-center text-gray-700 mb-6">Cùng bé vừa học vừa chơi!</p>
-            
-            <!-- Loading indicator for questions -->
-            <div id="loading-questions" class="text-center text-gray-600 font-semibold mb-4">
-                <p>Đang tải dữ liệu, vui lòng chờ...</p>
-            </div>
-
-            <!-- Selections container (initially hidden until questions are loaded) -->
+            <div id="loading-questions" class="text-center text-gray-600 font-semibold mb-4"><p>Đang tải dữ liệu, vui lòng chờ...</p></div>
             <div id="selections-container" class="hidden">
-                <!-- Subject Selection -->
                 <div class="mb-6">
                     <h2 class="text-xl font-semibold mb-3 text-gray-700">1. Chọn Môn Học</h2>
                     <div class="grid grid-cols-2 gap-4">
@@ -139,8 +91,6 @@
                         <button data-subject="tiengviet" class="choice-btn glass-btn bg-emerald-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-emerald-500/60">✍️ Tiếng Việt</button>
                     </div>
                 </div>
-
-                <!-- Grade Selection -->
                 <div class="mb-6">
                     <h2 class="text-xl font-semibold mb-3 text-gray-700">2. Chọn Lớp</h2>
                     <div class="grid grid-cols-2 gap-4">
@@ -148,8 +98,6 @@
                         <button data-grade="lop2" class="choice-btn glass-btn bg-rose-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-rose-500/60">Lớp 2</button>
                     </div>
                 </div>
-
-                <!-- Semester Selection -->
                 <div class="mb-8">
                     <h2 class="text-xl font-semibold mb-3 text-gray-700">3. Chọn Học Kỳ</h2>
                     <div class="grid grid-cols-2 gap-4">
@@ -158,641 +106,326 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Start Button (initially disabled) -->
             <button id="start-btn" class="w-full glass-btn bg-gray-500/50 text-white font-bold py-4 rounded-2xl text-xl shadow-lg cursor-not-allowed" disabled>Bắt đầu!</button>
-            <!-- Admin Login Button -->
-            <div class="text-right mt-4"><button id="admin-login-btn" class="text-sm text-gray-200 hover:text-white font-semibold">Quản trị viên</button></div>
+            <div class="flex justify-between items-center mt-4">
+                <button id="leaderboard-btn" class="text-sm font-semibold hover:text-white">🏆 Bảng Xếp Hạng</button>
+                <button id="admin-login-btn" class="text-sm font-semibold hover:text-white">Quản trị viên</button>
+            </div>
         </div>
 
-        <!-- Game Screen: Displays questions and options -->
+        <!-- Game Screen -->
         <div id="game-screen" class="hidden">
-            <div class="flex justify-between items-center mb-4 text-white">
+             <div class="flex justify-between items-center mb-4 text-white">
                 <div id="progress-text" class="font-semibold">Câu 1/10</div>
                 <div id="score-text" class="font-bold text-lg">Điểm: 0</div>
             </div>
             <div id="question-container" class="bg-black/10 p-6 rounded-2xl text-center mb-6 min-h-[100px] flex items-center justify-center relative">
                 <p class="text-xl md:text-2xl font-semibold text-white"></p>
-                <!-- Speaker icon for Text-to-Speech -->
                 <button id="read-question-btn" class="speaker-btn absolute top-4 right-4 text-white focus:outline-none">
-                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
-                        <path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06ZM5.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" />
-                    </svg>
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06ZM5.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
                 </button>
             </div>
             <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-            <!-- Feedback and Explanation Containers -->
             <div id="feedback-container" class="text-center mt-4 font-bold text-2xl h-8 text-white"></div>
             <div id="explanation-container" class="hidden relative mt-2 bg-black/10 p-4 rounded-2xl text-white text-center font-medium">
                  <p id="explanation-text" class="pr-10"></p>
                  <button id="read-explanation-btn" class="speaker-btn absolute top-1/2 -translate-y-1/2 right-3 text-white focus:outline-none">
-                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-                        <path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06ZM5.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" />
-                    </svg>
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06ZM5.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
                  </button>
             </div>
             <button id="next-btn" class="hidden w-full mt-4 glass-btn bg-blue-500/60 text-white font-bold py-3 rounded-2xl shadow-lg hover:bg-blue-500/80">Câu tiếp theo</button>
         </div>
-
-        <!-- Results Screen: Shows final score and message -->
-        <div id="results-screen" class="hidden text-center">
-            <h2 class="text-3xl font-bold text-gray-800 mb-4">Hoàn thành!</h2>
-            <p id="final-score-text" class="text-xl text-gray-700 mb-2">Bé đã đạt được</p>
-            <p id="final-score" class="text-6xl font-bold text-blue-600 mb-6">0/10</p>
-            <p id="final-message" class="text-lg text-gray-600 mb-8">Cố gắng lên ở lần sau nhé!</p>
-            <button id="play-again-btn" class="w-full glass-btn bg-green-500/60 text-white font-bold py-4 rounded-2xl text-xl shadow-lg hover:bg-green-500/80">Chơi lại</button>
-        </div>
         
-        <!-- Admin Panel: For administrative actions -->
-        <div id="admin-panel" class="hidden">
-            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Bảng điều khiển Admin</h2>
-            <div class="space-y-4">
-                   <button id="view-history-btn" class="w-full glass-btn bg-indigo-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-indigo-500/80">Xem Lịch Sử Thi</button>
-                   <button id="logout-btn" class="w-full glass-btn bg-red-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-500/80">Đăng xuất</button>
-            </div>
-        </div>
+        <!-- Admin & History Panels -->
+        <div id="admin-panel" class="hidden"><h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Bảng điều khiển Admin</h2><div class="space-y-4"><button id="view-history-btn" class="w-full glass-btn bg-indigo-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-indigo-500/80">Xem Lịch Sử Thi</button><button id="logout-btn" class="w-full glass-btn bg-red-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-500/80">Đăng xuất</button></div></div>
+        <div id="history-panel" class="hidden"><h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Lịch Sử Làm Bài</h2><div id="history-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4"></div><button id="back-to-admin-btn" class="w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button></div>
         
-        <!-- History Panel: Displays past quiz results -->
-        <div id="history-panel" class="hidden">
-            <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Lịch Sử Làm Bài</h2>
-            <div id="history-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4">
-                <!-- History table will be inserted here dynamically from Firebase -->
+        <!-- Leaderboard Panel -->
+        <div id="leaderboard-panel" class="hidden">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">🏆 Bảng Xếp Hạng 🏆</h2>
+            <div class="flex flex-wrap justify-center gap-4 mb-4">
+                <select id="leaderboard-subject-filter" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold">
+                    <option value="all">Tất cả môn</option>
+                    <option value="toan">Toán Học</option>
+                    <option value="tiengviet">Tiếng Việt</option>
+                </select>
+                <select id="leaderboard-grade-filter" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold">
+                    <option value="all">Tất cả lớp</option>
+                    <option value="lop1">Lớp 1</option>
+                    <option value="lop2">Lớp 2</option>
+                </select>
             </div>
-            <button id="back-to-admin-btn" class="w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
+            <div id="leaderboard-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4"></div>
+            <button id="back-to-menu-btn" class="w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Chơi Lại</button>
         </div>
-
     </div>
 
-    <!-- Admin Login Modal -->
-    <div id="login-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0">
-        <div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative">
-            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Đăng Nhập Admin</h2>
-            <form id="login-form">
-                <div class="mb-4">
-                    <label for="username" class="block text-gray-700 font-semibold mb-2">Tên đăng nhập</label>
-                    <input type="text" id="username" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
-                </div>
-                <div class="mb-6">
-                    <label for="password" class="block text-gray-700 font-semibold mb-2">Mật khẩu</label>
-                    <input type="password" id="password" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
-                </div>
-                <p id="login-error" class="text-red-500 text-center text-sm h-4 mb-4"></p>
-                <button type="submit" class="w-full glass-btn bg-blue-600/70 text-white font-bold py-3 rounded-2xl hover:bg-blue-600/90">Đăng nhập</button>
-            </form>
-            <button id="close-modal-btn" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl">&times;</button>
+    <!-- Modals -->
+    <div id="login-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0"><div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative"><h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Đăng Nhập Admin</h2><form id="login-form"><div class="mb-4"><label for="username" class="block text-gray-700 font-semibold mb-2">Tên đăng nhập</label><input type="text" id="username" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"></div><div class="mb-6"><label for="password" class="block text-gray-700 font-semibold mb-2">Mật khẩu</label><input type="password" id="password" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"></div><p id="login-error" class="text-red-500 text-center text-sm h-4 mb-4"></p><button type="submit" class="w-full glass-btn bg-blue-600/70 text-white font-bold py-3 rounded-2xl hover:bg-blue-600/90">Đăng nhập</button></form><button id="close-modal-btn" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl">&times;</button></div></div>
+    
+    <!-- UPDATED: Name Selection Modal -->
+    <div id="name-selection-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0">
+        <div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative text-center">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Hoàn thành!</h2>
+            <p id="modal-final-score" class="text-6xl font-bold text-blue-600 my-4">0/10</p>
+            <p id="modal-final-message" class="text-lg text-gray-600 mb-6">Bé đã làm rất tốt! Hãy chọn tên của mình để lưu điểm nhé.</p>
+            <div id="name-selection-container" class="space-y-3">
+                <button data-name="Thảo Huyền" class="name-btn w-full glass-btn bg-pink-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-pink-500/80">Thảo Huyền</button>
+                <button data-name="Hằng Nga" class="name-btn w-full glass-btn bg-indigo-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-indigo-500/80">Hằng Nga</button>
+            </div>
+            <button id="skip-and-play-again-btn" class="w-full mt-6 text-gray-600 font-semibold hover:text-gray-800 text-sm">Chơi Lại (Không lưu)</button>
         </div>
     </div>
 
 
     <script type="module">
-        // Import necessary Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp, doc, getDoc, setDoc, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- LOCAL QUESTION SEED DATA (with explanations) ---
-        const localQuestionSeedData = {
-            toan: {
-                lop1: {
-                    hocky1: [
-                        { question: "5 + 4 = ?", options: [8, 9, 10, 7], answer: 9, explanation: "Vì 5 que tính thêm 4 que tính nữa là 9 que tính." },
-                        { question: "8 - 3 = ?", options: [4, 5, 6, 7], answer: 5, explanation: "Vì có 8 cái kẹo, ăn hết 3 cái thì còn lại 5 cái." },
-                        { question: "Số liền sau của 9 là?", options: [8, 10, 11, 7], answer: 10, explanation: "Số liền sau là số lớn hơn 1 đơn vị, nên sau số 9 là số 10." },
-                        { question: "Có mấy hình tròn: 🔵 🔺 🔵 ⬜", options: [1, 2, 3, 4], answer: 2, explanation: "Bé hãy đếm các hình có dạng tròn nhé!" },
-                        { question: "2 + 6 = ?", options: [7, 8, 9, 10], answer: 8 },
-                        { question: "Số liền trước của 15 là?", options: [13, 14, 16, 17], answer: 14, explanation: "Số liền trước là số nhỏ hơn 1 đơn vị, nên trước số 15 là số 14." },
-                        { question: "Hình vuông có mấy cạnh?", options: [2, 3, 4, 5], answer: 4, explanation: "Hình vuông là hình có 4 cạnh dài bằng nhau." },
-                        { question: "Điền dấu: 5 + 3 ... 8", options: ["<", ">", "="], answer: "=" },
-                        { question: "7 + ... = 10", options: [1, 2, 3, 4], answer: 3 },
-                        { question: "Số bé nhất trong các số: 9, 3, 7, 5 là?", options: [9, 3, 7, 5], answer: 3 },
-                    ],
-                    hocky2: [
-                        { question: "10 + 6 = ?", options: [15, 16, 17, 18], answer: 16 },
-                        { question: "18 - 5 = ?", options: [12, 13, 14, 15], answer: 13 },
-                        { question: "Số gồm 1 chục và 7 đơn vị là?", options: [10, 7, 17, 71], answer: 17, explanation: "1 chục là 10, thêm 7 đơn vị nữa là 17." },
-                        { question: "Hôm nay là thứ Hai, ngày mai là thứ mấy?", options: ["Chủ Nhật", "Thứ Ba", "Thứ Tư"], answer: "Thứ Ba", explanation: "Sau thứ Hai sẽ là thứ Ba." },
-                        { question: "Lan có 8 kẹo, mẹ cho thêm 5. Lan có tất cả...cái kẹo?", options: [12, 13, 14, 3], answer: 13 },
-                    ]
-                }
-            },
-            tiengviet: {
-                lop1: {
-                    hocky1: [
-                        { question: "Chữ cái nào đứng sau 'A' trong bảng chữ cái?", options: ["C", "B", "D", "E"], answer: "B", explanation: "Bảng chữ cái là A, B, C... nên sau A là B." },
-                        { question: "Từ nào chỉ hoạt động 'ăn'?", options: ["Ngủ", "Chơi", "Ăn", "Học"], answer: "Ăn", explanation: "'Ăn' là hành động đưa thức ăn vào miệng để nuôi sống cơ thể." },
-                        { question: "Điền từ còn thiếu: 'Con ... đang bơi.'", options: ["chim", "cá", "mèo", "chó"], answer: "cá", explanation: "Trong các con vật này, chỉ có 'cá' là sống dưới nước và biết bơi." },
-                        { question: "Từ nào có vần 'ai'?", options: ["Cái", "Con", "Sách", "Bút"], answer: "Cái" },
-                        { question: "Chữ cái nào đứng trước 'D' trong bảng chữ cái?", options: ["C", "E", "F", "B"], answer: "C" },
-                    ],
-                    hocky2: [
-                        { question: "Từ nào có tiếng 'sách'?", options: ["Quyển vở", "Bút chì", "Sách giáo khoa", "Cái bàn"], answer: "Sách giáo khoa" },
-                        { question: "Từ nào đồng nghĩa với 'vui vẻ'?", options: ["Buồn bã", "Hạnh phúc", "Tức giận", "Sợ hãi"], answer: "Hạnh phúc", explanation: "'Vui vẻ' và 'hạnh phúc' đều chỉ cảm xúc tích cực, vui sướng." },
-                        { question: "Điền từ còn thiếu: 'Bầu trời ...'", options: ["xanh", "đỏ", "vàng", "đen"], answer: "xanh", explanation: "Bầu trời ban ngày thường có màu xanh trong." },
-                    ]
-                },
-                lop2: {
-                    hocky1: [
-                        { question: "Từ nào là từ chỉ sự vật?", options: ["Chạy", "Đẹp", "Cái bàn", "Vui"], answer: "Cái bàn", explanation: "Từ chỉ sự vật là từ gọi tên đồ vật, con vật, cây cối. 'Cái bàn' là một đồ vật." },
-                        { question: "Từ nào là từ chỉ hoạt động?", options: ["Con mèo", "Đọc sách", "Màu xanh", "Cao lớn"], answer: "Đọc sách", explanation: "Từ chỉ hoạt động nói lên sự vận động, làm việc. 'Đọc sách' là một hoạt động." },
-                    ],
-                    hocky2: [
-                        { question: "Từ nào là từ chỉ số lượng?", options: ["Nhanh", "Đẹp", "Năm", "Ăn"], answer: "Năm", explanation: "'Năm' là một con số, dùng để đếm số lượng." },
-                        { question: "Từ nào là từ chỉ thời gian?", options: ["Hôm nay", "Sách", "Bút", "Cái ghế"], answer: "Hôm nay", explanation: "'Hôm nay' là từ chỉ ngày hiện tại, thuộc về thời gian." },
-                    ]
-                }
-            }
+        // --- SOUND EFFECTS SETUP ---
+        let soundsEnabled = true;
+        const synths = {
+            click: new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 0.1 } }).toDestination(),
+            correct: new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.005, decay: 0.2, sustain: 0.1, release: 0.2 } }).toDestination(),
+            incorrect: new Tone.Synth({ oscillator: { type: "square" }, envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 0.2 } }).toDestination(),
+            complete: new Tone.PolySynth(Tone.Synth).toDestination()
         };
+        function playSound(soundType) {
+            if (!soundsEnabled || !Tone.context.state === 'running') return;
+            try {
+                switch (soundType) {
+                    case 'click': synths.click.triggerAttackRelease("C5", "8n"); break;
+                    case 'correct': synths.correct.triggerAttackRelease("G5", "8n", Tone.now()); break;
+                    case 'incorrect': synths.incorrect.triggerAttackRelease("C3", "8n"); break;
+                    case 'complete': const now = Tone.now(); synths.complete.triggerAttackRelease(["C4", "E4", "G4"], "8n", now); synths.complete.triggerAttackRelease(["E4", "G4", "B4"], "8n", now + 0.2); synths.complete.triggerAttackRelease(["G4", "B4", "D5"], "8n", now + 0.4); break;
+                }
+            } catch (error) { console.error("Sound play error:", error); }
+        }
 
-        // --- STATE VARIABLES ---
-        let questionBank = null;
-        let selectedSubject = null;
-        let selectedGrade = null;
-        let selectedSemester = null;
-        let currentQuestions = [];
-        let currentQuestionIndex = 0;
-        let score = 0;
+        // --- LOCAL QUESTION SEED DATA (unchanged) ---
+        const localQuestionSeedData = { toan: { lop1: { hocky1: [ { question: "5 + 4 = ?", options: [8, 9, 10, 7], answer: 9, explanation: "Vì 5 que tính thêm 4 que tính nữa là 9 que tính." }, { question: "8 - 3 = ?", options: [4, 5, 6, 7], answer: 5, explanation: "Vì có 8 cái kẹo, ăn hết 3 cái thì còn lại 5 cái." }, { question: "Số liền sau của 9 là?", options: [8, 10, 11, 7], answer: 10, explanation: "Số liền sau là số lớn hơn 1 đơn vị, nên sau số 9 là số 10." }, { question: "Có mấy hình tròn: 🔵 🔺 🔵 ⬜", options: [1, 2, 3, 4], answer: 2, explanation: "Bé hãy đếm các hình có dạng tròn nhé!" }, { question: "2 + 6 = ?", options: [7, 8, 9, 10], answer: 8 }, { question: "Số liền trước của 15 là?", options: [13, 14, 16, 17], answer: 14, explanation: "Số liền trước là số nhỏ hơn 1 đơn vị, nên trước số 15 là số 14." }, { question: "Hình vuông có mấy cạnh?", options: [2, 3, 4, 5], answer: 4, explanation: "Hình vuông là hình có 4 cạnh dài bằng nhau." }, { question: "Điền dấu: 5 + 3 ... 8", options: ["<", ">", "="], answer: "=" }, { question: "7 + ... = 10", options: [1, 2, 3, 4], answer: 3 }, { question: "Số bé nhất trong các số: 9, 3, 7, 5 là?", options: [9, 3, 7, 5], answer: 3 }, ], hocky2: [ { question: "10 + 6 = ?", options: [15, 16, 17, 18], answer: 16 }, { question: "18 - 5 = ?", options: [12, 13, 14, 15], answer: 13 }, { question: "Số gồm 1 chục và 7 đơn vị là?", options: [10, 7, 17, 71], answer: 17, explanation: "1 chục là 10, thêm 7 đơn vị nữa là 17." }, { question: "Hôm nay là thứ Hai, ngày mai là thứ mấy?", options: ["Chủ Nhật", "Thứ Ba", "Thứ Tư"], answer: "Thứ Ba", explanation: "Sau thứ Hai sẽ là thứ Ba." }, { question: "Lan có 8 kẹo, mẹ cho thêm 5. Lan có tất cả...cái kẹo?", options: [12, 13, 14, 3], answer: 13 }, ] } }, tiengviet: { lop1: { hocky1: [ { question: "Chữ cái nào đứng sau 'A' trong bảng chữ cái?", options: ["C", "B", "D", "E"], answer: "B", explanation: "Bảng chữ cái là A, B, C... nên sau A là B." }, { question: "Từ nào chỉ hoạt động 'ăn'?", options: ["Ngủ", "Chơi", "Ăn", "Học"], answer: "Ăn", explanation: "'Ăn' là hành động đưa thức ăn vào miệng để nuôi sống cơ thể." }, { question: "Điền từ còn thiếu: 'Con ... đang bơi.'", options: ["chim", "cá", "mèo", "chó"], answer: "cá", explanation: "Trong các con vật này, chỉ có 'cá' là sống dưới nước và biết bơi." }, { question: "Từ nào có vần 'ai'?", options: ["Cái", "Con", "Sách", "Bút"], answer: "Cái" }, { question: "Chữ cái nào đứng trước 'D' trong bảng chữ cái?", options: ["C", "E", "F", "B"], answer: "C" }, ], hocky2: [ { question: "Từ nào có tiếng 'sách'?", options: ["Quyển vở", "Bút chì", "Sách giáo khoa", "Cái bàn"], answer: "Sách giáo khoa" }, { question: "Từ nào đồng nghĩa với 'vui vẻ'?", options: ["Buồn bã", "Hạnh phúc", "Tức giận", "Sợ hãi"], answer: "Hạnh phúc", explanation: "'Vui vẻ' và 'hạnh phúc' đều chỉ cảm xúc tích cực, vui sướng." }, { question: "Điền từ còn thiếu: 'Bầu trời ...'", options: ["xanh", "đỏ", "vàng", "đen"], answer: "xanh", explanation: "Bầu trời ban ngày thường có màu xanh trong." }, ] }, lop2: { hocky1: [ { question: "Từ nào là từ chỉ sự vật?", options: ["Chạy", "Đẹp", "Cái bàn", "Vui"], answer: "Cái bàn", explanation: "Từ chỉ sự vật là từ gọi tên đồ vật, con vật, cây cối. 'Cái bàn' là một đồ vật." }, { question: "Từ nào là từ chỉ hoạt động?", options: ["Con mèo", "Đọc sách", "Màu xanh", "Cao lớn"], answer: "Đọc sách", explanation: "Từ chỉ hoạt động nói lên sự vận động, làm việc. 'Đọc sách' là một hoạt động." }, ], hocky2: [ { question: "Từ nào là từ chỉ số lượng?", options: ["Nhanh", "Đẹp", "Năm", "Ăn"], answer: "Năm", explanation: "'Năm' là một con số, dùng để đếm số lượng." }, { question: "Từ nào là từ chỉ thời gian?", options: ["Hôm nay", "Sách", "Bút", "Cái ghế"], answer: "Hôm nay", explanation: "'Hôm nay' là từ chỉ ngày hiện tại, thuộc về thời gian." }, ] } } };
+
+        // --- STATE & DOM VARIABLES ---
+        let db, auth, appId, questionBank, selectedSubject, selectedGrade, selectedSemester;
+        let currentQuestions = [], currentQuestionIndex = 0, score = 0;
         const NUM_OF_QUESTIONS_PER_GAME = 10;
 
-        // --- FIREBASE VARIABLES ---
-        let db;
-        let auth;
-        let appId;
+        const screens = {
+            selection: document.getElementById('selection-screen'),
+            game: document.getElementById('game-screen'),
+            admin: document.getElementById('admin-panel'),
+            history: document.getElementById('history-panel'),
+            leaderboard: document.getElementById('leaderboard-panel')
+        };
+        const modals = {
+            login: document.getElementById('login-modal'),
+            nameSelection: document.getElementById('name-selection-modal')
+        };
+        const leaderboardBtn = document.getElementById('leaderboard-btn');
+        const backToMenuBtn = document.getElementById('back-to-menu-btn');
+        const leaderboardSubjectFilter = document.getElementById('leaderboard-subject-filter');
+        const leaderboardGradeFilter = document.getElementById('leaderboard-grade-filter');
 
-        // --- GET DOM ELEMENTS ---
-        const selectionScreen = document.getElementById('selection-screen');
-        const gameScreen = document.getElementById('game-screen');
-        const resultsScreen = document.getElementById('results-screen');
-        const startBtn = document.getElementById('start-btn');
-        const subjectBtns = document.querySelectorAll('[data-subject]');
-        const gradeBtns = document.querySelectorAll('[data-grade]');
-        const semesterBtns = document.querySelectorAll('[data-semester]');
-        const loadingQuestionsIndicator = document.getElementById('loading-questions');
-        const selectionsContainer = document.getElementById('selections-container');
+        // --- FIREBASE & DATA LOADING ---
+        async function initializeFirebase() { try { let firebaseConfig; if (typeof __firebase_config !== 'undefined' && __firebase_config) { firebaseConfig = JSON.parse(__firebase_config); appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.appId; } else { console.warn("Using hardcoded fallback Firebase config."); firebaseConfig = { apiKey: "AIzaSyDJBY6U0LUtmnk4PrfNeA7UE7qq1FZ84X8", authDomain: "data-chung-a62ee.firebaseapp.com", projectId: "data-chung-a62ee", storageBucket: "data-chung-a62ee.appspot.com", messagingSenderId: "453115303161", appId: "1:453115303161:web:c885f876f4914829863e28" }; appId = firebaseConfig.appId; } if (!firebaseConfig.projectId) throw new Error("Firebase config is missing projectId."); const app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app); if (typeof __initial_auth_token !== 'undefined') { await signInWithCustomToken(auth, __initial_auth_token); } else { await signInAnonymously(auth); } onAuthStateChanged(auth, (user) => { if (user) { console.log("User authenticated, loading questions..."); loadAndSeedQuestions(); } }); } catch (error) { console.error("Firebase initialization error:", error); document.getElementById('loading-questions').textContent = "Lỗi kết nối đến cơ sở dữ liệu."; } }
+        async function loadAndSeedQuestions() { if (!db || !appId) { console.error("Firestore DB or App ID not initialized."); return; } const questionBankRef = doc(db, `artifacts/${appId}/public/data/questions`, 'mainBank'); try { const docSnap = await getDoc(questionBankRef); if (docSnap.exists() && docSnap.data().toan) { questionBank = docSnap.data(); } else { await setDoc(questionBankRef, localQuestionSeedData); questionBank = localQuestionSeedData; } document.getElementById('loading-questions').classList.add('hidden'); document.getElementById('selections-container').classList.remove('hidden'); updateStartButtonState(); } catch (error) { console.error("Error loading or seeding questions:", error); document.getElementById('loading-questions').textContent = "Lỗi khi tải câu hỏi."; } }
         
-        const explanationContainer = document.getElementById('explanation-container');
-        const explanationText = document.getElementById('explanation-text');
-        const readExplanationBtn = document.getElementById('read-explanation-btn');
-        
-        const adminPanel = document.getElementById('admin-panel');
-        const adminLoginBtn = document.getElementById('admin-login-btn');
-        const loginModal = document.getElementById('login-modal');
-        const closeModalBtn = document.getElementById('close-modal-btn');
-        const loginForm = document.getElementById('login-form');
-        const logoutBtn = document.getElementById('logout-btn');
-        const loginError = document.getElementById('login-error');
-        const viewHistoryBtn = document.getElementById('view-history-btn');
-        const historyPanel = document.getElementById('history-panel');
-        const backToAdminBtn = document.getElementById('back-to-admin-btn');
-        const historyTableContainer = document.getElementById('history-table-container');
-
-        const readQuestionBtn = document.getElementById('read-question-btn');
-
-        // --- FIREBASE AND DATA LOADING ---
-        async function initializeFirebase() {
-            try {
-                let firebaseConfig;
-                if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-                    firebaseConfig = JSON.parse(__firebase_config);
-                    appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.appId;
-                } else {
-                    console.warn("Using hardcoded fallback Firebase config.");
-                    firebaseConfig = {
-                        apiKey: "AIzaSyDJBY6U0LUtmnk4PrfNeA7UE7qq1FZ84X8",
-                        authDomain: "data-chung-a62ee.firebaseapp.com",
-                        projectId: "data-chung-a62ee",
-                        storageBucket: "data-chung-a62ee.appspot.com",
-                        messagingSenderId: "453115303161",
-                        appId: "1:453115303161:web:c885f876f4914829863e28"
-                    };
-                    appId = firebaseConfig.appId;
-                }
-
-                if (!firebaseConfig.projectId) throw new Error("Firebase config is missing projectId.");
-
-                const app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-
-                if (typeof __initial_auth_token !== 'undefined') {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        console.log("User authenticated, loading questions...");
-                        loadAndSeedQuestions();
-                    }
-                });
-
-            } catch (error) {
-                console.error("Firebase initialization error:", error);
-                loadingQuestionsIndicator.textContent = "Lỗi kết nối đến cơ sở dữ liệu.";
-                loadingQuestionsIndicator.classList.add('text-red-500');
-            }
-        }
-
-        async function loadAndSeedQuestions() {
-            if (!db || !appId) {
-                console.error("Firestore DB or App ID not initialized.");
-                loadingQuestionsIndicator.textContent = "Lỗi: CSDL chưa sẵn sàng.";
-                return;
-            }
-
-            const questionBankRef = doc(db, `artifacts/${appId}/public/data/questions`, 'mainBank');
-
-            try {
-                const docSnap = await getDoc(questionBankRef);
-
-                if (docSnap.exists() && docSnap.data().toan) {
-                    console.log("Question bank loaded from Firestore.");
-                    questionBank = docSnap.data();
-                } else {
-                    console.log("No valid question bank in Firestore. Seeding from local data...");
-                    await setDoc(questionBankRef, localQuestionSeedData);
-                    console.log("Seeding successful!");
-                    questionBank = localQuestionSeedData;
-                }
-
-                loadingQuestionsIndicator.classList.add('hidden');
-                selectionsContainer.classList.remove('hidden');
-                updateStartButtonState();
-
-            } catch (error) {
-                console.error("Error loading or seeding questions:", error);
-                loadingQuestionsIndicator.textContent = "Lỗi khi tải câu hỏi.";
-                loadingQuestionsIndicator.classList.add('text-red-500');
-            }
-        }
-        
-        // --- SAVE AND DISPLAY HISTORY (USING FIRESTORE) ---
-        /**
-         * Saves the result of a completed quiz to the Firestore database.
-         * @param {object} resultData - The data object for the quiz result.
-         */
-        async function saveResult(resultData) {
-            if (!db || !appId || !auth.currentUser) {
-                console.error("Cannot save result: Firebase not ready or user not authenticated.");
-                return;
+        // --- HISTORY & LEADERBOARD FUNCTIONS ---
+        async function saveResult(resultData, playerName = null) {
+            if (!db || !appId || !auth.currentUser) return;
+            const dataToSave = { ...resultData, name: playerName };
+            if (playerName) {
+                try {
+                    const leaderboardCollectionRef = collection(db, `artifacts/${appId}/public/data/leaderboard`);
+                    await addDoc(leaderboardCollectionRef, dataToSave);
+                    console.log("Score saved to leaderboard!");
+                } catch (e) { console.error("Error writing to leaderboard:", e); }
             }
             try {
-                // Defines the path to the 'quizResults' collection in Firestore.
                 const historyCollectionRef = collection(db, `artifacts/${appId}/public/data/quizResults`);
-                // Adds a new document with the result data to the collection.
-                await addDoc(historyCollectionRef, resultData);
-                console.log("Quiz result saved successfully to Firebase!");
-            } catch (e) {
-                console.error("Error writing result to Firestore:", e);
-            }
+                await addDoc(historyCollectionRef, dataToSave);
+                console.log("Quiz result saved to history!");
+            } catch (e) { console.error("Error writing to history:", e); }
         }
 
-        /**
-         * Fetches and displays the quiz history from the Firestore database.
-         */
         async function displayHistory() {
-            adminPanel.classList.add('hidden');
-            historyPanel.classList.remove('hidden');
-            historyTableContainer.innerHTML = '<p class="text-center text-gray-500">Đang tải lịch sử...</p>';
+            showScreen('history');
+            const container = document.getElementById('history-table-container');
+            container.innerHTML = '<p class="text-center text-gray-500">Đang tải lịch sử...</p>';
+            if (!db || !appId) { container.innerHTML = '<p class="text-center text-red-500">Lỗi CSDL.</p>'; return; }
+            const q = query(collection(db, `artifacts/${appId}/public/data/quizResults`), orderBy("date", "desc"));
+            const querySnapshot = await getDocs(q);
+             if (querySnapshot.empty) { container.innerHTML = '<p class="text-center text-gray-500">Chưa có lịch sử làm bài.</p>'; return; }
+            const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
+            let tableHTML = '<table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden"><thead class="bg-gray-100/50"><tr><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Ngày Giờ</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Môn</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Lớp</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th></tr></thead><tbody class="bg-white/30 divide-y divide-gray-200 text-gray-800">';
+            querySnapshot.forEach(doc => {
+                const r = doc.data();
+                const date = r.date?.toDate() ? r.date.toDate().toLocaleString('vi-VN') : 'N/A';
+                const scoreDisplay = `${r.score}/${r.totalQuestions || 10}`;
+                tableHTML += `<tr><td class="px-3 py-2 text-sm">${date}</td><td class="px-3 py-2 text-sm font-semibold">${r.name || 'Không lưu'}</td><td class="px-3 py-2 text-sm">${nameMap[r.subject] || r.subject}</td><td class="px-3 py-2 text-sm">${nameMap[r.grade] || r.grade}</td><td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td></tr>`;
+            });
+            tableHTML += '</tbody></table>';
+            container.innerHTML = tableHTML;
+        }
 
-            if (!db || !appId || !auth.currentUser) {
-                historyTableContainer.innerHTML = '<p class="text-center text-red-500">Lỗi kết nối CSDL hoặc chưa xác thực.</p>';
-                return;
-            }
+        async function displayLeaderboard() {
+            showScreen('leaderboard');
+            const container = document.getElementById('leaderboard-table-container');
+            container.innerHTML = '<p class="text-center text-gray-500">Đang tải bảng xếp hạng...</p>';
+            if (!db || !appId) { container.innerHTML = '<p class="text-center text-red-500">Lỗi CSDL.</p>'; return; }
+
+            const subjectFilter = leaderboardSubjectFilter.value;
+            const gradeFilter = leaderboardGradeFilter.value;
+
+            let queryConstraints = [orderBy("score", "desc"), limit(10)];
+            if (subjectFilter !== 'all') queryConstraints.push(where("subject", "==", subjectFilter));
+            if (gradeFilter !== 'all') queryConstraints.push(where("grade", "==", gradeFilter));
             
-            try {
-                // Defines the path to the 'quizResults' collection.
-                const historyCollectionRef = collection(db, `artifacts/${appId}/public/data/quizResults`);
-                // Fetches all documents from the collection.
-                const querySnapshot = await getDocs(query(historyCollectionRef));
-                
-                historyTableContainer.innerHTML = '';
+            const q = query(collection(db, `artifacts/${appId}/public/data/leaderboard`), ...queryConstraints);
+            const querySnapshot = await getDocs(q);
 
-                if (querySnapshot.empty) {
-                    historyTableContainer.innerHTML = '<p class="text-center text-gray-500">Chưa có lịch sử làm bài.</p>';
-                    return;
-                }
+            if (querySnapshot.empty) { container.innerHTML = '<p class="text-center text-gray-500">Chưa có ai trên bảng xếp hạng cho mục này.</p>'; return; }
 
-                const results = [];
-                querySnapshot.forEach((doc) => results.push(doc.data()));
-                // Sorts results by date in descending order (newest first).
-                results.sort((a, b) => (b.date?.toDate() || 0) - (a.date?.toDate() || 0));
-
-                const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
-                
-                const table = document.createElement('table');
-                table.className = 'min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden';
-                table.innerHTML = `
-                    <thead class="bg-gray-100/50">
-                        <tr>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Ngày Giờ</th>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Môn</th>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Lớp</th>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Học Kỳ</th>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Điểm</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white/30 divide-y divide-gray-200 text-gray-800"></tbody>
-                `;
-                const tbody = table.querySelector('tbody');
-
-                results.forEach((result) => {
-                    const row = tbody.insertRow();
-                    const date = result.date?.toDate() ? result.date.toDate().toLocaleString('vi-VN') : 'N/A';
-                    // Displays score as "score/totalQuestions", defaults to /10 for older data.
-                    const scoreDisplay = `${result.score}/${result.totalQuestions || 10}`;
-                    row.innerHTML = `
-                        <td class="px-3 py-2 whitespace-nowrap text-sm">${date}</td>
-                        <td class="px-3 py-2 whitespace-nowrap text-sm">${nameMap[result.subject] || result.subject}</td>
-                        <td class="px-3 py-2 whitespace-nowrap text-sm">${nameMap[result.grade] || result.grade}</td>
-                        <td class="px-3 py-2 whitespace-nowrap text-sm">${nameMap[result.semester] || result.semester}</td>
-                        <td class="px-3 py-2 whitespace-nowrap text-sm font-bold">${scoreDisplay}</td>
-                    `;
-                });
-                historyTableContainer.appendChild(table);
-
-            } catch (e) {
-                console.error("Error fetching history from Firebase:", e);
-                historyTableContainer.innerHTML = '<p class="text-center text-red-500">Không thể tải lịch sử.</p>';
-            }
+            let tableHTML = '<table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden"><thead class="bg-gray-100/50"><tr><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Hạng</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên Bé</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th></tr></thead><tbody class="bg-white/30 divide-y divide-gray-200 text-gray-800">';
+            let rank = 1;
+            querySnapshot.forEach(doc => {
+                const data = doc.data();
+                const scoreDisplay = `${data.score}/${data.totalQuestions || 10}`;
+                const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+                tableHTML += `<tr><td class="px-3 py-2 text-center text-sm font-bold">${rankIcon}</td><td class="px-3 py-2 text-sm font-semibold">${data.name}</td><td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td></tr>`;
+                rank++;
+            });
+            tableHTML += '</tbody></table>';
+            container.innerHTML = tableHTML;
         }
         
-        function hideHistory() {
-            historyPanel.classList.add('hidden');
-            adminPanel.classList.remove('hidden');
-        }
-
-        // --- GAME LOGIC FUNCTIONS ---
-        function updateStartButtonState() { 
-            if (selectedSubject && selectedGrade && selectedSemester && questionBank) { 
-                startBtn.disabled = false; 
-                startBtn.classList.remove('bg-gray-500/50', 'cursor-not-allowed'); 
-                startBtn.classList.add('bg-blue-600/70', 'hover:bg-blue-600/90'); 
-            } else { 
-                startBtn.disabled = true; 
-                startBtn.classList.add('bg-gray-500/50', 'cursor-not-allowed'); 
-                startBtn.classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90'); 
-            } 
-        }
-
-        function startGame() { 
-            if (!questionBank || !questionBank[selectedSubject] || !questionBank[selectedSubject][selectedGrade] || !questionBank[selectedSubject][selectedGrade][selectedSemester]) {
-                return; 
-            }
-
-            let allQuestions = questionBank[selectedSubject][selectedGrade][selectedSemester]; 
-            currentQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, NUM_OF_QUESTIONS_PER_GAME); 
-            currentQuestionIndex = 0; 
-            score = 0; 
-
-            selectionScreen.classList.add('hidden'); 
-            gameScreen.classList.remove('hidden'); 
-            resultsScreen.classList.add('hidden'); 
-            adminPanel.classList.add('hidden');
-            historyPanel.classList.add('hidden');
-
+        // --- GAME LOGIC ---
+        function updateStartButtonState() { if (selectedSubject && selectedGrade && selectedSemester && questionBank) { document.getElementById('start-btn').disabled = false; document.getElementById('start-btn').classList.remove('bg-gray-500/50', 'cursor-not-allowed'); document.getElementById('start-btn').classList.add('bg-blue-600/70', 'hover:bg-blue-600/90'); } else { document.getElementById('start-btn').disabled = true; document.getElementById('start-btn').classList.add('bg-gray-500/50', 'cursor-not-allowed'); document.getElementById('start-btn').classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90'); } }
+        function startGame() {
+            if (!questionBank || !questionBank[selectedSubject] || !questionBank[selectedSubject][selectedGrade] || !questionBank[selectedSubject][selectedGrade][selectedSemester]) return;
+            let allQuestions = questionBank[selectedSubject][selectedGrade][selectedSemester];
+            currentQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, NUM_OF_QUESTIONS_PER_GAME);
+            currentQuestionIndex = 0; score = 0;
+            showScreen('game');
             displayQuestion();
         }
-
-        function displayQuestion() { 
+        function displayQuestion() {
             document.getElementById('feedback-container').innerHTML = '';
-            explanationContainer.classList.add('hidden');
+            document.getElementById('explanation-container').classList.add('hidden');
             document.getElementById('next-btn').classList.add('hidden');
-
-            const questionData = currentQuestions[currentQuestionIndex]; 
-            const questionTextElement = document.getElementById('question-container').querySelector('p');
-            questionTextElement.textContent = questionData.question; 
-
-            const optionsContainer = document.getElementById('options-container'); 
-            optionsContainer.innerHTML = '';
-
-            const shuffledOptions = [...questionData.options].sort(() => Math.random() - 0.5); 
-            shuffledOptions.forEach(option => { 
-                const button = document.createElement('button'); 
-                button.textContent = option; 
-                button.className = 'answer-option w-full p-4 rounded-2xl font-semibold glass-btn bg-white/20 hover:bg-white/40 text-gray-800';
-                button.onclick = (e) => checkAnswer(e.target, questionData.answer); 
-                optionsContainer.appendChild(button); 
-            }); 
-
-            document.getElementById('progress-text').textContent = `Câu ${currentQuestionIndex + 1}/${currentQuestions.length}`; 
-            document.getElementById('score-text').textContent = `Điểm: ${score}`; 
-
-            readQuestionBtn.style.display = 'block';
-            readQuestionBtn.onclick = () => speakText(questionData.question);
-        }
-
-        function checkAnswer(selectedButton, correctAnswer) { 
-            const allOptions = document.querySelectorAll('.answer-option'); 
-            allOptions.forEach(btn => btn.disabled = true); 
-
-            const feedbackContainer = document.getElementById('feedback-container'); 
             const questionData = currentQuestions[currentQuestionIndex];
-
-            if (selectedButton.textContent == correctAnswer) { 
+            document.getElementById('question-container').querySelector('p').textContent = questionData.question;
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            const shuffledOptions = [...questionData.options].sort(() => Math.random() - 0.5);
+            shuffledOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.className = 'answer-option w-full p-4 rounded-2xl font-semibold glass-btn bg-white/20 hover:bg-white/40 text-gray-800';
+                button.onclick = (e) => { playSound('click'); checkAnswer(e.target, questionData.answer); };
+                optionsContainer.appendChild(button);
+            });
+            document.getElementById('progress-text').textContent = `Câu ${currentQuestionIndex + 1}/${currentQuestions.length}`;
+            document.getElementById('score-text').textContent = `Điểm: ${score}`;
+            document.getElementById('read-question-btn').onclick = () => speakText(questionData.question);
+        }
+        function checkAnswer(selectedButton, correctAnswer) {
+            document.querySelectorAll('.answer-option').forEach(btn => btn.disabled = true);
+            const questionData = currentQuestions[currentQuestionIndex];
+            if (selectedButton.textContent == correctAnswer) {
                 score++;
                 selectedButton.classList.add('correct');
-                feedbackContainer.textContent = '🎉 Đúng rồi!'; 
-            } else { 
+                document.getElementById('feedback-container').textContent = '🎉 Đúng rồi!';
+                playSound('correct');
+            } else {
                 selectedButton.classList.add('incorrect');
-                feedbackContainer.textContent = '😥 Sai rồi!'; 
-                allOptions.forEach(btn => { 
-                    if (btn.textContent == correctAnswer) { 
-                        btn.classList.add('correct'); 
-                    } 
-                }); 
-            } 
-            
+                document.getElementById('feedback-container').textContent = '😥 Sai rồi!';
+                playSound('incorrect');
+                document.querySelectorAll('.answer-option').forEach(btn => { if (btn.textContent == correctAnswer) btn.classList.add('correct'); });
+            }
             if (questionData.explanation) {
-                explanationText.textContent = `💡 Giải thích: ${questionData.explanation}`;
-                explanationContainer.classList.remove('hidden');
-                readExplanationBtn.onclick = () => speakText(questionData.explanation);
+                document.getElementById('explanation-text').textContent = `💡 Giải thích: ${questionData.explanation}`;
+                document.getElementById('explanation-container').classList.remove('hidden');
+                document.getElementById('read-explanation-btn').onclick = () => speakText(questionData.explanation);
             }
-
-            document.getElementById('score-text').textContent = `Điểm: ${score}`; 
+            document.getElementById('score-text').textContent = `Điểm: ${score}`;
             document.getElementById('next-btn').classList.remove('hidden');
-            
-            if (speechSynthesis.speaking) {
-                speechSynthesis.cancel();
-            }
+            if (speechSynthesis.speaking) speechSynthesis.cancel();
         }
-
-        function nextQuestion() { 
-            currentQuestionIndex++; 
-            if (currentQuestionIndex < currentQuestions.length) { 
-                displayQuestion(); 
-            } else { 
-                showResults(); 
-            } 
-        }
-
-        function showResults() { 
-            gameScreen.classList.add('hidden'); 
-            resultsScreen.classList.remove('hidden'); 
-
+        function nextQuestion() { currentQuestionIndex++; if (currentQuestionIndex < currentQuestions.length) { displayQuestion(); } else { showResults(); } }
+        
+        // UPDATED: Show results now directly shows the name selection modal
+        function showResults() {
+            playSound('complete');
             const finalScore = score;
             const totalQuestions = currentQuestions.length;
-            document.getElementById('final-score').textContent = `${finalScore}/${totalQuestions}`; 
-
-            // Prepare data object to be saved to Firebase.
-            const resultData = { 
-                date: serverTimestamp(), // Use server's timestamp for consistency.
-                subject: selectedSubject, 
-                grade: selectedGrade, 
-                semester: selectedSemester, 
-                score: finalScore,
-                totalQuestions: totalQuestions // Also save the total number of questions.
-            }; 
-            // Call the function to save the result.
-            saveResult(resultData);
-
-            const finalMessageElement = document.getElementById('final-message'); 
-            const percentage = (finalScore / totalQuestions) * 100; 
-            if (percentage === 100) { 
-                finalMessageElement.textContent = "Xuất sắc! Bé thật là giỏi!"; 
-            } else if (percentage >= 70) { 
-                finalMessageElement.textContent = "Giỏi lắm! Cố gắng thêm chút nữa nhé!"; 
-            } else if (percentage >= 50) { 
-                finalMessageElement.textContent = "Làm tốt lắm! Tiếp tục luyện tập nhé!"; 
-            } else { 
-                finalMessageElement.textContent = "Đừng buồn, lần sau sẽ tốt hơn!"; 
-            } 
             
-            readQuestionBtn.style.display = 'none';
+            document.getElementById('modal-final-score').textContent = `${finalScore}/${totalQuestions}`;
+            const percentage = (finalScore / totalQuestions) * 100;
+            const finalMessageElement = document.getElementById('modal-final-message');
+            if (percentage === 100) finalMessageElement.textContent = "Xuất sắc! Bé thật là giỏi! Hãy chọn tên để lưu điểm nhé.";
+            else if (percentage >= 70) finalMessageElement.textContent = "Giỏi lắm! Hãy chọn tên để lưu điểm nhé.";
+            else if (percentage >= 50) finalMessageElement.textContent = "Làm tốt lắm! Hãy chọn tên để lưu điểm nhé.";
+            else finalMessageElement.textContent = "Cố gắng hơn lần sau nhé! Chọn tên để lưu điểm nào.";
+
+            showModal('nameSelection');
         }
 
-        function resetGame() { 
-            resultsScreen.classList.add('hidden'); 
-            selectionScreen.classList.remove('hidden'); 
-            
-            selectionsContainer.classList.remove('hidden');
-            loadingQuestionsIndicator.classList.add('hidden');
-            explanationContainer.classList.add('hidden');
-
-            selectedSubject = null; 
-            selectedGrade = null; 
-            selectedSemester = null; 
-            
-            subjectBtns.forEach(btn => btn.classList.remove('selected')); 
-            gradeBtns.forEach(btn => btn.classList.remove('selected')); 
-            semesterBtns.forEach(btn => btn.classList.remove('selected')); 
+        function resetGame() {
+            showScreen('selection');
+            selectedSubject = null; selectedGrade = null; selectedSemester = null;
+            document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('selected'));
             updateStartButtonState();
-
-            readQuestionBtn.style.display = 'none';
         }
 
-        // --- ADMIN FUNCTIONS ---
-        function showLoginModal() { 
-            loginModal.classList.remove('hidden'); 
-            setTimeout(() => loginModal.classList.remove('opacity-0'), 10); 
-        }
-
-        function hideLoginModal() { 
-            loginModal.classList.add('opacity-0'); 
-            setTimeout(() => loginModal.classList.add('hidden'), 300); 
-            loginError.textContent = '';
-            loginForm.reset();
-        }
-
-        function handleLogin(event) { 
-            event.preventDefault();
-            const username = loginForm.username.value; 
-            const password = loginForm.password.value; 
-            
-            if (username === 'admin' && password === 'admin') { 
-                hideLoginModal(); 
-                selectionScreen.classList.add('hidden');
-                adminPanel.classList.remove('hidden');
-            } else { 
-                loginError.textContent = 'Tên đăng nhập hoặc mật khẩu không đúng.';
-            } 
-        }
-
-        function handleLogout() { 
-            adminPanel.classList.add('hidden');
-            selectionScreen.classList.remove('hidden');
-            resetGame();
-        }
-
-        // --- TEXT-TO-SPEECH FUNCTIONALITY ---
-        let vietnamVoice = null;
-        let voicesLoaded = false;
-
-        function findVietnameseVoice() {
-            if (vietnamVoice) return vietnamVoice;
-            const voices = speechSynthesis.getVoices();
-            vietnamVoice = voices.find(voice => voice.lang === 'vi-VN') || voices.find(voice => voice.lang.startsWith('vi'));
-            if (!vietnamVoice) console.warn("Không tìm thấy giọng đọc tiếng Việt.");
-            return vietnamVoice;
-        }
-
-        speechSynthesis.onvoiceschanged = () => {
-            if (!voicesLoaded) {
-                findVietnameseVoice();
-                voicesLoaded = true;
-            }
-        };
-
-        function speakText(text) { 
-            if (!'speechSynthesis' in window) return;
-            if (speechSynthesis.speaking) {
-                speechSynthesis.cancel();
-            }
-
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'vi-VN';
-            const voiceToUse = findVietnameseVoice();
-            if (voiceToUse) utterance.voice = voiceToUse;
-            speechSynthesis.speak(utterance);
-        }
-
-        // --- EVENT LISTENERS ---
-        subjectBtns.forEach(btn => btn.addEventListener('click', () => { 
-            selectedSubject = btn.dataset.subject; 
-            subjectBtns.forEach(b => b.classList.remove('selected')); 
-            btn.classList.add('selected'); 
-            updateStartButtonState(); 
-        }));
-
-        gradeBtns.forEach(btn => btn.addEventListener('click', () => { 
-            selectedGrade = btn.dataset.grade; 
-            gradeBtns.forEach(b => b.classList.remove('selected')); 
-            btn.classList.add('selected'); 
-            updateStartButtonState(); 
-        }));
-
-        semesterBtns.forEach(btn => btn.addEventListener('click', () => { 
-            selectedSemester = btn.dataset.semester; 
-            semesterBtns.forEach(b => b.classList.remove('selected')); 
-            btn.classList.add('selected'); 
-            updateStartButtonState(); 
-        }));
-
-        startBtn.addEventListener('click', () => { 
-            if (!startBtn.disabled) startGame(); 
-        });
-        document.getElementById('next-btn').addEventListener('click', nextQuestion);
-        document.getElementById('play-again-btn').addEventListener('click', resetGame);
-
-        adminLoginBtn.addEventListener('click', showLoginModal);
-        closeModalBtn.addEventListener('click', hideLoginModal);
-        loginModal.addEventListener('click', (e) => { 
-            if (e.target === loginModal) hideLoginModal(); 
-        });
-        loginForm.addEventListener('submit', handleLogin);
-        logoutBtn.addEventListener('click', handleLogout);
-        viewHistoryBtn.addEventListener('click', displayHistory);
-        backToAdminBtn.addEventListener('click', hideHistory);
+        // --- UI & MODAL MANAGEMENT ---
+        function showScreen(screenName) { Object.values(screens).forEach(s => s.classList.add('hidden')); if (screens[screenName]) screens[screenName].classList.remove('hidden'); }
+        function showModal(modalName) { if (modals[modalName]) { modals[modalName].classList.remove('hidden'); setTimeout(() => modals[modalName].classList.remove('opacity-0'), 10); } }
+        function hideModal(modalName) { if (modals[modalName]) { modals[modalName].classList.add('opacity-0'); setTimeout(() => modals[modalName].classList.add('hidden'), 300); } }
+        function speakText(text) { if (!'speechSynthesis' in window) return; if (speechSynthesis.speaking) speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'vi-VN'; const voice = speechSynthesis.getVoices().find(v => v.lang === 'vi-VN'); if (voice) utterance.voice = voice; speechSynthesis.speak(utterance); }
         
-        // --- INITIAL APPLICATION START ---
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeFirebase();
-            readQuestionBtn.style.display = 'none';
-            if (speechSynthesis.getVoices().length > 0) {
-                findVietnameseVoice();
-                voicesLoaded = true;
+        // --- EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initializeFirebase();
+            document.body.addEventListener('click', async () => { if (Tone.context.state !== 'running') { await Tone.start(); console.log('Audio context started'); } }, { once: true });
+        });
+        
+        document.getElementById('sound-toggle-btn').addEventListener('click', () => { soundsEnabled = !soundsEnabled; document.getElementById('speaker-on-icon').classList.toggle('hidden', !soundsEnabled); document.getElementById('speaker-off-icon').classList.toggle('hidden', soundsEnabled); });
+        document.querySelectorAll('.choice-btn').forEach(btn => btn.addEventListener('click', (e) => { playSound('click'); const type = Object.keys(e.target.dataset)[0]; const value = e.target.dataset[type]; if (type === 'subject') selectedSubject = value; if (type === 'grade') selectedGrade = value; if (type === 'semester') selectedSemester = value; document.querySelectorAll(`[data-${type}]`).forEach(b => b.classList.remove('selected')); e.target.classList.add('selected'); updateStartButtonState(); }));
+        document.getElementById('start-btn').addEventListener('click', () => { if (!document.getElementById('start-btn').disabled) { playSound('click'); startGame(); } });
+        document.getElementById('next-btn').addEventListener('click', () => { playSound('click'); nextQuestion(); });
+        
+        // Name selection modal
+        document.getElementById('name-selection-container').addEventListener('click', (e) => {
+            if (e.target.classList.contains('name-btn')) {
+                playSound('click');
+                const playerName = e.target.dataset.name;
+                const resultData = { date: serverTimestamp(), subject: selectedSubject, grade: selectedGrade, semester: selectedSemester, score: score, totalQuestions: currentQuestions.length };
+                saveResult(resultData, playerName);
+                hideModal('nameSelection');
+                displayLeaderboard();
             }
         });
+        document.getElementById('skip-and-play-again-btn').addEventListener('click', () => {
+            playSound('click');
+            hideModal('nameSelection');
+            resetGame();
+        });
+
+        // Leaderboard
+        leaderboardBtn.addEventListener('click', () => { playSound('click'); displayLeaderboard(); });
+        backToMenuBtn.addEventListener('click', () => { playSound('click'); resetGame(); });
+        leaderboardSubjectFilter.addEventListener('change', displayLeaderboard);
+        leaderboardGradeFilter.addEventListener('change', displayLeaderboard);
+        
+        // Admin
+        document.getElementById('admin-login-btn').addEventListener('click', () => { playSound('click'); showModal('login'); });
+        document.getElementById('close-modal-btn').addEventListener('click', () => hideModal('login'));
+        document.getElementById('login-form').addEventListener('submit', (e) => { e.preventDefault(); playSound('click'); const u = document.getElementById('username').value; const p = document.getElementById('password').value; if (u === 'admin' && p === 'admin') { hideModal('login'); showScreen('admin'); } else { document.getElementById('login-error').textContent = 'Tên đăng nhập hoặc mật khẩu không đúng.'; } });
+        document.getElementById('logout-btn').addEventListener('click', () => { playSound('click'); showScreen('selection'); });
+        document.getElementById('view-history-btn').addEventListener('click', () => { playSound('click'); displayHistory(); });
+        document.getElementById('back-to-admin-btn').addEventListener('click', () => { playSound('click'); showScreen('admin'); });
 
     </script>
 </body>
