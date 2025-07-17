@@ -4,104 +4,127 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trò Chơi Học Tập Vui</title>
+    <!-- Tailwind CSS for utility-first styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Quicksand for a friendly look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Base font-family for the entire body */
         body {
             font-family: 'Quicksand', sans-serif;
+            /* Gradient background for a vibrant look */
             background: linear-gradient(to right top, #6d8cf0, #8d8de0, #a98fcb, #be93b6, #ce99a6);
         }
+        /* Glassmorphism effect for containers */
         .glass-container {
             background: rgba(255, 255, 255, 0.4);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
+        /* Glassmorphism effect for buttons */
         .glass-btn {
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.3);
             transition: all 0.2s ease-in-out;
-            /* Đảm bảo chữ trong nút có màu dễ đọc */
-            color: #2d3748; /* Màu xám đậm cho chữ */
+            /* Default text color for better contrast on glass background */
+            color: #2d3748; /* Dark gray for text */
         }
-        /* Override text color for specific buttons if needed for better contrast */
+        /* Override text color for primary action buttons to ensure visibility */
         #start-btn, #next-btn, #play-again-btn, #admin-login-btn, #logout-btn, #view-history-btn, #back-to-admin-btn {
-            color: white; /* Giữ màu trắng cho các nút hành động chính */
+            color: white; /* White text for main action buttons */
         }
+        /* Specific color for admin login button on main screen */
         #admin-login-btn {
-            color: #cbd5e0; /* Màu xám nhạt cho nút admin ở màn hình chính */
+            color: #cbd5e0; /* Light gray for admin button */
         }
 
+        /* Styling for selected choice buttons */
         .choice-btn.selected {
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+            transform: scale(1.05); /* Slightly enlarge on selection */
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); /* Add a glow effect */
             border-width: 2px;
-            border-color: rgba(255, 255, 255, 0.7);
+            border-color: rgba(255, 255, 255, 0.7); /* Thicker, more visible border */
         }
+        /* Styling for correct answer option */
         .answer-option.correct {
-            background-color: rgba(34, 197, 94, 0.7) !important;
+            background-color: rgba(34, 197, 94, 0.7) !important; /* Green background */
             border-color: rgba(22, 163, 74, 0.8);
-            color: white !important; /* Đảm bảo chữ trắng trên nền xanh */
+            color: white !important; /* White text for contrast */
         }
+        /* Styling for incorrect answer option */
         .answer-option.incorrect {
-            background-color: rgba(239, 68, 68, 0.7) !important;
+            background-color: rgba(239, 68, 68, 0.7) !important; /* Red background */
             border-color: rgba(220, 38, 38, 0.8);
-            color: white !important; /* Đảm bảo chữ trắng trên nền đỏ */
+            color: white !important; /* White text for contrast */
         }
+        /* Modal overlay transition for smooth appearance */
         .modal-overlay {
             transition: opacity 0.3s ease;
         }
 
-        /* Responsive adjustments */
+        /* Responsive adjustments for smaller screens (mobile first approach) */
         @media (max-width: 768px) {
             .glass-container {
-                padding: 1rem; /* Giảm padding trên điện thoại */
-                margin: 0.5rem; /* Giảm margin trên điện thoại */
+                padding: 1rem; /* Reduce padding on mobile */
+                margin: 0.5rem; /* Reduce margin on mobile */
             }
             h1 {
-                font-size: 2.25rem; /* Điều chỉnh kích thước tiêu đề */
+                font-size: 2.25rem; /* Adjust main title size */
             }
             h2 {
-                font-size: 1.5rem; /* Điều chỉnh kích thước tiêu đề phụ */
+                font-size: 1.5rem; /* Adjust subtitle size */
             }
             .choice-btn, .answer-option, #start-btn, #next-btn, #play-again-btn {
-                font-size: 1rem; /* Điều chỉnh kích thước chữ nút */
-                padding: 0.8rem; /* Điều chỉnh padding nút */
+                font-size: 1rem; /* Adjust button text size */
+                padding: 0.8rem; /* Adjust button padding */
             }
             #progress-text, #score-text {
-                font-size: 0.9rem;
+                font-size: 0.9rem; /* Adjust progress/score text size */
             }
             #question-container p {
-                font-size: 1.1rem; /* Điều chỉnh kích thước chữ câu hỏi */
+                font-size: 1.1rem; /* Adjust question text size */
             }
             #final-score {
-                font-size: 4rem; /* Giảm kích thước điểm cuối cùng */
+                font-size: 4rem; /* Reduce final score size */
             }
             #login-modal .glass-container {
-                padding: 1.5rem;
+                padding: 1.5rem; /* Adjust modal padding */
             }
         }
 
-        /* Custom style for history table container for scrollability */
+        /* Custom style for history table container to enable scrolling */
         #history-table-container {
-            max-height: 400px; /* Adjust as needed for scrollability */
-            overflow-y: auto;
+            max-height: 400px; /* Set max height for scrollability */
+            overflow-y: auto; /* Enable vertical scrolling */
+        }
+
+        /* Style for the speaker icon */
+        #read-question-btn { /* Changed ID to reflect original purpose */
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
+        }
+
+        #read-question-btn:hover {
+            transform: scale(1.1);
+            color: #6366f1; /* Indigo-500 on hover */
         }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
 
+    <!-- Main container for the game, styled with glassmorphism -->
     <div class="w-full max-w-3xl mx-auto glass-container rounded-3xl shadow-2xl p-4 md:p-8 relative">
 
-        <!-- Màn hình lựa chọn -->
+        <!-- Selection Screen: Where users choose subject, grade, and semester -->
         <div id="selection-screen">
             <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-2">Trò Chơi Học Tập</h1>
             <p class="text-center text-gray-700 mb-8">Cùng bé vừa học vừa chơi!</p>
 
-            <!-- Chọn Môn học -->
+            <!-- Subject Selection -->
             <div class="mb-6">
                 <h2 class="text-xl font-semibold mb-3 text-gray-700">1. Chọn Môn Học</h2>
                 <div class="grid grid-cols-2 gap-4">
@@ -110,7 +133,7 @@
                 </div>
             </div>
 
-            <!-- Chọn Lớp -->
+            <!-- Grade Selection -->
             <div class="mb-6">
                 <h2 class="text-xl font-semibold mb-3 text-gray-700">2. Chọn Lớp</h2>
                 <div class="grid grid-cols-2 gap-4">
@@ -119,7 +142,7 @@
                 </div>
             </div>
 
-            <!-- Chọn Học Kỳ -->
+            <!-- Semester Selection -->
             <div class="mb-8">
                 <h2 class="text-xl font-semibold mb-3 text-gray-700">3. Chọn Học Kỳ</h2>
                 <div class="grid grid-cols-2 gap-4">
@@ -128,25 +151,34 @@
                 </div>
             </div>
 
+            <!-- Start Button (initially disabled) -->
             <button id="start-btn" class="w-full glass-btn bg-gray-500/50 text-white font-bold py-4 rounded-2xl text-xl shadow-lg cursor-not-allowed" disabled>Bắt đầu!</button>
+            <!-- Admin Login Button -->
             <div class="text-right mt-4"><button id="admin-login-btn" class="text-sm text-gray-200 hover:text-white font-semibold">Quản trị viên</button></div>
         </div>
 
-        <!-- Màn hình trò chơi -->
+        <!-- Game Screen: Displays questions and options -->
         <div id="game-screen" class="hidden">
             <div class="flex justify-between items-center mb-4 text-white">
                 <div id="progress-text" class="font-semibold">Câu 1/20</div>
                 <div id="score-text" class="font-bold text-lg">Điểm: 0</div>
             </div>
-            <div id="question-container" class="bg-black/10 p-6 rounded-2xl text-center mb-6 min-h-[100px] flex items-center justify-center">
+            <div id="question-container" class="bg-black/10 p-6 rounded-2xl text-center mb-6 min-h-[100px] flex items-center justify-center relative">
                 <p class="text-xl md:text-2xl font-semibold text-white"></p>
+                <!-- Speaker icon for Text-to-Speech -->
+                <button id="read-question-btn" class="absolute top-4 right-4 text-white hover:text-indigo-400 focus:outline-none">
+                    <!-- New Speaker SVG Icon (Material Design 'volume_up' icon) -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
+                        <path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 10v4h3l4 4V6l-4 4H5zm13.5 2c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM19 12c0-2.8-1.56-5.28-3.8-6.5L14 4.5v15l1.2-1.5C17.44 17.28 19 14.8 19 12zM16 8.5v7l-4-4H8V8.5h4l4-4z"/>
+                    </svg>
+                </button>
             </div>
             <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             <div id="feedback-container" class="text-center mt-4 font-bold text-2xl h-8 text-white"></div>
             <button id="next-btn" class="hidden w-full mt-4 glass-btn bg-blue-500/60 text-white font-bold py-3 rounded-2xl shadow-lg hover:bg-blue-500/80">Câu tiếp theo</button>
         </div>
 
-        <!-- Màn hình kết quả -->
+        <!-- Results Screen: Shows final score and message -->
         <div id="results-screen" class="hidden text-center">
             <h2 class="text-3xl font-bold text-gray-800 mb-4">Hoàn thành!</h2>
             <p id="final-score-text" class="text-xl text-gray-700 mb-2">Bé đã đạt được</p>
@@ -155,7 +187,7 @@
             <button id="play-again-btn" class="w-full glass-btn bg-green-500/60 text-white font-bold py-4 rounded-2xl text-xl shadow-lg hover:bg-green-500/80">Chơi lại</button>
         </div>
         
-        <!-- Màn hình Admin -->
+        <!-- Admin Panel: For administrative actions -->
         <div id="admin-panel" class="hidden">
             <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Bảng điều khiển Admin</h2>
             <div class="space-y-4">
@@ -164,18 +196,18 @@
             </div>
         </div>
         
-        <!-- Màn hình Lịch sử thi -->
+        <!-- History Panel: Displays past quiz results -->
         <div id="history-panel" class="hidden">
             <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Lịch Sử Làm Bài</h2>
             <div id="history-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4">
-                <!-- Bảng lịch sử sẽ được chèn vào đây -->
+                <!-- History table will be inserted here dynamically -->
             </div>
             <button id="back-to-admin-btn" class="w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
         </div>
 
     </div>
 
-    <!-- Modal Đăng nhập Admin -->
+    <!-- Admin Login Modal -->
     <div id="login-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0">
         <div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative">
             <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Đăng Nhập Admin</h2>
@@ -197,12 +229,13 @@
 
 
     <script type="module">
-        // Import the functions you need from the SDKs you need
+        // Import necessary Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- NGÂN HÀNG CÂU HỎI LỚN (Đã thêm dữ liệu cho Tiếng Việt) ---
+        // --- LARGE QUESTION BANK (Updated with Vietnamese data) ---
+        // This object holds all the questions categorized by subject, grade, and semester.
         const questions = {
             toan: {
                 lop1: {
@@ -210,7 +243,7 @@
                     hocky2: [ { question: "10 + 6 = ?", options: [15, 16, 17, 18], answer: 16 }, { question: "18 - 5 = ?", options: [12, 13, 14, 15], answer: 13 }, { question: "Số gồm 1 chục và 7 đơn vị là?", options: [10, 7, 17, 71], answer: 17 }, { question: "Hôm nay là thứ Hai, ngày mai là thứ mấy?", options: ["Chủ Nhật", "Thứ Ba", "Thứ Tư"], answer: "Thứ Ba" }, { question: "Lan có 8 kẹo, mẹ cho thêm 5. Lan có tất cả...cái kẹo?", options: [12, 13, 14, 3], answer: 13 }, { question: "Số lớn nhất có hai chữ số là?", options: [10, 90, 99, 100], answer: 99 }, { question: "15 + 4 = ?", options: [18, 19, 20, 21], answer: 19 }, { question: "Trên cành có 12 con chim, bay đi 4 con. Còn lại...con chim?", options: [7, 8, 9, 16], answer: 8 }, { question: "Số 50 còn được gọi là?", options: ["Năm mươi", "Năm chục", "Cả hai đều đúng"], answer: "Cả hai đều đúng" }, { question: "Điền số: 20, 30, ..., 50", options: [35, 40, 45, 60], answer: 40 }, { question: "30 + 40 = ?", options: [60, 70, 80, 10], answer: 70 }, { question: "90 - 20 = ?", options: [60, 70, 80, 110], answer: 70 }, { question: "Số gồm 8 chục và 1 đơn vị là?", options: [80, 18, 81, 9], answer: 81 }, { question: "Số bé nhất có hai chữ số giống nhau là?", options: [10, 11, 12, 22], answer: 11 }, { question: "An có 19 viên bi, An cho Bình 7 viên. An còn lại...viên bi?", options: [11, 12, 13, 26], answer: 12 }, { question: "1 tuần có mấy ngày?", options: [5, 6, 7, 8], answer: 7 }, { question: "Số liền trước của 100 là?", options: [90, 98, 99, 101], answer: 99 }, { question: "Điền dấu: 45 ... 54", options: ["<", ">", "="], answer: "<" }, { question: "50 + 50 = ?", options: [90, 100, 10, 0], answer: 100 }, { question: "Số tròn chục lớn nhất có hai chữ số là?", options: [10, 80, 90, 99], answer: 90 } ]
                 }
             },
-            tiengviet: { // Đã thêm môn Tiếng Việt
+            tiengviet: { // Added Vietnamese subject data
                 lop1: {
                     hocky1: [
                         { question: "Chữ cái nào đứng sau 'A' trong bảng chữ cái?", options: ["C", "B", "D", "E"], answer: "B" },
@@ -306,16 +339,23 @@
             }
         };
 
-        // --- BIẾN TRẠNG THÁI ---
-        let selectedSubject = null, selectedGrade = null, selectedSemester = null;
-        let currentQuestions = [], currentQuestionIndex = 0, score = 0;
-        const NUM_OF_QUESTIONS_PER_GAME = 20;
+        // --- STATE VARIABLES ---
+        // These variables hold the current state of the game and user selections.
+        let selectedSubject = null;
+        let selectedGrade = null;
+        let selectedSemester = null;
+        let currentQuestions = []; // Array to hold questions for the current game session
+        let currentQuestionIndex = 0; // Index of the current question
+        let score = 0; // Player's score (raw, will be divided by 2 for final display)
+        const NUM_OF_QUESTIONS_PER_GAME = 20; // Maximum number of questions per game
 
-        // --- BIẾN FIREBASE ---
-        let db, auth;
-        let appId; // This will be set from firebaseConfig.appId or __app_id
+        // --- FIREBASE VARIABLES ---
+        let db; // Firestore database instance
+        let auth; // Firebase Auth instance
+        let appId; // Application ID, derived from the environment or config
 
-        // --- LẤY CÁC PHẦN TỬ DOM ---
+        // --- GET DOM ELEMENTS ---
+        // Cache references to frequently used DOM elements for efficiency.
         const selectionScreen = document.getElementById('selection-screen');
         const gameScreen = document.getElementById('game-screen');
         const resultsScreen = document.getElementById('results-screen');
@@ -324,132 +364,166 @@
         const gradeBtns = document.querySelectorAll('[data-grade]');
         const semesterBtns = document.querySelectorAll('[data-semester]');
         
-        // DOM CHO ADMIN
+        // DOM Elements for Admin Panel
         const adminPanel = document.getElementById('admin-panel');
         const adminLoginBtn = document.getElementById('admin-login-btn');
         const loginModal = document.getElementById('login-modal');
         const closeModalBtn = document.getElementById('close-modal-btn');
         const loginForm = document.getElementById('login-form');
         const logoutBtn = document.getElementById('logout-btn');
-        const loginError = document.getElementById('login-error');
+        const loginError = document.getElementById('login-error'); // For displaying login errors
         const viewHistoryBtn = document.getElementById('view-history-btn');
         const historyPanel = document.getElementById('history-panel');
         const backToAdminBtn = document.getElementById('back-to-admin-btn');
         const historyTableContainer = document.getElementById('history-table-container');
 
-        // --- HÀM KHỞI TẠO FIREBASE VÀ XÁC THỰC ---
+        // New DOM element for the speaker button (renamed to reflect its original purpose)
+        const readQuestionBtn = document.getElementById('read-question-btn');
+
+
+        // --- FIREBASE INITIALIZATION AND AUTHENTICATION ---
+        // This function initializes Firebase and handles user authentication.
         async function initializeFirebase() {
             try {
-                let config;
+                let firebaseConfig;
                 let currentAppId;
 
-                // Use global __firebase_config if available, otherwise fallback to hardcoded
+                // Attempt to use global __firebase_config and __app_id provided by the Canvas environment.
                 if (typeof __firebase_config !== 'undefined' && __firebase_config) {
                     try {
-                        config = JSON.parse(__firebase_config);
+                        firebaseConfig = JSON.parse(__firebase_config);
                     } catch (e) {
                         console.error("Error parsing __firebase_config:", e);
-                        // Fallback to hardcoded if parsing fails
-                        config = {
-                            apiKey: "AIzaSyDJBY6U0LUtmnk4PrfNeA7UE7qq1FZ84X8",
-                            authDomain: "data-chung-a62ee.firebaseapp.com",
-                            projectId: "data-chung-a62ee",
-                            storageBucket: "data-chung-a62ee.firebasestorage.app",
-                            messagingSenderId: "453115303161",
-                            appId: "1:453115303161:web:c885f876f4914829863e28",
-                            measurementId: "G-QB6WP4SP09"
+                        // Fallback to a hardcoded config if parsing fails, for development/testing
+                        firebaseConfig = {
+                            apiKey: "YOUR_FALLBACK_API_KEY", // Replace with a valid fallback API key if needed
+                            authDomain: "YOUR_FALLBACK_AUTH_DOMAIN",
+                            projectId: "YOUR_FALLBACK_PROJECT_ID",
+                            storageBucket: "YOUR_FALLBACK_STORAGE_BUCKET",
+                            messagingSenderId: "YOUR_FALLBACK_MESSAGING_SENDER_ID",
+                            appId: "YOUR_FALLBACK_APP_ID",
+                            measurementId: "YOUR_FALLBACK_MEASUREMENT_ID"
                         };
                     }
-                    currentAppId = typeof __app_id !== 'undefined' ? __app_id : config.appId;
+                    // Prioritize __app_id if available, otherwise use appId from firebaseConfig
+                    currentAppId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.appId;
                 } else {
-                    // Fallback to hardcoded config if no global config is provided
-                    config = {
-                        apiKey: "AIzaSyDJBY6U0LUtmnk4PrfNeA7UE7qq1FZ84X8",
-                        authDomain: "data-chung-a62ee.firebaseapp.com",
-                        projectId: "data-chung-a62ee",
-                        storageBucket: "data-chung-a62ee.firebasestorage.app",
-                        messagingSenderId: "453115303161",
-                        appId: "1:453115303161:web:09f21761a2abbf9b863e28",
-                        measurementId: "G-MFE79B93PZ"
+                    // Fallback to hardcoded config if no global config is provided at all
+                    console.warn("No __firebase_config found. Using hardcoded fallback Firebase configuration.");
+                    firebaseConfig = {
+                        apiKey: "YOUR_FALLBACK_API_KEY", // Replace with a valid fallback API key if needed
+                        authDomain: "YOUR_FALLBACK_AUTH_DOMAIN",
+                        projectId: "YOUR_FALLBACK_PROJECT_ID",
+                        storageBucket: "YOUR_FALLBACK_STORAGE_BUCKET",
+                        messagingSenderId: "YOUR_FALLBACK_MESSAGING_SENDER_ID",
+                        appId: "YOUR_FALLBACK_APP_ID",
+                        measurementId: "YOUR_FALLBACK_MEASUREMENT_ID"
                     };
-                    currentAppId = config.appId; // Use appId from the hardcoded config
+                    currentAppId = firebaseConfig.appId; // Use appId from the hardcoded config
                 }
 
-                // Validate config
-                if (!config.projectId || !config.apiKey) {
-                    console.error("Firebase config is missing projectId or apiKey.");
-                    console.error("Cấu hình Firebase không hợp lệ. Vui lòng kiểm tra lại.");
+                // Basic validation for Firebase config
+                if (!firebaseConfig.projectId || !firebaseConfig.apiKey) {
+                    console.error("Firebase config is missing projectId or apiKey. Please check your Firebase setup.");
+                    document.getElementById('feedback-container').textContent = "Lỗi: Cấu hình Firebase không hợp lệ. Vui lòng kiểm tra lại.";
                     return;
                 }
 
-                const app = initializeApp(config);
-                auth = getAuth(app);
-                db = getFirestore(app);
-                appId = currentAppId; // Set the global appId variable
+                // Initialize Firebase app
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app); // Get Auth instance
+                db = getFirestore(app); // Get Firestore instance
+                appId = currentAppId; // Set the global appId variable for Firestore paths
 
                 // Authenticate user using __initial_auth_token or anonymously
+                // This ensures the user is authenticated before any Firestore operations.
                 if (typeof __initial_auth_token !== 'undefined') {
                     await signInWithCustomToken(auth, __initial_auth_token).catch(error => {
                         console.error("Custom token sign-in error:", error);
+                        // Fallback to anonymous sign-in if custom token fails
                         signInAnonymously(auth).catch(anonError => {
                             console.error("Anonymous sign-in fallback error:", anonError);
                         });
                     });
                 } else {
+                    // Sign in anonymously if no custom token is provided
                     signInAnonymously(auth).catch(error => {
                         console.error("Anonymous sign-in error:", error);
                     });
                 }
+
+                // Optional: Listen for auth state changes (useful for debugging or dynamic UI based on auth)
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        console.log("User is signed in:", user.uid);
+                    } else {
+                        console.log("No user is signed in.");
+                    }
+                });
+
             } catch (error) {
                 console.error("Firebase initialization error:", error);
-                console.error("Không thể kết nối đến cơ sở dữ liệu. Vui lòng kiểm tra lại cấu hình Firebase của bạn.");
+                document.getElementById('feedback-container').textContent = "Lỗi: Không thể kết nối đến cơ sở dữ liệu. Vui lòng kiểm tra lại cấu hình Firebase của bạn.";
             }
         }
         
-        // --- HÀM LƯU VÀ HIỂN THỊ LỊCH SỬ (DÙNG FIRESTORE) ---
+        // --- SAVE AND DISPLAY HISTORY (USING FIRESTORE) ---
+        // Saves the quiz result to Firestore.
         async function saveResult(resultData) {
+            // Ensure db and appId are initialized before attempting to save
             if (!db || !appId) {
-                console.error("DB or appId not initialized. Cannot save result.");
+                console.error("Firestore DB or App ID not initialized. Cannot save result.");
                 return;
             }
             try {
-                // Ensure user is authenticated before saving
+                // Ensure user is authenticated before saving.
+                // This check is crucial for Firestore security rules.
                 if (!auth.currentUser) {
                     console.warn("User not authenticated. Attempting anonymous sign-in before saving.");
                     await signInAnonymously(auth);
                 }
-                // Corrected collection path for public data
+                
+                // Firestore collection path for public data: /artifacts/{appId}/public/data/quizResults
                 const historyCollectionRef = collection(db, `artifacts/${appId}/public/data/quizResults`);
                 await addDoc(historyCollectionRef, resultData);
+                console.log("Quiz result saved successfully!");
             } catch (e) {
                 console.error("Error writing result to Firestore:", e);
+                document.getElementById('feedback-container').textContent = "Lỗi khi lưu kết quả. Vui lòng thử lại.";
             }
         }
 
+        // Fetches and displays the quiz history from Firestore.
         async function displayHistory() {
             adminPanel.classList.add('hidden');
             historyPanel.classList.remove('hidden');
             
+            // Display loading message while fetching data
+            historyTableContainer.innerHTML = '<p class="text-center text-gray-500">Đang tải lịch sử...</p>';
+
+            // Ensure db and appId are initialized
             if (!db || !appId) {
-                historyTableContainer.innerHTML = '<p class="text-center text-gray-500">Lỗi kết nối CSDL hoặc App ID chưa được thiết lập.</p>';
+                historyTableContainer.innerHTML = '<p class="text-center text-red-500">Lỗi kết nối CSDL hoặc App ID chưa được thiết lập.</p>';
+                console.error("DB or appId not initialized. Cannot display history.");
                 return;
             }
             
-            historyTableContainer.innerHTML = '<p class="text-center text-gray-500">Đang tải lịch sử...</p>';
-
             try {
-                // Ensure user is authenticated before fetching history
+                // Ensure user is authenticated before fetching history.
                 if (!auth.currentUser) {
                     console.warn("User not authenticated. Attempting anonymous sign-in before fetching history.");
                     await signInAnonymously(auth);
                 }
 
-                // Corrected collection path for public data
+                // Firestore collection path for public data
                 const historyCollectionRef = collection(db, `artifacts/${appId}/public/data/quizResults`);
-                // Removed orderBy as per instructions; will sort in memory
+                // Fetch documents from the collection.
+                // IMPORTANT: orderBy() is avoided as per instructions to prevent index missing errors.
+                // Sorting will be done in memory using JavaScript.
                 const querySnapshot = await getDocs(historyCollectionRef);
                 
-                historyTableContainer.innerHTML = '';
+                historyTableContainer.innerHTML = ''; // Clear loading message
+
                 if (querySnapshot.empty) {
                     historyTableContainer.innerHTML = '<p class="text-center text-gray-500">Chưa có lịch sử làm bài.</p>';
                     return;
@@ -460,14 +534,18 @@
                     results.push(doc.data());
                 });
 
-                // Sort results by date in descending order in JavaScript
+                // Sort results by date in descending order (newest first) in JavaScript memory.
                 results.sort((a, b) => {
-                    const dateA = a.date.toDate ? a.date.toDate().getTime() : new Date(a.date).getTime();
-                    const dateB = b.date.toDate ? b.date.toDate().getTime() : new Date(b.date).getTime();
+                    // Handle both Firestore Timestamp objects and plain Date strings/objects
+                    const dateA = a.date && a.date.toDate ? a.date.toDate().getTime() : new Date(a.date).getTime();
+                    const dateB = b.date && b.date.toDate ? b.date.toDate().getTime() : new Date(b.date).getTime();
                     return dateB - dateA; // Descending order
                 });
 
+                // Mapping for display names
                 const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
+                
+                // Create the history table HTML
                 const table = document.createElement('table');
                 table.classList.add('min-w-full', 'divide-y', 'divide-gray-200', 'rounded-lg', 'overflow-hidden');
                 table.innerHTML = `
@@ -484,10 +562,11 @@
                 `;
                 const tbody = table.querySelector('tbody');
 
+                // Populate the table with fetched results
                 results.forEach((result) => {
                     const row = tbody.insertRow();
-                    // Firestore timestamp needs to be converted to a Date object
-                    const date = result.date.toDate ? result.date.toDate() : new Date(result.date);
+                    // Convert Firestore Timestamp to a readable Date string
+                    const date = result.date && result.date.toDate ? result.date.toDate() : new Date(result.date);
                     const formattedDate = date.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                     row.innerHTML = `
                         <td class="px-3 py-2 whitespace-nowrap text-sm">${formattedDate}</td>
@@ -505,12 +584,14 @@
             }
         }
         
+        // Hides the history panel and shows the admin panel.
         function hideHistory() {
             historyPanel.classList.add('hidden');
             adminPanel.classList.remove('hidden');
         }
 
-        // --- CÁC HÀM LOGIC GAME (Giữ nguyên) ---
+        // --- GAME LOGIC FUNCTIONS ---
+        // Updates the state of the "Start" button based on selections.
         function updateStartButtonState() { 
             if (selectedSubject && selectedGrade && selectedSemester) { 
                 startBtn.disabled = false; 
@@ -522,63 +603,102 @@
                 startBtn.classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90'); 
             } 
         }
+
+        // Initiates the game, shuffles questions, and displays the first one.
         function startGame() { 
-            // Kiểm tra xem dữ liệu câu hỏi có tồn tại không trước khi bắt đầu
+            // Validate that questions exist for the selected criteria
             if (!questions[selectedSubject] || !questions[selectedSubject][selectedGrade] || !questions[selectedSubject][selectedGrade][selectedSemester]) {
-                console.error("Không tìm thấy câu hỏi cho lựa chọn này:", selectedSubject, selectedGrade, selectedSemester);
-                // Hiển thị thông báo lỗi thân thiện với người dùng (thay vì alert)
+                console.error("No questions found for the selected criteria:", selectedSubject, selectedGrade, selectedSemester);
+                // Provide user feedback instead of an alert
                 document.getElementById('feedback-container').textContent = 'Không có câu hỏi cho lựa chọn này. Vui lòng chọn lại.';
-                // Có thể reset lại màn hình lựa chọn hoặc giữ nguyên để người dùng chọn lại
+                // Optionally, reset the selection screen or keep it for user to re-select
                 return; 
             }
 
             let allQuestions = questions[selectedSubject][selectedGrade][selectedSemester]; 
+            // Shuffle questions and select the first NUM_OF_QUESTIONS_PER_GAME
             currentQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, NUM_OF_QUESTIONS_PER_GAME); 
             currentQuestionIndex = 0; 
             score = 0; 
+
+            // Transition to game screen
             selectionScreen.classList.add('hidden'); 
             gameScreen.classList.remove('hidden'); 
             resultsScreen.classList.add('hidden'); 
-            displayQuestion(); 
+            adminPanel.classList.add('hidden'); // Ensure admin panel is hidden
+            historyPanel.classList.add('hidden'); // Ensure history panel is hidden
+
+            displayQuestion(); // Display the first question
         }
+
+        // Displays the current question and its options.
         function displayQuestion() { 
-            document.getElementById('feedback-container').innerHTML = ''; 
-            document.getElementById('next-btn').classList.add('hidden'); 
+            document.getElementById('feedback-container').innerHTML = ''; // Clear previous feedback
+            document.getElementById('next-btn').classList.add('hidden'); // Hide next button until answer is checked
+
             const questionData = currentQuestions[currentQuestionIndex]; 
-            document.getElementById('question-container').querySelector('p').textContent = questionData.question; 
+            const questionTextElement = document.getElementById('question-container').querySelector('p');
+            questionTextElement.textContent = questionData.question; 
+
             const optionsContainer = document.getElementById('options-container'); 
-            optionsContainer.innerHTML = ''; 
+            optionsContainer.innerHTML = ''; // Clear previous options
+
+            // Shuffle options for the current question
             const shuffledOptions = [...questionData.options].sort(() => Math.random() - 0.5); 
             shuffledOptions.forEach(option => { 
                 const button = document.createElement('button'); 
                 button.textContent = option; 
-                button.classList.add('answer-option', 'w-full', 'p-4', 'rounded-2xl', 'font-semibold', 'glass-btn', 'bg-white/20', 'hover:bg-white/40', 'text-gray-800'); /* Thêm text-gray-800 */
+                // Add Tailwind classes and event listener
+                button.classList.add('answer-option', 'w-full', 'p-4', 'rounded-2xl', 'font-semibold', 'glass-btn', 'bg-white/20', 'hover:bg-white/40', 'text-gray-800');
                 button.onclick = (e) => checkAnswer(e.target, questionData.answer); 
                 optionsContainer.appendChild(button); 
             }); 
+
+            // Update progress and score display
             document.getElementById('progress-text').textContent = `Câu ${currentQuestionIndex + 1}/${currentQuestions.length}`; 
+            // Score is divided by 2 because each question contributes 0.5 points to a total of 10 points.
             document.getElementById('score-text').textContent = `Điểm: ${score / 2}/10`; 
+
+            // Show speaker button on game screen and set its click handler
+            if (readQuestionBtn) {
+                readQuestionBtn.style.display = 'block'; // Ensure it's visible
+                readQuestionBtn.onclick = () => speakText(questionData.question); // Call speakText for the question
+            }
         }
+
+        // Checks the selected answer and provides feedback.
         function checkAnswer(selectedButton, correctAnswer) { 
             const allOptions = document.querySelectorAll('.answer-option'); 
+            // Disable all options after an answer is selected
             allOptions.forEach(btn => btn.disabled = true); 
+
             const feedbackContainer = document.getElementById('feedback-container'); 
+
             if (selectedButton.textContent == correctAnswer) { 
-                score++; 
-                selectedButton.classList.add('correct'); 
+                score++; // Increment raw score
+                selectedButton.classList.add('correct'); // Highlight correct answer
                 feedbackContainer.textContent = '🎉 Đúng rồi!'; 
             } else { 
-                selectedButton.classList.add('incorrect'); 
+                selectedButton.classList.add('incorrect'); // Highlight incorrect answer
                 feedbackContainer.textContent = '😥 Sai rồi!'; 
+                // Also highlight the correct answer if the user chose incorrectly
                 allOptions.forEach(btn => { 
                     if (btn.textContent == correctAnswer) { 
                         btn.classList.add('correct'); 
                     } 
                 }); 
             } 
+            // Update score display immediately after checking answer
             document.getElementById('score-text').textContent = `Điểm: ${score / 2}/10`; 
-            document.getElementById('next-btn').classList.remove('hidden'); 
+            document.getElementById('next-btn').classList.remove('hidden'); // Show next button
+            
+            // Stop any ongoing speech when an answer is selected
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
         }
+
+        // Moves to the next question or shows results if all questions are answered.
         function nextQuestion() { 
             currentQuestionIndex++; 
             if (currentQuestionIndex < currentQuestions.length) { 
@@ -587,74 +707,223 @@
                 showResults(); 
             } 
         }
+
+        // Displays the final results screen and saves the score.
         function showResults() { 
             gameScreen.classList.add('hidden'); 
             resultsScreen.classList.remove('hidden'); 
-            const finalScore = score / 2; // Score out of 10 (20 questions * 0.5 points per question)
+
+            const finalScore = score / 2; // Calculate final score out of 10
             document.getElementById('final-score').textContent = `${finalScore}/10`; 
-            const resultData = { date: serverTimestamp(), subject: selectedSubject, grade: selectedGrade, semester: selectedSemester, score: finalScore }; 
-            saveResult(resultData); 
-            const finalMessage = document.getElementById('final-message'); 
+
+            // Prepare result data for saving to Firestore
+            const resultData = { 
+                date: serverTimestamp(), // Use Firestore's server timestamp for accurate time
+                subject: selectedSubject, 
+                grade: selectedGrade, 
+                semester: selectedSemester, 
+                score: finalScore 
+            }; 
+            saveResult(resultData); // Save the result asynchronously
+
+            // Provide a motivational message based on performance
+            const finalMessageElement = document.getElementById('final-message'); 
             const percentage = (score / currentQuestions.length) * 100; 
             if (percentage === 100) { 
-                finalMessage.textContent = "Xuất sắc! Bé thật là giỏi!"; 
+                finalMessageElement.textContent = "Xuất sắc! Bé thật là giỏi!"; 
             } else if (percentage >= 70) { 
-                finalMessage.textContent = "Giỏi lắm! Cố gắng thêm chút nữa nhé!"; 
+                finalMessageElement.textContent = "Giỏi lắm! Cố gắng thêm chút nữa nhé!"; 
             } else if (percentage >= 50) { 
-                finalMessage.textContent = "Làm tốt lắm! Tiếp tục luyện tập nhé!"; 
+                finalMessageElement.textContent = "Làm tốt lắm! Tiếp tục luyện tập nhé!"; 
             } else { 
-                finalMessage.textContent = "Đừng buồn, lần sau sẽ tốt hơn!"; 
+                finalMessageElement.textContent = "Đừng buồn, lần sau sẽ tốt hơn!"; 
             } 
+            
+            // Hide speaker button on results screen (as it's for questions)
+            if (readQuestionBtn) {
+                readQuestionBtn.style.display = 'none';
+            }
+            // If you want a speaker for results, you would add a new button on the results screen
+            // and attach a speakText function to it.
         }
+
+        // Resets the game to the initial selection screen.
         function resetGame() { 
             resultsScreen.classList.add('hidden'); 
             selectionScreen.classList.remove('hidden'); 
+            // Reset all selections
             selectedSubject = null; 
             selectedGrade = null; 
             selectedSemester = null; 
+            // Remove 'selected' class from all choice buttons
             subjectBtns.forEach(btn => btn.classList.remove('selected')); 
             gradeBtns.forEach(btn => btn.classList.remove('selected')); 
-            semesterBtns.forEach(btn => btn.classList.remove('selected')); // Sửa lỗi chính tả ở đây
-            updateStartButtonState(); 
+            semesterBtns.forEach(btn => btn.classList.remove('selected')); 
+            updateStartButtonState(); // Update start button state
+
+            // Hide speaker button on selection screen
+            if (readQuestionBtn) {
+                readQuestionBtn.style.display = 'none';
+            }
         }
 
-        // --- HÀM XỬ LÝ CHO ADMIN ---
-        function showLoginModal() { loginModal.classList.remove('hidden'); setTimeout(() => loginModal.classList.remove('opacity-0'), 10); }
-        function hideLoginModal() { loginModal.classList.add('opacity-0'); setTimeout(() => loginModal.classList.add('hidden'), 300); loginError.textContent = ''; loginForm.reset(); }
+        // --- ADMIN FUNCTIONS ---
+        // Shows the admin login modal.
+        function showLoginModal() { 
+            loginModal.classList.remove('hidden'); 
+            // Add a slight delay for the opacity transition to work
+            setTimeout(() => loginModal.classList.remove('opacity-0'), 10); 
+        }
+
+        // Hides the admin login modal and clears any error messages.
+        function hideLoginModal() { 
+            loginModal.classList.add('opacity-0'); 
+            // Add a slight delay for the opacity transition before hiding completely
+            setTimeout(() => loginModal.classList.add('hidden'), 300); 
+            loginError.textContent = ''; // Clear any previous error messages
+            loginForm.reset(); // Reset form fields
+        }
+
+        // Handles the admin login attempt.
         function handleLogin(event) { 
-            event.preventDefault(); 
+            event.preventDefault(); // Prevent default form submission
             const username = loginForm.username.value; 
             const password = loginForm.password.value; 
-            // CẢNH BÁO: Thông tin đăng nhập admin hiện đang được mã hóa cứng (hardcoded).
-            // Đối với các ứng dụng thực tế, bạn PHẢI triển khai hệ thống xác thực an toàn hơn
-            // (ví dụ: Firebase Authentication với tài khoản người dùng và vai trò).
+            
+            // WARNING: Admin credentials are hardcoded for demonstration purposes.
+            // In a production application, you MUST implement a secure authentication system
+            // (e.g., using Firebase Authentication with user accounts and roles)
+            // instead of hardcoding credentials.
             if (username === 'admin' && password === 'admin') { 
                 hideLoginModal(); 
-                selectionScreen.classList.add('hidden'); 
-                adminPanel.classList.remove('hidden'); 
+                selectionScreen.classList.add('hidden'); // Hide selection screen
+                adminPanel.classList.remove('hidden'); // Show admin panel
             } else { 
-                loginError.textContent = 'Tên đăng nhập hoặc mật khẩu không đúng.'; 
+                loginError.textContent = 'Tên đăng nhập hoặc mật khẩu không đúng.'; // Display error message
             } 
         }
-        function handleLogout() { adminPanel.classList.add('hidden'); selectionScreen.classList.remove('hidden'); resetGame(); }
 
-        // --- GẮN SỰ KIỆN ---
-        subjectBtns.forEach(btn => btn.addEventListener('click', () => { selectedSubject = btn.dataset.subject; subjectBtns.forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); updateStartButtonState(); }));
-        gradeBtns.forEach(btn => btn.addEventListener('click', () => { selectedGrade = btn.dataset.grade; gradeBtns.forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); updateStartButtonState(); }));
-        semesterBtns.forEach(btn => btn.addEventListener('click', () => { selectedSemester = btn.dataset.semester; semesterBtns.forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); updateStartButtonState(); }));
-        startBtn.addEventListener('click', () => { if (!startBtn.disabled) startGame(); });
+        // Handles admin logout, returning to the main selection screen.
+        function handleLogout() { 
+            adminPanel.classList.add('hidden'); // Hide admin panel
+            selectionScreen.classList.remove('hidden'); // Show selection screen
+            resetGame(); // Reset game state (clear selections)
+        }
+
+        // --- TEXT-TO-SPEECH FUNCTIONALITY ---
+        let vietnamVoice = null;
+        let voicesLoaded = false;
+
+        // Function to find a Vietnamese voice
+        function findVietnameseVoice() {
+            if (vietnamVoice) return vietnamVoice; // Return if already found
+
+            const voices = speechSynthesis.getVoices();
+            // Try to find a Vietnamese voice first (vi-VN is the most specific)
+            vietnamVoice = voices.find(voice => voice.lang === 'vi-VN');
+            
+            if (!vietnamVoice) {
+                // Fallback to any Vietnamese voice if specific 'vi-VN' not found but a 'vi' exists
+                vietnamVoice = voices.find(voice => voice.lang.startsWith('vi'));
+            }
+
+            if (!vietnamVoice) {
+                console.warn("Không tìm thấy giọng đọc tiếng Việt. Trình duyệt sẽ sử dụng giọng mặc định. Vui lòng kiểm tra cài đặt ngôn ngữ và giọng nói trên hệ điều hành của bạn.");
+            }
+            return vietnamVoice;
+        }
+
+        // Event listener for when voices are loaded
+        speechSynthesis.onvoiceschanged = () => {
+            if (!voicesLoaded) {
+                findVietnameseVoice(); // Try to find voice once voices are loaded
+                voicesLoaded = true;
+            }
+        };
+
+        // Function to speak the given text
+        function speakText(text) { 
+            if (!'speechSynthesis' in window) {
+                console.warn("API Chuyển văn bản thành giọng nói không được hỗ trợ trong trình duyệt này.");
+                return;
+            }
+
+            // Cancel any ongoing speech before starting a new one
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'vi-VN'; // Set language to Vietnamese
+
+            // Try to set a specific Vietnamese voice
+            const voiceToUse = findVietnameseVoice();
+            if (voiceToUse) {
+                utterance.voice = voiceToUse;
+            } else {
+                // If no Vietnamese voice is found, it will use the default voice
+                console.warn("Không thể tìm thấy giọng đọc tiếng Việt cụ thể. Đang sử dụng giọng mặc định.");
+            }
+
+            speechSynthesis.speak(utterance);
+        }
+
+        // --- EVENT LISTENERS ---
+        // Add event listeners to subject, grade, and semester selection buttons.
+        subjectBtns.forEach(btn => btn.addEventListener('click', () => { 
+            selectedSubject = btn.dataset.subject; 
+            subjectBtns.forEach(b => b.classList.remove('selected')); 
+            btn.classList.add('selected'); 
+            updateStartButtonState(); 
+        }));
+
+        gradeBtns.forEach(btn => btn.addEventListener('click', () => { 
+            selectedGrade = btn.dataset.grade; 
+            gradeBtns.forEach(b => b.classList.remove('selected')); 
+            btn.classList.add('selected'); 
+            updateStartButtonState(); 
+        }));
+
+        semesterBtns.forEach(btn => btn.addEventListener('click', () => { 
+            selectedSemester = btn.dataset.semester; 
+            semesterBtns.forEach(b => b.classList.remove('selected')); 
+            btn.classList.add('selected'); 
+            updateStartButtonState(); 
+        }));
+
+        // Add event listeners for game flow buttons.
+        startBtn.addEventListener('click', () => { 
+            if (!startBtn.disabled) startGame(); 
+        });
         document.getElementById('next-btn').addEventListener('click', nextQuestion);
         document.getElementById('play-again-btn').addEventListener('click', resetGame);
+
+        // Add event listeners for admin functionality.
         adminLoginBtn.addEventListener('click', showLoginModal);
         closeModalBtn.addEventListener('click', hideLoginModal);
-        loginModal.addEventListener('click', (e) => { if (e.target === loginModal) hideLoginModal(); });
+        // Close modal if clicking outside the modal content
+        loginModal.addEventListener('click', (e) => { 
+            if (e.target === loginModal) hideLoginModal(); 
+        });
         loginForm.addEventListener('submit', handleLogin);
         logoutBtn.addEventListener('click', handleLogout);
         viewHistoryBtn.addEventListener('click', displayHistory);
         backToAdminBtn.addEventListener('click', hideHistory);
         
-        // --- KHỞI CHẠY ỨNG DỤNG ---
+        // --- INITIAL APPLICATION START ---
+        // Initialize Firebase when the script loads.
         initializeFirebase();
+
+        // Initially hide the speaker button (it will be shown only on the game screen)
+        if (readQuestionBtn) {
+            readQuestionBtn.style.display = 'none';
+        }
+
+        // Check if voices are already loaded (can happen if script loads late)
+        if (speechSynthesis.getVoices().length > 0) {
+            findVietnameseVoice();
+            voicesLoaded = true;
+        }
 
     </script>
 </body>
