@@ -202,16 +202,106 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- NGÂN HÀNG CÂU HỎI LỚN (Giữ nguyên) ---
+        // --- NGÂN HÀNG CÂU HỎI LỚN (Đã thêm dữ liệu cho Tiếng Việt) ---
         const questions = {
             toan: {
                 lop1: {
                     hocky1: [ { question: "5 + 4 = ?", options: [8, 9, 10, 7], answer: 9 }, { question: "8 - 3 = ?", options: [4, 5, 6, 7], answer: 5 }, { question: "Số liền sau của 9 là?", options: [8, 10, 11, 7], answer: 10 }, { question: "Có mấy hình tròn: 🔵 🔺 🔵 ⬜", options: [1, 2, 3, 4], answer: 2 }, { question: "2 + 6 = ?", options: [7, 8, 9, 10], answer: 8 }, { question: "Số liền trước của 15 là?", options: [13, 14, 16, 17], answer: 14 }, { question: "Hình vuông có mấy cạnh?", options: [2, 3, 4, 5], answer: 4 }, { question: "Điền dấu: 5 + 3 ... 8", options: ["<", ">", "="], answer: "=" }, { question: "7 + ... = 10", options: [1, 2, 3, 4], answer: 3 }, { question: "Số bé nhất trong các số: 9, 3, 7, 5 là?", options: [9, 3, 7, 5], answer: 3 }, { question: "6 + 1 = ?", options: [5, 6, 7, 8], answer: 7 }, { question: "10 - 10 = ?", options: [0, 1, 10, 20], answer: 0 }, { question: "Số lớn nhất trong các số: 1, 8, 4, 6 là?", options: [1, 8, 4, 6], answer: 8 }, { question: "3 + ... = 9", options: [5, 6, 7, 8], answer: 6 }, { question: "Có mấy hình vuông: ⬜ ⬜ 🔵 ⬜", options: [1, 2, 3, 4], answer: 3 }, { question: "9 - 7 = ?", options: [1, 2, 3, 16], answer: 2 }, { question: "Số liền sau của 0 là?", options: [0, 1, 2, -1], answer: 1 }, { question: "4 + 4 = ?", options: [6, 7, 8, 9], answer: 8 }, { question: "Điền dấu: 10 ... 5 + 6", options: ["<", ">", "="], answer: "<" }, { question: "Trong các số 2, 8, 5, 1, số nào nhỏ nhất?", options: [2, 8, 5, 1], answer: 1 } ],
                     hocky2: [ { question: "10 + 6 = ?", options: [15, 16, 17, 18], answer: 16 }, { question: "18 - 5 = ?", options: [12, 13, 14, 15], answer: 13 }, { question: "Số gồm 1 chục và 7 đơn vị là?", options: [10, 7, 17, 71], answer: 17 }, { question: "Hôm nay là thứ Hai, ngày mai là thứ mấy?", options: ["Chủ Nhật", "Thứ Ba", "Thứ Tư"], answer: "Thứ Ba" }, { question: "Lan có 8 kẹo, mẹ cho thêm 5. Lan có tất cả...cái kẹo?", options: [12, 13, 14, 3], answer: 13 }, { question: "Số lớn nhất có hai chữ số là?", options: [10, 90, 99, 100], answer: 99 }, { question: "15 + 4 = ?", options: [18, 19, 20, 21], answer: 19 }, { question: "Trên cành có 12 con chim, bay đi 4 con. Còn lại...con chim?", options: [7, 8, 9, 16], answer: 8 }, { question: "Số 50 còn được gọi là?", options: ["Năm mươi", "Năm chục", "Cả hai đều đúng"], answer: "Cả hai đều đúng" }, { question: "Điền số: 20, 30, ..., 50", options: [35, 40, 45, 60], answer: 40 }, { question: "30 + 40 = ?", options: [60, 70, 80, 10], answer: 70 }, { question: "90 - 20 = ?", options: [60, 70, 80, 110], answer: 70 }, { question: "Số gồm 8 chục và 1 đơn vị là?", options: [80, 18, 81, 9], answer: 81 }, { question: "Số bé nhất có hai chữ số giống nhau là?", options: [10, 11, 12, 22], answer: 11 }, { question: "An có 19 viên bi, An cho Bình 7 viên. An còn lại...viên bi?", options: [11, 12, 13, 26], answer: 12 }, { question: "1 tuần có mấy ngày?", options: [5, 6, 7, 8], answer: 7 }, { question: "Số liền trước của 100 là?", options: [90, 98, 99, 101], answer: 99 }, { question: "Điền dấu: 45 ... 54", options: ["<", ">", "="], answer: "<" }, { question: "50 + 50 = ?", options: [90, 100, 10, 0], answer: 100 }, { question: "Số tròn chục lớn nhất có hai chữ số là?", options: [10, 80, 90, 99], answer: 90 } ]
+                }
+            },
+            tiengviet: { // Đã thêm môn Tiếng Việt
+                lop1: {
+                    hocky1: [
+                        { question: "Chữ cái nào đứng sau 'A' trong bảng chữ cái?", options: ["C", "B", "D", "E"], answer: "B" },
+                        { question: "Từ nào chỉ hoạt động 'ăn'?", options: ["Ngủ", "Chơi", "Ăn", "Học"], answer: "Ăn" },
+                        { question: "Điền từ còn thiếu: 'Con ... đang bơi.'", options: ["chim", "cá", "mèo", "chó"], answer: "cá" },
+                        { question: "Từ nào có vần 'ai'?", options: ["Cái", "Con", "Sách", "Bút"], answer: "Cái" },
+                        { question: "Chữ cái nào đứng trước 'D' trong bảng chữ cái?", options: ["C", "E", "F", "B"], answer: "C" },
+                        { question: "Từ nào là tên một loài hoa?", options: ["Bàn", "Ghế", "Hoa hồng", "Cây"], answer: "Hoa hồng" },
+                        { question: "Điền từ còn thiếu: 'Mẹ ... cơm.'", options: ["chơi", "nấu", "ngủ", "đọc"], answer: "nấu" },
+                        { question: "Từ nào có vần 'eo'?", options: ["Mèo", "Chó", "Gà", "Vịt"], answer: "Mèo" },
+                        { question: "Từ nào chỉ đồ vật dùng để viết?", options: ["Sách", "Bút", "Tẩy", "Thước"], answer: "Bút" },
+                        { question: "Chữ cái nào là nguyên âm?", options: ["B", "C", "A", "D"], answer: "A" },
+                        { question: "Từ nào có nghĩa là 'nhỏ bé'?", options: ["Lớn", "To", "Bé", "Dài"], answer: "Bé" },
+                        { question: "Điền từ còn thiếu: 'Ông bà ... cháu.'", options: ["chơi", "yêu", "đọc", "viết"], answer: "yêu" },
+                        { question: "Từ nào có vần 'iu'?", options: ["Hiu", "Hươu", "Siu", "Ciu"], answer: "Hiu" },
+                        { question: "Từ nào là tên một loại quả?", options: ["Cà rốt", "Táo", "Bông cải", "Khoai tây"], answer: "Táo" },
+                        { question: "Chữ cái nào là phụ âm?", options: ["O", "U", "E", "K"], answer: "K" },
+                        { question: "Từ nào chỉ màu sắc?", options: ["Bàn", "Đỏ", "Sách", "Cây"], answer: "Đỏ" },
+                        { question: "Điền từ còn thiếu: 'Con chó đang ...'", options: ["bay", "sủa", "bơi", "hót"], answer: "sủa" },
+                        { question: "Từ nào có vần 'ay'?", options: ["Tay", "Chân", "Mắt", "Mũi"], answer: "Tay" },
+                        { question: "Từ nào là tên một con vật nuôi trong nhà?", options: ["Hổ", "Sư tử", "Mèo", "Gấu"], answer: "Mèo" },
+                        { question: "Từ nào chỉ hành động 'nghe'?", options: ["Nhìn", "Nghe", "Nói", "Viết"], answer: "Nghe" }
+                    ],
+                    hocky2: [
+                        { question: "Từ nào có tiếng 'sách'?", options: ["Quyển vở", "Bút chì", "Sách giáo khoa", "Cái bàn"], answer: "Sách giáo khoa" },
+                        { question: "Từ nào đồng nghĩa với 'vui vẻ'?", options: ["Buồn bã", "Hạnh phúc", "Tức giận", "Sợ hãi"], answer: "Hạnh phúc" },
+                        { question: "Điền từ còn thiếu: 'Bầu trời ...'", options: ["xanh", "đỏ", "vàng", "đen"], answer: "xanh" },
+                        { question: "Từ nào có vần 'anh'?", options: ["Chanh", "Cam", "Quýt", "Bưởi"], answer: "Chanh" },
+                        { question: "Từ nào trái nghĩa với 'cao'?", options: ["Dài", "Ngắn", "Thấp", "Rộng"], answer: "Thấp" },
+                        { question: "Tìm từ chỉ hoạt động 'đọc'?", options: ["Viết bài", "Nghe nhạc", "Đọc sách", "Chơi game"], answer: "Đọc sách" },
+                        { question: "Điền từ còn thiếu: 'Con gà ... thóc.'", options: ["uống", "mổ", "ngủ", "bay"], answer: "mổ" },
+                        { question: "Từ nào có vần 'inh'?", options: ["Xinh", "Xanh", "Đỏ", "Vàng"], answer: "Xinh" },
+                        { question: "Từ nào là tên một loại phương tiện giao thông?", options: ["Nhà", "Cây", "Xe đạp", "Sông"], answer: "Xe đạp" },
+                        { question: "Từ nào chỉ cảm xúc 'yêu thương'?", options: ["Ghét bỏ", "Thích thú", "Yêu quý", "Giận dữ"], answer: "Yêu quý" },
+                        { question: "Từ nào có tiếng 'học'?", options: ["Chơi đùa", "Học bài", "Ăn uống", "Ngủ nghỉ"], answer: "Học bài" },
+                        { question: "Điền từ còn thiếu: 'Mặt trời ...'", options: ["lặn", "mọc", "bay", "chạy"], answer: "mọc" },
+                        { question: "Từ nào có vần 'oan'?", options: ["Toán", "Loan", "Hoàn", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" },
+                        { question: "Từ nào là tên một nghề nghiệp?", options: ["Bác sĩ", "Học sinh", "Trẻ em", "Người lớn"], answer: "Bác sĩ" },
+                        { question: "Từ nào trái nghĩa với 'sáng'?", options: ["Tối", "Trong", "Đục", "Nhanh"], answer: "Tối" },
+                        { question: "Tìm từ chỉ đồ dùng học tập?", options: ["Bát", "Đũa", "Cặp sách", "Chén"], answer: "Cặp sách" },
+                        { question: "Điền từ còn thiếu: 'Con mèo ... chuột.'", options: ["bắt", "thả", "ngắm", "đuổi"], answer: "bắt" },
+                        { question: "Từ nào có vần 'ươi'?", options: ["Tươi", "Cười", "Mười", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" },
+                        { question: "Từ nào là tên một bộ phận trên cơ thể người?", options: ["Áo", "Quần", "Mắt", "Giày"], answer: "Mắt" },
+                        { question: "Từ nào chỉ hành động 'nhảy'?", options: ["Đi bộ", "Chạy nhanh", "Nhảy dây", "Ngồi yên"], answer: "Nhảy dây" }
+                    ]
                 },
                 lop2: {
-                    hocky1: [ { question: "Phép tính '3 + 3 + 3 + 3' được viết thành?", options: ["3 x 3", "3 x 4", "4 x 3", "3 + 4"], answer: "3 x 4" }, { question: "2 x 8 = ?", options: [10, 14, 16, 18], answer: 16 }, { question: "15 : 3 = ?", options: [3, 4, 5, 6], answer: 5 }, { question: "Một giờ có bao nhiêu phút?", options: [30, 60, 90, 100], answer: 60 }, { question: "Tìm x, biết x + 15 = 40", options: [25, 35, 55, 15], answer: 25 }, { question: "Số liền sau của 99 là?", options: [98, 100, 101, 90], answer: 100 }, { question: "Đồng hồ chỉ 3 giờ đúng, kim ngắn chỉ số mấy?", options: [12, 3, 6, 9], answer: 3 }, { question: "5 x 7 = ?", options: [12, 30, 35, 40], answer: 35 }, { question: "Có 10 cái bánh chia đều cho 2 bạn. Mỗi bạn có...cái bánh?", options: [4, 5, 8, 12], answer: 5 }, { question: "Tìm hiệu của 50 và 20", options: [30, 70, 25, 35], answer: 30 }, { question: "4 x 6 = ?", options: [20, 22, 24, 26], answer: 24 }, { question: "20 : 5 = ?", options: [3, 4, 5, 6], answer: 4 }, { question: "Tìm x, biết x - 10 = 30", options: [10, 20, 30, 40], answer: 40 }, { question: "Mỗi chuồng có 5 con gà. 4 chuồng như vậy có...con gà?", options: [9, 15, 20, 25], answer: 20 }, { question: "Số 18 gồm mấy chục và mấy đơn vị?", options: ["1 chục và 8 đơn vị", "8 chục và 1 đơn vị", "10 chục và 8 đơn vị"], answer: "1 chục và 8 đơn vị" }, { question: "Tìm tổng của 35 và 25", options: [50, 55, 60, 65], answer: 60 }, { question: "2 x 1 = ?", options: [1, 2, 3, 0], answer: 2 }, { question: "30 : 3 = ?", options: [3, 10, 33, 27], answer: 10 }, { question: "Số liền trước của 200 là?", options: [100, 190, 199, 201], answer: 199 }, { question: "Trong phép chia 14 : 2 = 7, số 14 được gọi là gì?", options: ["Số bị chia", "Số chia", "Thương"], answer: "Số bị chia" } ],
-                    hocky2: [ { question: "56 + 28 = ?", options: [74, 84, 94, 78], answer: 84 }, { question: "81 - 34 = ?", options: [47, 57, 53, 43], answer: 47 }, { question: "1km bằng bao nhiêu mét?", options: [10, 100, 1000, 10000], answer: 1000 }, { question: "Số lớn nhất có ba chữ số là?", options: [100, 987, 999, 990], answer: 999 }, { question: "Tìm y, biết y x 4 = 36", options: [7, 8, 9, 10], answer: 9 }, { question: "Số gồm 5 trăm, 0 chục, 8 đơn vị là?", options: [508, 580, 805, 850], answer: 508 }, { question: "Thùng thứ nhất có 150l dầu, thùng thứ hai nhiều hơn 25l. Thùng thứ hai có...lít dầu?", options: [125, 175, 25, 165], answer: 175 }, { question: "Một phần ba của 27 là?", options: [3, 7, 8, 9], answer: 9 }, { question: "1 mét bằng bao nhiêu centimet?", options: [10, 50, 100, 1000], answer: 100 }, { question: "Có 5 túi kẹo, mỗi túi 8 cái. Tổng cộng có...cái kẹo?", options: [13, 35, 40, 45], answer: 40 }, { question: "7 x 8 = ?", options: [54, 56, 63, 64], answer: 56 }, { question: "48 : 6 = ?", options: [6, 7, 8, 9], answer: 8 }, { question: "Tìm y, biết 50 : y = 5", options: [5, 10, 25, 45], answer: 10 }, { question: "Số bé nhất có ba chữ số khác nhau là?", options: [100, 101, 102, 123], answer: 102 }, { question: "Một hình tam giác có các cạnh là 10cm, 12cm, 15cm. Chu vi hình tam giác là?", options: ["37cm", "27cm", "35cm", "40cm"], answer: "37cm" }, { question: "Số 609 đọc là?", options: ["Sáu trăm chín", "Sáu trăm linh chín", "Sáu chín không"], answer: "Sáu trăm linh chín" }, { question: "1000 - 500 = ?", options: [400, 500, 600, 1500], answer: 500 }, { question: "Một năm (không nhuận) có bao nhiêu ngày?", options: [360, 365, 366, 370], answer: 365 }, { question: "Tìm x, biết x : 7 = 6", options: [13, 1, 42, 49], answer: 42 }, { question: "So sánh: 456 ... 465", options: ["<", ">", "="], answer: "<" } ]
+                    hocky1: [
+                        { question: "Từ nào là từ chỉ sự vật?", options: ["Chạy", "Đẹp", "Cái bàn", "Vui"], answer: "Cái bàn" },
+                        { question: "Từ nào là từ chỉ hoạt động?", options: ["Con mèo", "Đọc sách", "Màu xanh", "Cao lớn"], answer: "Đọc sách" },
+                        { question: "Điền từ còn thiếu: 'Dòng sông ...'", options: ["chảy", "đứng", "ngủ", "bay"], answer: "chảy" },
+                        { question: "Từ nào có vần 'iêng'?", options: ["Tiếng", "Miếng", "Chiêng", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" },
+                        { question: "Từ nào là từ chỉ đặc điểm?", options: ["Con chó", "Cái kéo", "Xinh đẹp", "Ngủ"], answer: "Xinh đẹp" },
+                        { question: "Tìm từ trái nghĩa với 'nhanh'?", options: ["Chậm", "Vội", "Gấp", "Nhanh nhẹn"], answer: "Chậm" },
+                        { question: "Điền từ còn thiếu: 'Bông hoa ...'", options: ["nở", "tàn", "rụng", "héo"], answer: "nở" },
+                        { question: "Từ nào có vần 'uôn'?", options: ["Buồn", "Vui", "Sướng", "Khổ"], answer: "Buồn" },
+                        { question: "Từ nào là tên một mùa trong năm?", options: ["Tháng", "Tuần", "Mùa hè", "Ngày"], answer: "Mùa hè" },
+                        { question: "Từ nào là từ láy?", options: ["Xanh", "Xanh xanh", "Đỏ", "Trắng"], answer: "Xanh xanh" },
+                        { question: "Từ nào là từ ghép?", options: ["Đi", "Học", "Sách vở", "Ăn"], answer: "Sách vở" },
+                        { question: "Điền từ còn thiếu: 'Chim hót ...'", options: ["líu lo", "gâu gâu", "meo meo", "quác quác"], answer: "líu lo" },
+                        { question: "Từ nào có vần 'ươn'?", options: ["Vườn", "Trường", "Đường", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" },
+                        { question: "Từ nào là tên một loại nhạc cụ?", options: ["Bóng đá", "Đàn piano", "Vẽ tranh", "Hát"], answer: "Đàn piano" },
+                        { question: "Từ nào trái nghĩa với 'lên'?", options: ["Xuống", "Trong", "Ngoài", "Trên"], answer: "Xuống" },
+                        { question: "Tìm từ chỉ tình cảm gia đình?", options: ["Bạn bè", "Tình yêu", "Tình bạn", "Tình cảm"], answer: "Tình yêu" },
+                        { question: "Điền từ còn thiếu: 'Mặt trăng ...'", options: ["tròn", "vuông", "dài", "ngắn"], answer: "tròn" },
+                        { question: "Từ nào có vần 'oai'?", options: ["Khoai", "Ngoại", "Thoải mái", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" },
+                        { question: "Từ nào là tên một loại rau củ?", options: ["Thịt", "Cá", "Cà chua", "Trứng"], answer: "Cà chua" },
+                        { question: "Từ nào là từ đồng âm khác nghĩa?", options: ["Đường (đi) - Đường (ăn)", "Bàn (ghế) - Bàn (luận)", "Cả hai đáp án trên", "Không có"], answer: "Cả hai đáp án trên" }
+                    ],
+                    hocky2: [
+                        { question: "Từ nào là từ chỉ số lượng?", options: ["Nhanh", "Đẹp", "Năm", "Ăn"], answer: "Năm" },
+                        { question: "Từ nào là từ chỉ thời gian?", options: ["Hôm nay", "Sách", "Bút", "Cái ghế"], answer: "Hôm nay" },
+                        { question: "Điền từ còn thiếu: 'Con sông ... ra biển.'", options: ["chảy", "đứng", "ngủ", "bay"], answer: "chảy" },
+                        { question: "Từ nào có vần 'uyên'?", options: ["Quyển", "Huyền", "Xuyên", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" },
+                        { question: "Từ nào là từ chỉ màu sắc?", options: ["Vui", "Buồn", "Tím", "Chạy"], answer: "Tím" },
+                        { question: "Tìm từ trái nghĩa với 'mở'?", options: ["Đóng", "Mở ra", "Mở cửa", "Mở sách"], answer: "Đóng" },
+                        { question: "Điền từ còn thiếu: 'Cây cối ... lá.'", options: ["rụng", "mọc", "nở", "héo"], answer: "rụng" },
+                        { question: "Từ nào có vần 'ươi'?", options: ["Tươi", "Cười", "Mười", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" },
+                        { question: "Từ nào là tên một loại động vật hoang dã?", options: ["Chó", "Mèo", "Hổ", "Gà"], answer: "Hổ" },
+                        { question: "Từ nào là từ tượng thanh?", options: ["Xinh đẹp", "Lấp lánh", "Kêu meo meo", "Buồn bã"], answer: "Kêu meo meo" },
+                        { question: "Từ nào là từ láy vần?", options: ["Lấp lánh", "Xanh xanh", "Đỏ đỏ", "Trắng tinh"], answer: "Lấp lánh" },
+                        { question: "Điền từ còn thiếu: 'Gió ...'", options: ["thổi", "chạy", "ngủ", "ăn"], answer: "thổi" },
+                        { question: "Từ nào có vần 'iêu'?", options: ["Yêu", "Kiêu", "Hiểu", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" },
+                        { question: "Từ nào là tên một loại đồ uống?", options: ["Cơm", "Phở", "Nước cam", "Bánh mì"], answer: "Nước cam" },
+                        { question: "Từ nào trái nghĩa với 'vào'?", options: ["Ra", "Trong", "Ngoài", "Trên"], answer: "Ra" },
+                        { question: "Tìm từ chỉ hoạt động 'vẽ'?", options: ["Hát", "Nhảy", "Vẽ tranh", "Chơi đàn"], answer: "Vẽ tranh" },
+                        { question: "Điền từ còn thiếu: 'Con chim ... trên cành.'", options: ["bơi", "bay", "đi", "ngủ"], answer: "bay" },
+                        { question: "Từ nào có vần 'uýt'?", options: ["Quýt", "Ngọt", "Chua", "Đắng"], answer: "Quýt" },
+                        { question: "Từ nào là tên một loại cây ăn quả?", options: ["Cây bàng", "Cây xoài", "Cây phượng", "Cây tre"], answer: "Cây xoài" },
+                        { question: "Từ nào là từ Hán Việt?", options: ["Sông", "Núi", "Giang sơn", "Đất"], answer: "Giang sơn" }
+                    ]
                 }
             }
         };
@@ -262,12 +352,12 @@
                         // Fallback to hardcoded if parsing fails
                         config = {
                             apiKey: "AIzaSyDJBY6U0LUtmnk4PrfNeA7UE7qq1FZ84X8",
-  authDomain: "data-chung-a62ee.firebaseapp.com",
-  projectId: "data-chung-a62ee",
-  storageBucket: "data-chung-a62ee.firebasestorage.app",
-  messagingSenderId: "453115303161",
-  appId: "1:453115303161:web:c885f876f4914829863e28",
-  measurementId: "G-QB6WP4SP09"
+                            authDomain: "data-chung-a62ee.firebaseapp.com",
+                            projectId: "data-chung-a62ee",
+                            storageBucket: "data-chung-a62ee.firebasestorage.app",
+                            messagingSenderId: "453115303161",
+                            appId: "1:453115303161:web:c885f876f4914829863e28",
+                            measurementId: "G-QB6WP4SP09"
                         };
                     }
                     currentAppId = typeof __app_id !== 'undefined' ? __app_id : config.appId;
@@ -433,6 +523,15 @@
             } 
         }
         function startGame() { 
+            // Kiểm tra xem dữ liệu câu hỏi có tồn tại không trước khi bắt đầu
+            if (!questions[selectedSubject] || !questions[selectedSubject][selectedGrade] || !questions[selectedSubject][selectedGrade][selectedSemester]) {
+                console.error("Không tìm thấy câu hỏi cho lựa chọn này:", selectedSubject, selectedGrade, selectedSemester);
+                // Hiển thị thông báo lỗi thân thiện với người dùng (thay vì alert)
+                document.getElementById('feedback-container').textContent = 'Không có câu hỏi cho lựa chọn này. Vui lòng chọn lại.';
+                // Có thể reset lại màn hình lựa chọn hoặc giữ nguyên để người dùng chọn lại
+                return; 
+            }
+
             let allQuestions = questions[selectedSubject][selectedGrade][selectedSemester]; 
             currentQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, NUM_OF_QUESTIONS_PER_GAME); 
             currentQuestionIndex = 0; 
@@ -515,7 +614,7 @@
             selectedSemester = null; 
             subjectBtns.forEach(btn => btn.classList.remove('selected')); 
             gradeBtns.forEach(btn => btn.classList.remove('selected')); 
-            semesterBtns.forEach(btn => b.classList.remove('selected')); 
+            semesterBtns.forEach(btn => btn.classList.remove('selected')); // Sửa lỗi chính tả ở đây
             updateStartButtonState(); 
         }
 
