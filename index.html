@@ -102,13 +102,13 @@
             overflow-y: auto; /* Enable vertical scrolling */
         }
 
-        /* Style for the speaker icon */
-        #read-question-btn { /* Changed ID to reflect original purpose */
+        /* Style for the speaker icons */
+        .speaker-btn {
             cursor: pointer;
             transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
         }
 
-        #read-question-btn:hover {
+        .speaker-btn:hover {
             transform: scale(1.1);
             color: #6366f1; /* Indigo-500 on hover */
         }
@@ -168,21 +168,29 @@
         <!-- Game Screen: Displays questions and options -->
         <div id="game-screen" class="hidden">
             <div class="flex justify-between items-center mb-4 text-white">
-                <div id="progress-text" class="font-semibold">Câu 1/20</div>
+                <div id="progress-text" class="font-semibold">Câu 1/10</div>
                 <div id="score-text" class="font-bold text-lg">Điểm: 0</div>
             </div>
             <div id="question-container" class="bg-black/10 p-6 rounded-2xl text-center mb-6 min-h-[100px] flex items-center justify-center relative">
                 <p class="text-xl md:text-2xl font-semibold text-white"></p>
                 <!-- Speaker icon for Text-to-Speech -->
-                <button id="read-question-btn" class="absolute top-4 right-4 text-white hover:text-indigo-400 focus:outline-none">
-                    <!-- New Speaker SVG Icon (Material Design 'volume_up' icon) -->
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
-                        <path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 10v4h3l4 4V6l-4 4H5zm13.5 2c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM19 12c0-2.8-1.56-5.28-3.8-6.5L14 4.5v15l1.2-1.5C17.44 17.28 19 14.8 19 12zM16 8.5v7l-4-4H8V8.5h4l4-4z"/>
+                <button id="read-question-btn" class="speaker-btn absolute top-4 right-4 text-white focus:outline-none">
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
+                        <path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06ZM5.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" />
                     </svg>
                 </button>
             </div>
             <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            <!-- Feedback and Explanation Containers -->
             <div id="feedback-container" class="text-center mt-4 font-bold text-2xl h-8 text-white"></div>
+            <div id="explanation-container" class="hidden relative mt-2 bg-black/10 p-4 rounded-2xl text-white text-center font-medium">
+                 <p id="explanation-text" class="pr-10"></p>
+                 <button id="read-explanation-btn" class="speaker-btn absolute top-1/2 -translate-y-1/2 right-3 text-white focus:outline-none">
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                        <path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06ZM5.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" />
+                    </svg>
+                 </button>
+            </div>
             <button id="next-btn" class="hidden w-full mt-4 glass-btn bg-blue-500/60 text-white font-bold py-3 rounded-2xl shadow-lg hover:bg-blue-500/80">Câu tiếp theo</button>
         </div>
 
@@ -208,7 +216,7 @@
         <div id="history-panel" class="hidden">
             <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Lịch Sử Làm Bài</h2>
             <div id="history-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4">
-                <!-- History table will be inserted here dynamically -->
+                <!-- History table will be inserted here dynamically from Firebase -->
             </div>
             <button id="back-to-admin-btn" class="w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
         </div>
@@ -242,37 +250,68 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- LOCAL QUESTION SEED DATA ---
-        // This object is now used as a fallback to seed the database if it's empty.
-        // It's no longer the primary source of questions for the game.
+        // --- LOCAL QUESTION SEED DATA (with explanations) ---
         const localQuestionSeedData = {
             toan: {
                 lop1: {
-                    hocky1: [ { question: "5 + 4 = ?", options: [8, 9, 10, 7], answer: 9 }, { question: "8 - 3 = ?", options: [4, 5, 6, 7], answer: 5 }, { question: "Số liền sau của 9 là?", options: [8, 10, 11, 7], answer: 10 }, { question: "Có mấy hình tròn: 🔵 🔺 🔵 ⬜", options: [1, 2, 3, 4], answer: 2 }, { question: "2 + 6 = ?", options: [7, 8, 9, 10], answer: 8 }, { question: "Số liền trước của 15 là?", options: [13, 14, 16, 17], answer: 14 }, { question: "Hình vuông có mấy cạnh?", options: [2, 3, 4, 5], answer: 4 }, { question: "Điền dấu: 5 + 3 ... 8", options: ["<", ">", "="], answer: "=" }, { question: "7 + ... = 10", options: [1, 2, 3, 4], answer: 3 }, { question: "Số bé nhất trong các số: 9, 3, 7, 5 là?", options: [9, 3, 7, 5], answer: 3 }, { question: "6 + 1 = ?", options: [5, 6, 7, 8], answer: 7 }, { question: "10 - 10 = ?", options: [0, 1, 10, 20], answer: 0 }, { question: "Số lớn nhất trong các số: 1, 8, 4, 6 là?", options: [1, 8, 4, 6], answer: 8 }, { question: "3 + ... = 9", options: [5, 6, 7, 8], answer: 6 }, { question: "Có mấy hình vuông: ⬜ ⬜ 🔵 ⬜", options: [1, 2, 3, 4], answer: 3 }, { question: "9 - 7 = ?", options: [1, 2, 3, 16], answer: 2 }, { question: "Số liền sau của 0 là?", options: [0, 1, 2, -1], answer: 1 }, { question: "4 + 4 = ?", options: [6, 7, 8, 9], answer: 8 }, { question: "Điền dấu: 10 ... 5 + 6", options: ["<", ">", "="], answer: "<" }, { question: "Trong các số 2, 8, 5, 1, số nào nhỏ nhất?", options: [2, 8, 5, 1], answer: 1 } ],
-                    hocky2: [ { question: "10 + 6 = ?", options: [15, 16, 17, 18], answer: 16 }, { question: "18 - 5 = ?", options: [12, 13, 14, 15], answer: 13 }, { question: "Số gồm 1 chục và 7 đơn vị là?", options: [10, 7, 17, 71], answer: 17 }, { question: "Hôm nay là thứ Hai, ngày mai là thứ mấy?", options: ["Chủ Nhật", "Thứ Ba", "Thứ Tư"], answer: "Thứ Ba" }, { question: "Lan có 8 kẹo, mẹ cho thêm 5. Lan có tất cả...cái kẹo?", options: [12, 13, 14, 3], answer: 13 }, { question: "Số lớn nhất có hai chữ số là?", options: [10, 90, 99, 100], answer: 99 }, { question: "15 + 4 = ?", options: [18, 19, 20, 21], answer: 19 }, { question: "Trên cành có 12 con chim, bay đi 4 con. Còn lại...con chim?", options: [7, 8, 9, 16], answer: 8 }, { question: "Số 50 còn được gọi là?", options: ["Năm mươi", "Năm chục", "Cả hai đều đúng"], answer: "Cả hai đều đúng" }, { question: "Điền số: 20, 30, ..., 50", options: [35, 40, 45, 60], answer: 40 }, { question: "30 + 40 = ?", options: [60, 70, 80, 10], answer: 70 }, { question: "90 - 20 = ?", options: [60, 70, 80, 110], answer: 70 }, { question: "Số gồm 8 chục và 1 đơn vị là?", options: [80, 18, 81, 9], answer: 81 }, { question: "Số bé nhất có hai chữ số giống nhau là?", options: [10, 11, 12, 22], answer: 11 }, { question: "An có 19 viên bi, An cho Bình 7 viên. An còn lại...viên bi?", options: [11, 12, 13, 26], answer: 12 }, { question: "1 tuần có mấy ngày?", options: [5, 6, 7, 8], answer: 7 }, { question: "Số liền trước của 100 là?", options: [90, 98, 99, 101], answer: 99 }, { question: "Điền dấu: 45 ... 54", options: ["<", ">", "="], answer: "<" }, { question: "50 + 50 = ?", options: [90, 100, 10, 0], answer: 100 }, { question: "Số tròn chục lớn nhất có hai chữ số là?", options: [10, 80, 90, 99], answer: 90 } ]
+                    hocky1: [
+                        { question: "5 + 4 = ?", options: [8, 9, 10, 7], answer: 9, explanation: "Vì 5 que tính thêm 4 que tính nữa là 9 que tính." },
+                        { question: "8 - 3 = ?", options: [4, 5, 6, 7], answer: 5, explanation: "Vì có 8 cái kẹo, ăn hết 3 cái thì còn lại 5 cái." },
+                        { question: "Số liền sau của 9 là?", options: [8, 10, 11, 7], answer: 10, explanation: "Số liền sau là số lớn hơn 1 đơn vị, nên sau số 9 là số 10." },
+                        { question: "Có mấy hình tròn: 🔵 🔺 🔵 ⬜", options: [1, 2, 3, 4], answer: 2, explanation: "Bé hãy đếm các hình có dạng tròn nhé!" },
+                        { question: "2 + 6 = ?", options: [7, 8, 9, 10], answer: 8 },
+                        { question: "Số liền trước của 15 là?", options: [13, 14, 16, 17], answer: 14, explanation: "Số liền trước là số nhỏ hơn 1 đơn vị, nên trước số 15 là số 14." },
+                        { question: "Hình vuông có mấy cạnh?", options: [2, 3, 4, 5], answer: 4, explanation: "Hình vuông là hình có 4 cạnh dài bằng nhau." },
+                        { question: "Điền dấu: 5 + 3 ... 8", options: ["<", ">", "="], answer: "=" },
+                        { question: "7 + ... = 10", options: [1, 2, 3, 4], answer: 3 },
+                        { question: "Số bé nhất trong các số: 9, 3, 7, 5 là?", options: [9, 3, 7, 5], answer: 3 },
+                    ],
+                    hocky2: [
+                        { question: "10 + 6 = ?", options: [15, 16, 17, 18], answer: 16 },
+                        { question: "18 - 5 = ?", options: [12, 13, 14, 15], answer: 13 },
+                        { question: "Số gồm 1 chục và 7 đơn vị là?", options: [10, 7, 17, 71], answer: 17, explanation: "1 chục là 10, thêm 7 đơn vị nữa là 17." },
+                        { question: "Hôm nay là thứ Hai, ngày mai là thứ mấy?", options: ["Chủ Nhật", "Thứ Ba", "Thứ Tư"], answer: "Thứ Ba", explanation: "Sau thứ Hai sẽ là thứ Ba." },
+                        { question: "Lan có 8 kẹo, mẹ cho thêm 5. Lan có tất cả...cái kẹo?", options: [12, 13, 14, 3], answer: 13 },
+                    ]
                 }
             },
             tiengviet: {
                 lop1: {
-                    hocky1: [ { question: "Chữ cái nào đứng sau 'A' trong bảng chữ cái?", options: ["C", "B", "D", "E"], answer: "B" }, { question: "Từ nào chỉ hoạt động 'ăn'?", options: ["Ngủ", "Chơi", "Ăn", "Học"], answer: "Ăn" }, { question: "Điền từ còn thiếu: 'Con ... đang bơi.'", options: ["chim", "cá", "mèo", "chó"], answer: "cá" }, { question: "Từ nào có vần 'ai'?", options: ["Cái", "Con", "Sách", "Bút"], answer: "Cái" }, { question: "Chữ cái nào đứng trước 'D' trong bảng chữ cái?", options: ["C", "E", "F", "B"], answer: "C" }, { question: "Từ nào là tên một loài hoa?", options: ["Bàn", "Ghế", "Hoa hồng", "Cây"], answer: "Hoa hồng" }, { question: "Điền từ còn thiếu: 'Mẹ ... cơm.'", options: ["chơi", "nấu", "ngủ", "đọc"], answer: "nấu" }, { question: "Từ nào có vần 'eo'?", options: ["Mèo", "Chó", "Gà", "Vịt"], answer: "Mèo" }, { question: "Từ nào chỉ đồ vật dùng để viết?", options: ["Sách", "Bút", "Tẩy", "Thước"], answer: "Bút" }, { question: "Chữ cái nào là nguyên âm?", options: ["B", "C", "A", "D"], answer: "A" }, { question: "Từ nào có nghĩa là 'nhỏ bé'?", options: ["Lớn", "To", "Bé", "Dài"], answer: "Bé" }, { question: "Điền từ còn thiếu: 'Ông bà ... cháu.'", options: ["chơi", "yêu", "đọc", "viết"], answer: "yêu" }, { question: "Từ nào có vần 'iu'?", options: ["Hiu", "Hươu", "Siu", "Ciu"], answer: "Hiu" }, { question: "Từ nào là tên một loại quả?", options: ["Cà rốt", "Táo", "Bông cải", "Khoai tây"], answer: "Táo" }, { question: "Chữ cái nào là phụ âm?", options: ["O", "U", "E", "K"], answer: "K" }, { question: "Từ nào chỉ màu sắc?", options: ["Bàn", "Đỏ", "Sách", "Cây"], answer: "Đỏ" }, { question: "Điền từ còn thiếu: 'Con chó đang ...'", options: ["bay", "sủa", "bơi", "hót"], answer: "sủa" }, { question: "Từ nào có vần 'ay'?", options: ["Tay", "Chân", "Mắt", "Mũi"], answer: "Tay" }, { question: "Từ nào là tên một con vật nuôi trong nhà?", options: ["Hổ", "Sư tử", "Mèo", "Gấu"], answer: "Mèo" }, { question: "Từ nào chỉ hành động 'nghe'?", options: ["Nhìn", "Nghe", "Nói", "Viết"], answer: "Nghe" } ],
-                    hocky2: [ { question: "Từ nào có tiếng 'sách'?", options: ["Quyển vở", "Bút chì", "Sách giáo khoa", "Cái bàn"], answer: "Sách giáo khoa" }, { question: "Từ nào đồng nghĩa với 'vui vẻ'?", options: ["Buồn bã", "Hạnh phúc", "Tức giận", "Sợ hãi"], answer: "Hạnh phúc" }, { question: "Điền từ còn thiếu: 'Bầu trời ...'", options: ["xanh", "đỏ", "vàng", "đen"], answer: "xanh" }, { question: "Từ nào có vần 'anh'?", options: ["Chanh", "Cam", "Quýt", "Bưởi"], answer: "Chanh" }, { question: "Từ nào trái nghĩa với 'cao'?", options: ["Dài", "Ngắn", "Thấp", "Rộng"], answer: "Thấp" }, { question: "Tìm từ chỉ hoạt động 'đọc'?", options: ["Viết bài", "Nghe nhạc", "Đọc sách", "Chơi game"], answer: "Đọc sách" }, { question: "Điền từ còn thiếu: 'Con gà ... thóc.'", options: ["uống", "mổ", "ngủ", "bay"], answer: "mổ" }, { question: "Từ nào có vần 'inh'?", options: ["Xinh", "Xanh", "Đỏ", "Vàng"], answer: "Xinh" }, { question: "Từ nào là tên một loại phương tiện giao thông?", options: ["Nhà", "Cây", "Xe đạp", "Sông"], answer: "Xe đạp" }, { question: "Từ nào chỉ cảm xúc 'yêu thương'?", options: ["Ghét bỏ", "Thích thú", "Yêu quý", "Giận dữ"], answer: "Yêu quý" }, { question: "Từ nào có tiếng 'học'?", options: ["Chơi đùa", "Học bài", "Ăn uống", "Ngủ nghỉ"], answer: "Học bài" }, { question: "Điền từ còn thiếu: 'Mặt trời ...'", options: ["lặn", "mọc", "bay", "chạy"], answer: "mọc" }, { question: "Từ nào có vần 'oan'?", options: ["Toán", "Loan", "Hoàn", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" }, { question: "Từ nào là tên một nghề nghiệp?", options: ["Bác sĩ", "Học sinh", "Trẻ em", "Người lớn"], answer: "Bác sĩ" }, { question: "Từ nào trái nghĩa với 'sáng'?", options: ["Tối", "Trong", "Đục", "Nhanh"], answer: "Tối" }, { question: "Tìm từ chỉ đồ dùng học tập?", options: ["Bát", "Đũa", "Cặp sách", "Chén"], answer: "Cặp sách" }, { question: "Điền từ còn thiếu: 'Con mèo ... chuột.'", options: ["bắt", "thả", "ngắm", "đuổi"], answer: "bắt" }, { question: "Từ nào có vần 'ươi'?", options: ["Tươi", "Cười", "Mười", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" }, { question: "Từ nào là tên một bộ phận trên cơ thể người?", options: ["Áo", "Quần", "Mắt", "Giày"], answer: "Mắt" }, { question: "Từ nào chỉ hành động 'nhảy'?", options: ["Đi bộ", "Chạy nhanh", "Nhảy dây", "Ngồi yên"], answer: "Nhảy dây" } ]
+                    hocky1: [
+                        { question: "Chữ cái nào đứng sau 'A' trong bảng chữ cái?", options: ["C", "B", "D", "E"], answer: "B", explanation: "Bảng chữ cái là A, B, C... nên sau A là B." },
+                        { question: "Từ nào chỉ hoạt động 'ăn'?", options: ["Ngủ", "Chơi", "Ăn", "Học"], answer: "Ăn", explanation: "'Ăn' là hành động đưa thức ăn vào miệng để nuôi sống cơ thể." },
+                        { question: "Điền từ còn thiếu: 'Con ... đang bơi.'", options: ["chim", "cá", "mèo", "chó"], answer: "cá", explanation: "Trong các con vật này, chỉ có 'cá' là sống dưới nước và biết bơi." },
+                        { question: "Từ nào có vần 'ai'?", options: ["Cái", "Con", "Sách", "Bút"], answer: "Cái" },
+                        { question: "Chữ cái nào đứng trước 'D' trong bảng chữ cái?", options: ["C", "E", "F", "B"], answer: "C" },
+                    ],
+                    hocky2: [
+                        { question: "Từ nào có tiếng 'sách'?", options: ["Quyển vở", "Bút chì", "Sách giáo khoa", "Cái bàn"], answer: "Sách giáo khoa" },
+                        { question: "Từ nào đồng nghĩa với 'vui vẻ'?", options: ["Buồn bã", "Hạnh phúc", "Tức giận", "Sợ hãi"], answer: "Hạnh phúc", explanation: "'Vui vẻ' và 'hạnh phúc' đều chỉ cảm xúc tích cực, vui sướng." },
+                        { question: "Điền từ còn thiếu: 'Bầu trời ...'", options: ["xanh", "đỏ", "vàng", "đen"], answer: "xanh", explanation: "Bầu trời ban ngày thường có màu xanh trong." },
+                    ]
                 },
                 lop2: {
-                    hocky1: [ { question: "Từ nào là từ chỉ sự vật?", options: ["Chạy", "Đẹp", "Cái bàn", "Vui"], answer: "Cái bàn" }, { question: "Từ nào là từ chỉ hoạt động?", options: ["Con mèo", "Đọc sách", "Màu xanh", "Cao lớn"], answer: "Đọc sách" }, { question: "Điền từ còn thiếu: 'Dòng sông ...'", options: ["chảy", "đứng", "ngủ", "bay"], answer: "chảy" }, { question: "Từ nào có vần 'iêng'?", options: ["Tiếng", "Miếng", "Chiêng", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" }, { question: "Từ nào là từ chỉ đặc điểm?", options: ["Con chó", "Cái kéo", "Xinh đẹp", "Ngủ"], answer: "Xinh đẹp" }, { question: "Tìm từ trái nghĩa với 'nhanh'?", options: ["Chậm", "Vội", "Gấp", "Nhanh nhẹn"], answer: "Chậm" }, { question: "Điền từ còn thiếu: 'Bông hoa ...'", options: ["nở", "tàn", "rụng", "héo"], answer: "nở" }, { question: "Từ nào có vần 'uôn'?", options: ["Buồn", "Vui", "Sướng", "Khổ"], answer: "Buồn" }, { question: "Từ nào là tên một mùa trong năm?", options: ["Tháng", "Tuần", "Mùa hè", "Ngày"], answer: "Mùa hè" }, { question: "Từ nào là từ láy?", options: ["Xanh", "Xanh xanh", "Đỏ", "Trắng"], answer: "Xanh xanh" }, { question: "Từ nào là từ ghép?", options: ["Đi", "Học", "Sách vở", "Ăn"], answer: "Sách vở" }, { question: "Điền từ còn thiếu: 'Chim hót ...'", options: ["líu lo", "gâu gâu", "meo meo", "quác quác"], answer: "líu lo" }, { question: "Từ nào có vần 'ươn'?", options: ["Vườn", "Trường", "Đường", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" }, { question: "Từ nào là tên một loại nhạc cụ?", options: ["Bóng đá", "Đàn piano", "Vẽ tranh", "Hát"], answer: "Đàn piano" }, { question: "Từ nào trái nghĩa với 'lên'?", options: ["Xuống", "Trong", "Ngoài", "Trên"], answer: "Xuống" }, { question: "Tìm từ chỉ tình cảm gia đình?", options: ["Bạn bè", "Tình yêu", "Tình bạn", "Tình cảm"], answer: "Tình yêu" }, { question: "Điền từ còn thiếu: 'Mặt trăng ...'", options: ["tròn", "vuông", "dài", "ngắn"], answer: "tròn" }, { question: "Từ nào có vần 'oai'?", options: ["Khoai", "Ngoại", "Thoải mái", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" }, { question: "Từ nào là tên một loại rau củ?", options: ["Thịt", "Cá", "Cà chua", "Trứng"], answer: "Cà chua" }, { question: "Từ nào là từ đồng âm khác nghĩa?", options: ["Đường (đi) - Đường (ăn)", "Bàn (ghế) - Bàn (luận)", "Cả hai đáp án trên", "Không có"], answer: "Không có" } ],
-                    hocky2: [ { question: "Từ nào là từ chỉ số lượng?", options: ["Nhanh", "Đẹp", "Năm", "Ăn"], answer: "Năm" }, { question: "Từ nào là từ chỉ thời gian?", options: ["Hôm nay", "Sách", "Bút", "Cái ghế"], answer: "Hôm nay" }, { question: "Điền từ còn thiếu: 'Con sông ... ra biển.'", options: ["chảy", "đứng", "ngủ", "bay"], answer: "chảy" }, { question: "Từ nào có vần 'uyên'?", options: ["Quyển", "Huyền", "Xuyên", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" }, { question: "Từ nào là từ chỉ màu sắc?", options: ["Vui", "Buồn", "Tím", "Chạy"], answer: "Tím" }, { question: "Tìm từ trái nghĩa với 'mở'?", options: ["Đóng", "Mở ra", "Mở cửa", "Mở sách"], answer: "Đóng" }, { question: "Điền từ còn thiếu: 'Cây cối ... lá.'", options: ["rụng", "mọc", "nở", "héo"], answer: "rụng" }, { question: "Từ nào có vần 'ươi'?", options: ["Tươi", "Cười", "Mười", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" }, { question: "Từ nào là tên một loại động vật hoang dã?", options: ["Chó", "Mèo", "Hổ", "Gà"], answer: "Hổ" }, { question: "Từ nào là từ tượng thanh?", options: ["Xinh đẹp", "Lấp lánh", "Kêu meo meo", "Buồn bã"], answer: "Kêu meo meo" }, { question: "Từ nào là từ láy vần?", options: ["Lấp lánh", "Xanh xanh", "Đỏ đỏ", "Trắng tinh"], answer: "Lấp lánh" }, { question: "Điền từ còn thiếu: 'Gió ...'", options: ["thổi", "chạy", "ngủ", "ăn"], answer: "thổi" }, { question: "Từ nào có vần 'iêu'?", options: ["Yêu", "Kiêu", "Hiểu", "Cả ba đáp án trên"], answer: "Cả ba đáp án trên" }, { question: "Từ nào là tên một loại đồ uống?", options: ["Cơm", "Phở", "Nước cam", "Bánh mì"], answer: "Nước cam" }, { question: "Từ nào trái nghĩa với 'vào'?", options: ["Ra", "Trong", "Ngoài", "Trên"], answer: "Ra" }, { question: "Tìm từ chỉ hoạt động 'vẽ'?", options: ["Hát", "Nhảy", "Vẽ tranh", "Chơi đàn"], answer: "Vẽ tranh" }, { question: "Điền từ còn thiếu: 'Con chim ... trên cành.'", options: ["bơi", "bay", "đi", "ngủ"], answer: "bay" }, { question: "Từ nào có vần 'uýt'?", options: ["Quýt", "Ngọt", "Chua", "Đắng"], answer: "Quýt" }, { question: "Từ nào là tên một loại cây ăn quả?", options: ["Cây bàng", "Cây xoài", "Cây phượng", "Cây tre"], answer: "Cây xoài" }, { question: "Từ nào là từ Hán Việt?", options: ["Sông", "Núi", "Giang sơn", "Đất"], answer: "Giang sơn" } ]
+                    hocky1: [
+                        { question: "Từ nào là từ chỉ sự vật?", options: ["Chạy", "Đẹp", "Cái bàn", "Vui"], answer: "Cái bàn", explanation: "Từ chỉ sự vật là từ gọi tên đồ vật, con vật, cây cối. 'Cái bàn' là một đồ vật." },
+                        { question: "Từ nào là từ chỉ hoạt động?", options: ["Con mèo", "Đọc sách", "Màu xanh", "Cao lớn"], answer: "Đọc sách", explanation: "Từ chỉ hoạt động nói lên sự vận động, làm việc. 'Đọc sách' là một hoạt động." },
+                    ],
+                    hocky2: [
+                        { question: "Từ nào là từ chỉ số lượng?", options: ["Nhanh", "Đẹp", "Năm", "Ăn"], answer: "Năm", explanation: "'Năm' là một con số, dùng để đếm số lượng." },
+                        { question: "Từ nào là từ chỉ thời gian?", options: ["Hôm nay", "Sách", "Bút", "Cái ghế"], answer: "Hôm nay", explanation: "'Hôm nay' là từ chỉ ngày hiện tại, thuộc về thời gian." },
+                    ]
                 }
             }
         };
 
         // --- STATE VARIABLES ---
-        let questionBank = null; // Will hold questions from Firestore. Null until loaded.
+        let questionBank = null;
         let selectedSubject = null;
         let selectedGrade = null;
         let selectedSemester = null;
         let currentQuestions = [];
         let currentQuestionIndex = 0;
         let score = 0;
-        const NUM_OF_QUESTIONS_PER_GAME = 20;
+        const NUM_OF_QUESTIONS_PER_GAME = 10;
 
         // --- FIREBASE VARIABLES ---
         let db;
@@ -290,6 +329,10 @@
         const loadingQuestionsIndicator = document.getElementById('loading-questions');
         const selectionsContainer = document.getElementById('selections-container');
         
+        const explanationContainer = document.getElementById('explanation-container');
+        const explanationText = document.getElementById('explanation-text');
+        const readExplanationBtn = document.getElementById('read-explanation-btn');
+        
         const adminPanel = document.getElementById('admin-panel');
         const adminLoginBtn = document.getElementById('admin-login-btn');
         const loginModal = document.getElementById('login-modal');
@@ -305,7 +348,6 @@
         const readQuestionBtn = document.getElementById('read-question-btn');
 
         // --- FIREBASE AND DATA LOADING ---
-        // Initializes Firebase and then loads the question data.
         async function initializeFirebase() {
             try {
                 let firebaseConfig;
@@ -325,22 +367,18 @@
                     appId = firebaseConfig.appId;
                 }
 
-                if (!firebaseConfig.projectId) {
-                    throw new Error("Firebase config is missing projectId.");
-                }
+                if (!firebaseConfig.projectId) throw new Error("Firebase config is missing projectId.");
 
                 const app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                // Authenticate user
                 if (typeof __initial_auth_token !== 'undefined') {
                     await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
                     await signInAnonymously(auth);
                 }
 
-                // Once authenticated, load the questions
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         console.log("User authenticated, loading questions...");
@@ -355,7 +393,6 @@
             }
         }
 
-        // Loads questions from Firestore, or seeds them if they don't exist.
         async function loadAndSeedQuestions() {
             if (!db || !appId) {
                 console.error("Firestore DB or App ID not initialized.");
@@ -363,28 +400,24 @@
                 return;
             }
 
-            // Path to the single document holding the entire question bank
             const questionBankRef = doc(db, `artifacts/${appId}/public/data/questions`, 'mainBank');
 
             try {
                 const docSnap = await getDoc(questionBankRef);
 
-                if (docSnap.exists()) {
-                    // If document exists, use it as the question bank
+                if (docSnap.exists() && docSnap.data().toan) {
                     console.log("Question bank loaded from Firestore.");
                     questionBank = docSnap.data();
                 } else {
-                    // If document doesn't exist, seed it from local data
-                    console.log("No question bank found in Firestore. Seeding from local data...");
+                    console.log("No valid question bank in Firestore. Seeding from local data...");
                     await setDoc(questionBankRef, localQuestionSeedData);
                     console.log("Seeding successful!");
                     questionBank = localQuestionSeedData;
                 }
 
-                // Once questions are loaded (either from DB or after seeding), update the UI
                 loadingQuestionsIndicator.classList.add('hidden');
                 selectionsContainer.classList.remove('hidden');
-                updateStartButtonState(); // Check if selections are already made
+                updateStartButtonState();
 
             } catch (error) {
                 console.error("Error loading or seeding questions:", error);
@@ -394,20 +427,29 @@
         }
         
         // --- SAVE AND DISPLAY HISTORY (USING FIRESTORE) ---
+        /**
+         * Saves the result of a completed quiz to the Firestore database.
+         * @param {object} resultData - The data object for the quiz result.
+         */
         async function saveResult(resultData) {
             if (!db || !appId || !auth.currentUser) {
-                console.error("Firestore not ready or user not authenticated. Cannot save result.");
+                console.error("Cannot save result: Firebase not ready or user not authenticated.");
                 return;
             }
             try {
+                // Defines the path to the 'quizResults' collection in Firestore.
                 const historyCollectionRef = collection(db, `artifacts/${appId}/public/data/quizResults`);
+                // Adds a new document with the result data to the collection.
                 await addDoc(historyCollectionRef, resultData);
-                console.log("Quiz result saved successfully!");
+                console.log("Quiz result saved successfully to Firebase!");
             } catch (e) {
                 console.error("Error writing result to Firestore:", e);
             }
         }
 
+        /**
+         * Fetches and displays the quiz history from the Firestore database.
+         */
         async function displayHistory() {
             adminPanel.classList.add('hidden');
             historyPanel.classList.remove('hidden');
@@ -419,8 +461,10 @@
             }
             
             try {
+                // Defines the path to the 'quizResults' collection.
                 const historyCollectionRef = collection(db, `artifacts/${appId}/public/data/quizResults`);
-                const querySnapshot = await getDocs(historyCollectionRef);
+                // Fetches all documents from the collection.
+                const querySnapshot = await getDocs(query(historyCollectionRef));
                 
                 historyTableContainer.innerHTML = '';
 
@@ -431,6 +475,7 @@
 
                 const results = [];
                 querySnapshot.forEach((doc) => results.push(doc.data()));
+                // Sorts results by date in descending order (newest first).
                 results.sort((a, b) => (b.date?.toDate() || 0) - (a.date?.toDate() || 0));
 
                 const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
@@ -454,18 +499,20 @@
                 results.forEach((result) => {
                     const row = tbody.insertRow();
                     const date = result.date?.toDate() ? result.date.toDate().toLocaleString('vi-VN') : 'N/A';
+                    // Displays score as "score/totalQuestions", defaults to /10 for older data.
+                    const scoreDisplay = `${result.score}/${result.totalQuestions || 10}`;
                     row.innerHTML = `
                         <td class="px-3 py-2 whitespace-nowrap text-sm">${date}</td>
                         <td class="px-3 py-2 whitespace-nowrap text-sm">${nameMap[result.subject] || result.subject}</td>
                         <td class="px-3 py-2 whitespace-nowrap text-sm">${nameMap[result.grade] || result.grade}</td>
                         <td class="px-3 py-2 whitespace-nowrap text-sm">${nameMap[result.semester] || result.semester}</td>
-                        <td class="px-3 py-2 whitespace-nowrap text-sm font-bold">${result.score}/10</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-sm font-bold">${scoreDisplay}</td>
                     `;
                 });
                 historyTableContainer.appendChild(table);
 
             } catch (e) {
-                console.error("Error fetching history:", e);
+                console.error("Error fetching history from Firebase:", e);
                 historyTableContainer.innerHTML = '<p class="text-center text-red-500">Không thể tải lịch sử.</p>';
             }
         }
@@ -477,7 +524,6 @@
 
         // --- GAME LOGIC FUNCTIONS ---
         function updateStartButtonState() { 
-            // Button is enabled only if all selections are made AND questions are loaded.
             if (selectedSubject && selectedGrade && selectedSemester && questionBank) { 
                 startBtn.disabled = false; 
                 startBtn.classList.remove('bg-gray-500/50', 'cursor-not-allowed'); 
@@ -490,10 +536,7 @@
         }
 
         function startGame() { 
-            // Use the globally loaded questionBank
             if (!questionBank || !questionBank[selectedSubject] || !questionBank[selectedSubject][selectedGrade] || !questionBank[selectedSubject][selectedGrade][selectedSemester]) {
-                console.error("Question data is not available for the selection.");
-                // This should ideally not happen if the UI is controlled properly
                 return; 
             }
 
@@ -513,6 +556,7 @@
 
         function displayQuestion() { 
             document.getElementById('feedback-container').innerHTML = '';
+            explanationContainer.classList.add('hidden');
             document.getElementById('next-btn').classList.add('hidden');
 
             const questionData = currentQuestions[currentQuestionIndex]; 
@@ -532,12 +576,10 @@
             }); 
 
             document.getElementById('progress-text').textContent = `Câu ${currentQuestionIndex + 1}/${currentQuestions.length}`; 
-            document.getElementById('score-text').textContent = `Điểm: ${score / 2}/10`; 
+            document.getElementById('score-text').textContent = `Điểm: ${score}`; 
 
-            if (readQuestionBtn) {
-                readQuestionBtn.style.display = 'block';
-                readQuestionBtn.onclick = () => speakText(questionData.question);
-            }
+            readQuestionBtn.style.display = 'block';
+            readQuestionBtn.onclick = () => speakText(questionData.question);
         }
 
         function checkAnswer(selectedButton, correctAnswer) { 
@@ -545,6 +587,7 @@
             allOptions.forEach(btn => btn.disabled = true); 
 
             const feedbackContainer = document.getElementById('feedback-container'); 
+            const questionData = currentQuestions[currentQuestionIndex];
 
             if (selectedButton.textContent == correctAnswer) { 
                 score++;
@@ -559,7 +602,14 @@
                     } 
                 }); 
             } 
-            document.getElementById('score-text').textContent = `Điểm: ${score / 2}/10`; 
+            
+            if (questionData.explanation) {
+                explanationText.textContent = `💡 Giải thích: ${questionData.explanation}`;
+                explanationContainer.classList.remove('hidden');
+                readExplanationBtn.onclick = () => speakText(questionData.explanation);
+            }
+
+            document.getElementById('score-text').textContent = `Điểm: ${score}`; 
             document.getElementById('next-btn').classList.remove('hidden');
             
             if (speechSynthesis.speaking) {
@@ -580,20 +630,24 @@
             gameScreen.classList.add('hidden'); 
             resultsScreen.classList.remove('hidden'); 
 
-            const finalScore = score / 2;
-            document.getElementById('final-score').textContent = `${finalScore}/10`; 
+            const finalScore = score;
+            const totalQuestions = currentQuestions.length;
+            document.getElementById('final-score').textContent = `${finalScore}/${totalQuestions}`; 
 
+            // Prepare data object to be saved to Firebase.
             const resultData = { 
-                date: serverTimestamp(),
+                date: serverTimestamp(), // Use server's timestamp for consistency.
                 subject: selectedSubject, 
                 grade: selectedGrade, 
                 semester: selectedSemester, 
-                score: finalScore 
+                score: finalScore,
+                totalQuestions: totalQuestions // Also save the total number of questions.
             }; 
+            // Call the function to save the result.
             saveResult(resultData);
 
             const finalMessageElement = document.getElementById('final-message'); 
-            const percentage = (score / currentQuestions.length) * 100; 
+            const percentage = (finalScore / totalQuestions) * 100; 
             if (percentage === 100) { 
                 finalMessageElement.textContent = "Xuất sắc! Bé thật là giỏi!"; 
             } else if (percentage >= 70) { 
@@ -604,18 +658,16 @@
                 finalMessageElement.textContent = "Đừng buồn, lần sau sẽ tốt hơn!"; 
             } 
             
-            if (readQuestionBtn) {
-                readQuestionBtn.style.display = 'none';
-            }
+            readQuestionBtn.style.display = 'none';
         }
 
         function resetGame() { 
             resultsScreen.classList.add('hidden'); 
             selectionScreen.classList.remove('hidden'); 
             
-            // Show the loading/selections container structure again
             selectionsContainer.classList.remove('hidden');
-            loadingQuestionsIndicator.classList.add('hidden'); // Should already be hidden
+            loadingQuestionsIndicator.classList.add('hidden');
+            explanationContainer.classList.add('hidden');
 
             selectedSubject = null; 
             selectedGrade = null; 
@@ -626,9 +678,7 @@
             semesterBtns.forEach(btn => btn.classList.remove('selected')); 
             updateStartButtonState();
 
-            if (readQuestionBtn) {
-                readQuestionBtn.style.display = 'none';
-            }
+            readQuestionBtn.style.display = 'none';
         }
 
         // --- ADMIN FUNCTIONS ---
@@ -685,7 +735,9 @@
 
         function speakText(text) { 
             if (!'speechSynthesis' in window) return;
-            if (speechSynthesis.speaking) speechSynthesis.cancel();
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
 
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'vi-VN';
@@ -735,11 +787,7 @@
         // --- INITIAL APPLICATION START ---
         document.addEventListener('DOMContentLoaded', () => {
             initializeFirebase();
-
-            if (readQuestionBtn) {
-                readQuestionBtn.style.display = 'none';
-            }
-
+            readQuestionBtn.style.display = 'none';
             if (speechSynthesis.getVoices().length > 0) {
                 findVietnameseVoice();
                 voicesLoaded = true;
