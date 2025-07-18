@@ -141,10 +141,10 @@
         
         <!-- Admin & History Panels -->
         <div id="admin-panel" class="hidden">
-            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Bảng điều khiển Admin</h2>
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Bảng điều khiển Admin</h2>
             <div class="space-y-4">
                 <button id="view-history-btn" class="w-full glass-btn bg-indigo-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-indigo-500/80">Xem Lịch Sử Thi</button>
-                <div class="mt-8 border-t pt-6">
+                <div class="mt-6 border-t pt-6">
                     <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">Cài đặt Đồng hồ</h3>
                     <div class="space-y-4 max-w-sm mx-auto">
                         <div class="flex items-center justify-between p-3 bg-white/20 rounded-xl">
@@ -156,10 +156,20 @@
                             <input type="number" id="timer-duration" min="5" max="120" class="w-24 px-3 py-1 border border-gray-300/50 rounded-lg bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
                         </div>
                         <button id="save-settings-btn" class="w-full glass-btn bg-green-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-green-500/80">Lưu Cài Đặt</button>
-                        <p id="settings-feedback" class="text-center text-sm text-green-800 font-bold h-4"></p>
                     </div>
                 </div>
-                <button id="logout-btn" class="w-full glass-btn bg-red-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-500/80 mt-8">Đăng xuất</button>
+                
+                <div class="mt-6 border-t pt-6 border-red-400/50">
+                    <h3 class="text-xl font-semibold text-red-700 mb-4 text-center">Tác Vụ Nguy Hiểm</h3>
+                    <div class="space-y-4 max-w-sm mx-auto">
+                        <button id="clear-leaderboard-btn" class="w-full glass-btn bg-amber-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-amber-500/80">Xóa Bảng Xếp Hạng</button>
+                        <button id="clear-history-btn" class="w-full glass-btn bg-amber-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-amber-500/80">Xóa Lịch Sử Thi</button>
+                    </div>
+                </div>
+
+                <p id="settings-feedback" class="text-center text-sm font-bold h-4 mt-4"></p>
+                
+                <button id="logout-btn" class="w-full glass-btn bg-red-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-500/80 mt-6">Đăng xuất</button>
             </div>
         </div>
         <div id="history-panel" class="hidden"><h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Lịch Sử Làm Bài</h2><div id="history-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4"></div><button id="back-to-admin-btn" class="w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button></div>
@@ -212,11 +222,22 @@
         </div>
     </div>
 
+    <div id="confirmation-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0">
+        <div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative text-center">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Xác nhận hành động</h2>
+            <p id="confirmation-message" class="text-gray-700 mb-6"></p>
+            <div class="flex justify-center gap-4">
+                <button id="confirm-delete-btn" class="w-full glass-btn bg-red-600/70 text-white font-bold py-3 rounded-2xl hover:bg-red-600/90">Xác nhận</button>
+                <button id="cancel-delete-btn" class="w-full glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl hover:bg-gray-500/80">Hủy</button>
+            </div>
+        </div>
+    </div>
+
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp, doc, getDoc, setDoc, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp, doc, getDoc, setDoc, where, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- SOUND EFFECTS SETUP ---
         let soundsEnabled = true;
@@ -417,7 +438,8 @@
         const modals = {
             login: document.getElementById('login-modal'),
             nameSelection: document.getElementById('name-selection-modal'),
-            historyDetail: document.getElementById('history-detail-modal')
+            historyDetail: document.getElementById('history-detail-modal'),
+            confirmation: document.getElementById('confirmation-modal')
         };
         const leaderboardBtn = document.getElementById('leaderboard-btn');
         const backToMenuBtn = document.getElementById('back-to-menu-btn');
@@ -505,7 +527,6 @@
         async function saveResult(resultData, playerName = null) {
             if (!db || !appId || !auth.currentUser) return;
             const dataToSaveForHistory = { ...resultData, name: playerName };
-            // Leaderboard only needs score and name
             const dataToSaveForLeaderboard = {
                 name: playerName,
                 score: resultData.score,
@@ -727,7 +748,6 @@
             else if (percentage >= 50) finalMessageElement.textContent = "Làm tốt lắm! Hãy chọn tên để lưu điểm nhé."; 
             else finalMessageElement.textContent = "Cố gắng hơn lần sau nhé! Chọn tên để lưu điểm nào."; 
             
-            // Save result immediately before showing name selection
             const resultData = { 
                 date: serverTimestamp(), 
                 subject: selectedSubject, 
@@ -735,7 +755,7 @@
                 semester: selectedSemester, 
                 score: score, 
                 totalQuestions: currentQuestions.length,
-                questions: sessionAnswers // Add detailed answers
+                questions: sessionAnswers
             };
             
             document.getElementById('name-selection-container').onclick = (e) => {
@@ -749,7 +769,7 @@
             };
             document.getElementById('skip-and-play-again-btn').onclick = () => {
                 playSound('click');
-                saveResult(resultData, null); // Save with null name
+                saveResult(resultData, null); 
                 hideModal('nameSelection');
                 resetGame();
             };
@@ -764,6 +784,39 @@
         function hideModal(modalName) { if (modals[modalName]) { modals[modalName].classList.add('opacity-0'); setTimeout(() => modals[modalName].classList.add('hidden'), 300); } }
         function speakText(text) { if (!'speechSynthesis' in window) { console.warn("Speech synthesis not supported."); return; } if (speechSynthesis.speaking) speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'vi-VN'; const voice = speechSynthesis.getVoices().find(v => v.lang === 'vi-VN'); if (voice) utterance.voice = voice; speechSynthesis.speak(utterance); }
         
+        let confirmCallback = null;
+        function showConfirmationModal(message, onConfirm) {
+            document.getElementById('confirmation-message').textContent = message;
+            confirmCallback = onConfirm;
+            showModal('confirmation');
+        }
+
+        async function clearCollection(collectionName) {
+            const feedbackEl = document.getElementById('settings-feedback');
+            const friendlyName = collectionName === 'leaderboard' ? 'Bảng xếp hạng' : 'Lịch sử thi';
+            feedbackEl.textContent = `Đang xóa ${friendlyName}...`;
+            feedbackEl.classList.remove('text-green-800', 'text-red-600');
+
+            const collectionRef = collection(db, `artifacts/${appId}/public/data/${collectionName}`);
+            try {
+                const querySnapshot = await getDocs(collectionRef);
+                const deletePromises = [];
+                querySnapshot.forEach((doc) => {
+                    deletePromises.push(deleteDoc(doc.ref));
+                });
+                await Promise.all(deletePromises);
+                
+                console.log(`${collectionName} cleared successfully.`);
+                feedbackEl.textContent = `Đã xóa thành công ${friendlyName}!`;
+                feedbackEl.classList.add('text-green-800');
+                setTimeout(() => feedbackEl.textContent = '', 4000);
+            } catch (error) {
+                console.error(`Error clearing ${collectionName}:`, error);
+                feedbackEl.textContent = `Lỗi khi xóa ${friendlyName}.`;
+                feedbackEl.classList.add('text-red-600');
+            }
+        }
+
         // --- EVENT LISTENERS ---
         document.addEventListener('DOMContentLoaded', async () => { await initializeFirebase(); document.body.addEventListener('click', async () => { if (Tone.context.state !== 'running') { await Tone.start(); console.log('Audio context started'); } }, { once: true }); });
         document.getElementById('sound-toggle-btn').addEventListener('click', () => { soundsEnabled = !soundsEnabled; document.getElementById('speaker-on-icon').classList.toggle('hidden', !soundsEnabled); document.getElementById('speaker-off-icon').classList.toggle('hidden', soundsEnabled); });
@@ -779,6 +832,34 @@
         document.getElementById('admin-login-btn').addEventListener('click',_=> { playSound('click'); showModal('login'); });
         document.getElementById('close-modal-btn').addEventListener('click', () => hideModal('login'));
         document.getElementById('close-history-detail-btn').addEventListener('click', () => hideModal('historyDetail'));
+        
+        document.getElementById('clear-leaderboard-btn').addEventListener('click', () => {
+            showConfirmationModal('Bạn có chắc chắn muốn xóa TOÀN BỘ bảng xếp hạng không? Hành động này không thể hoàn tác.', () => {
+                clearCollection('leaderboard');
+            });
+        });
+
+        document.getElementById('clear-history-btn').addEventListener('click', () => {
+            showConfirmationModal('Bạn có chắc chắn muốn xóa TOÀN BỘ lịch sử thi không? Hành động này không thể hoàn tác.', () => {
+                clearCollection('quizResults');
+            });
+        });
+
+        document.getElementById('confirm-delete-btn').addEventListener('click', () => {
+            if (typeof confirmCallback === 'function') {
+                playSound('click');
+                confirmCallback();
+            }
+            hideModal('confirmation');
+            confirmCallback = null;
+        });
+
+        document.getElementById('cancel-delete-btn').addEventListener('click', () => {
+            playSound('click');
+            hideModal('confirmation');
+            confirmCallback = null;
+        });
+        
         document.getElementById('login-form').addEventListener('submit', (e) => { e.preventDefault(); playSound('click'); const u = document.getElementById('username').value; const p = document.getElementById('password').value; if (u === 'admin' && p === 'admin') { document.getElementById('timer-toggle').checked = timerEnabled; document.getElementById('timer-duration').value = timerDuration; hideModal('login'); showScreen('admin'); } else { document.getElementById('login-error').textContent = 'Tên đăng nhập hoặc mật khẩu không đúng.'; } });
         document.getElementById('logout-btn').addEventListener('click', () => { playSound('click'); showScreen('selection'); });
         document.getElementById('view-history-btn').addEventListener('click', () => { playSound('click'); displayHistory(); });
