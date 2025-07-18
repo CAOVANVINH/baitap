@@ -107,6 +107,8 @@
                 </div>
             </div>
             <button id="start-btn" class="w-full glass-btn bg-gray-500/50 text-white font-bold py-4 rounded-2xl text-xl shadow-lg cursor-not-allowed" disabled>Bắt đầu!</button>
+            <!-- Error message container -->
+            <p id="start-error" class="text-red-600 font-bold text-center text-sm h-5 mt-2"></p>
             <div class="flex justify-between items-center mt-4">
                 <button id="leaderboard-btn" class="text-sm font-semibold hover:text-white">🏆 Bảng Xếp Hạng</button>
                 <button id="admin-login-btn" class="text-sm font-semibold hover:text-white">Quản trị viên</button>
@@ -202,8 +204,9 @@
             } catch (error) { console.error("Sound play error:", error); }
         }
 
-        // --- LOCAL QUESTION SEED DATA (Expanded to ensure >= 10 questions per category) ---
+        // --- EXPANDED LOCAL QUESTION SEED DATA ---
         const localQuestionSeedData = {
+            version: 2.0, // Used to force update the question bank in Firestore
             toan: {
                 lop1: {
                     hocky1: [
@@ -212,11 +215,19 @@
                         { question: "Số liền sau của 9 là?", options: [8, 10, 11, 7], answer: 10 },
                         { question: "Có mấy hình tròn: 🔵 🔺 🔵 ⬜", options: [1, 2, 3, 4], answer: 2 },
                         { question: "2 + 6 = ?", options: [7, 8, 9, 10], answer: 8 },
-                        { question: "Số liền trước của 15 là?", options: [13, 14, 16, 17], answer: 14 },
+                        { question: "Số liền trước của 7 là?", options: [5, 6, 8, 9], answer: 6 },
                         { question: "Hình vuông có mấy cạnh?", options: [2, 3, 4, 5], answer: 4 },
-                        { question: "Điền dấu: 5 + 3 ... 8", options: ["<", ">", "="], answer: "=" },
+                        { question: "Điền dấu thích hợp: 5 + 3 ... 8", options: ["<", ">", "="], answer: "=" },
                         { question: "7 + ... = 10", options: [1, 2, 3, 4], answer: 3 },
                         { question: "Số bé nhất trong các số: 9, 3, 7, 5 là?", options: [9, 3, 7, 5], answer: 3 },
+                        { question: "Số lớn nhất trong các số: 2, 8, 4, 10 là?", options: [2, 8, 4, 10], answer: 10 },
+                        { question: "Phép tính nào có kết quả bằng 6?", options: ["3 + 2", "9 - 3", "4 + 3"], answer: "9 - 3" },
+                        { question: "Sắp xếp các số sau theo thứ tự từ bé đến lớn: 5, 2, 9, 1", options: ["1, 2, 5, 9", "9, 5, 2, 1", "1, 5, 2, 9"], answer: "1, 2, 5, 9" },
+                        { question: "Có 4 quả táo, thêm 3 quả táo nữa. Có tất cả mấy quả táo?", options: [6, 7, 8, 1], answer: 7 },
+                        { question: "Hình nào khác với các hình còn lại: 🔴 🔴 🔷 🔴", options: ["Hình tròn", "Hình vuông", "Tất cả đều giống nhau"], answer: "Hình vuông" },
+                        { question: "10 - ... = 4", options: [5, 6, 7, 8], answer: 6 },
+                        { question: "Trong các số 1, 5, 0, 8, số nào là số 0?", options: [1, 5, 0, 8], answer: 0 },
+                        { question: "Có bao nhiêu ô vuông trong hình này: ⬜️⬜️⬜️", options: [2, 3, 4, 1], answer: 3 },
                     ],
                     hocky2: [
                         { question: "10 + 6 = ?", options: [15, 16, 17, 18], answer: 16 },
@@ -226,30 +237,84 @@
                         { question: "Lan có 8 kẹo, mẹ cho thêm 5. Lan có tất cả...cái kẹo?", options: [12, 13, 14, 3], answer: 13 },
                         { question: "15 - 7 = ?", options: [6, 7, 8, 9], answer: 8 },
                         { question: "Kim ngắn chỉ số 3, kim dài chỉ số 12. Là mấy giờ?", options: ["12 giờ 3 phút", "3 giờ 12 phút", "3 giờ đúng", "12 giờ 15 phút"], answer: "3 giờ đúng" },
-                        { question: "An có 12 viên bi, An cho Bình 5 viên. Hỏi An còn lại mấy viên bi?", options: [17, 7, 8, 6], answer: "7" },
+                        { question: "An có 12 viên bi, An cho Bình 5 viên. Hỏi An còn lại mấy viên bi?", options: [17, 7, 8, 6], answer: 7 },
                         { question: "Điền dấu thích hợp vào chỗ chấm: 19 ... 16", options: ["<", ">", "="], answer: ">" },
                         { question: "Số 14 gồm mấy chục và mấy đơn vị?", options: ["4 chục 1 đơn vị", "1 chục 4 đơn vị", "10 chục 4 đơn vị"], answer: "1 chục 4 đơn vị" },
+                        { question: "Số liền sau của 29 là?", options: [28, 30, 31, 20], answer: 30 },
+                        { question: "Số 50 đọc là gì?", options: ["Năm mươi", "Mười lăm", "Năm không"], answer: "Năm mươi" },
+                        { question: "40 + 30 = ?", options: [60, 70, 80, 50], answer: 70 },
+                        { question: "90 - 20 = ?", options: [60, 70, 80, 50], answer: 70 },
+                        { question: "Đoạn thẳng AB dài 10cm, đoạn thẳng CD dài 8cm. Đoạn thẳng nào dài hơn?", options: ["AB", "CD", "Bằng nhau"], answer: "AB" },
+                        { question: "Một tuần lễ có mấy ngày?", options: [5, 6, 7, 8], answer: 7 },
+                        { question: "Số tròn chục lớn nhất có 2 chữ số là?", options: [90, 99, 100, 80], answer: 90 },
+                        { question: "Lớp 1A có 20 bạn nam và 15 bạn nữ. Lớp 1A có tất cả bao nhiêu bạn?", options: [30, 35, 40, 25], answer: 35 },
+                    ]
+                },
+                lop2: {
+                    hocky1: [
+                        { question: "35 + 24 = ?", options: [58, 59, 69, 60], answer: 59 },
+                        { question: "78 - 45 = ?", options: [33, 32, 43, 23], answer: 33 },
+                        { question: "Số 56 đọc là gì?", options: ["Năm sáu", "Năm mươi sáu", "Sáu mươi năm", "Năm mươi sáu lăm"], answer: "Năm mươi sáu" },
+                        { question: "1 mét bằng bao nhiêu xăng-ti-mét?", options: ["10 cm", "100 cm", "1000 cm", "1 cm"], answer: "100 cm" },
+                        { question: "Tìm x, biết x + 15 = 40", options: [25, 35, 55, 15], answer: 25 },
+                        { question: "Trong phép tính 4 x 5 = 20, số 4 được gọi là gì?", options: ["Tích", "Thừa số", "Tổng", "Hiệu"], answer: "Thừa số" },
+                        { question: "Thứ tư tuần này là ngày 10, vậy thứ tư tuần sau là ngày mấy?", options: [16, 17, 18, 11], answer: 17 },
+                        { question: "2 x 8 = ?", options: [10, 14, 16, 18], answer: 16 },
+                        { question: "Có 15 quả cam chia đều vào 3 đĩa. Mỗi đĩa có mấy quả cam?", options: [3, 4, 5, 6], answer: 5 },
+                        { question: "Số lớn nhất có hai chữ số là số nào?", options: [90, 98, 99, 100], answer: 99 },
+                        { question: "Kết quả của phép tính 27 + 35 là?", options: [52, 62, 51, 61], answer: 62 },
+                        { question: "Hiệu của 64 và 28 là?", options: [36, 46, 34, 44], answer: 36 },
+                        { question: "Tìm x, biết 50 - x = 25", options: [25, 35, 75], answer: 25 },
+                        { question: "Trong phép chia 18 : 2 = 9, số 18 được gọi là gì?", options: ["Số chia", "Thương", "Số bị chia"], answer: "Số bị chia" },
+                        { question: "1 dm = ... cm?", options: [1, 10, 100], answer: 10 },
+                        { question: "Tổng của số lớn nhất có một chữ số và số bé nhất có hai chữ số là?", options: [18, 19, 20, 91], answer: 19 },
+                        { question: "Mẹ mua 2 chục quả trứng, mẹ đã dùng hết 5 quả. Mẹ còn lại bao nhiêu quả trứng?", options: [15, 25, 10], answer: 15 },
+                    ],
+                    hocky2: [
+                        { question: "5 x 9 = ?", options: [40, 45, 50, 54], answer: 45 },
+                        { question: "36 : 4 = ?", options: [7, 8, 9, 10], answer: 9 },
+                        { question: "Một phần ba của 27 là bao nhiêu?", options: [7, 8, 9, 3], answer: 9 },
+                        { question: "Đồng hồ chỉ 8 giờ 30 phút. Kim phút chỉ vào số mấy?", options: [3, 6, 8, 12], answer: 6 },
+                        { question: "Một cửa hàng buổi sáng bán được 150kg gạo, buổi chiều bán được nhiều hơn buổi sáng 50kg. Cả hai buổi bán được bao nhiêu kg gạo?", options: [200, 250, 350, 300], answer: 350 },
+                        { question: "Hình chữ nhật có mấy góc vuông?", options: [1, 2, 3, 4], answer: 4 },
+                        { question: "Điền số thích hợp: 8, 12, 16, ..., 24", options: [18, 20, 22, 19], answer: 20 },
+                        { question: "1000 - 300 = ?", options: [600, 700, 800, 500], answer: 700 },
+                        { question: "Chu vi hình tam giác có ba cạnh bằng nhau, mỗi cạnh dài 8cm là:", options: ["16cm", "24cm", "32cm", "11cm"], answer: "24cm" },
+                        { question: "Số bé nhất có ba chữ số khác nhau là số nào?", options: [100, 111, 102, 123], answer: 102 },
+                        { question: "Tìm y, biết y x 5 = 40", options: [6, 7, 8, 9], answer: 8 },
+                        { question: "1/4 của 20 là?", options: [4, 5, 6, 16], answer: 5 },
+                        { question: "Bố 36 tuổi, con 9 tuổi. Tuổi bố gấp mấy lần tuổi con?", options: [3, 4, 5, 27], answer: 4 },
+                        { question: "Số 758 gồm mấy trăm, mấy chục, mấy đơn vị?", options: ["7 trăm, 5 chục, 8 đơn vị", "8 trăm, 5 chục, 7 đơn vị", "7 trăm, 8 chục, 5 đơn vị"], answer: "7 trăm, 5 chục, 8 đơn vị" },
+                        { question: "Chu vi hình vuông có cạnh 6m là?", options: ["12m", "24m", "36m"], answer: "24m" },
+                        { question: "Có 45 học sinh xếp thành 5 hàng đều nhau. Hỏi mỗi hàng có bao nhiêu học sinh?", options: [8, 9, 10, 7], answer: 9 },
+                        { question: "Ngày 25 tháng 4 là thứ ba, vậy ngày 1 tháng 5 cùng năm đó là thứ mấy?", options: ["Thứ hai", "Thứ ba", "Thứ tư"], answer: "Thứ hai" },
                     ]
                 }
             },
             tiengviet: {
                 lop1: {
                     hocky1: [
-                        { question: "Chữ cái nào đứng sau 'A' trong bảng chữ cái?", options: ["C", "B", "D", "E"], answer: "B" },
+                        { question: "Chữ cái nào đứng sau 'a' trong bảng chữ cái?", options: ["c", "b", "d", "e"], answer: "b" },
                         { question: "Từ nào chỉ hoạt động 'ăn'?", options: ["Ngủ", "Chơi", "Ăn", "Học"], answer: "Ăn" },
                         { question: "Điền từ còn thiếu: 'Con ... đang bơi.'", options: ["chim", "cá", "mèo", "chó"], answer: "cá" },
                         { question: "Từ nào có vần 'ai'?", options: ["Cái", "Con", "Sách", "Bút"], answer: "Cái" },
-                        { question: "Chữ cái nào đứng trước 'D' trong bảng chữ cái?", options: ["C", "E", "F", "B"], answer: "C" },
-                        { question: "Ghép âm 'nh' và vần 'a' ta được tiếng gì?", options: ["nha", "anh", "nha", "han"], answer: "nha" },
+                        { question: "Chữ cái nào đứng trước 'd' trong bảng chữ cái?", options: ["c", "e", "f", "b"], answer: "c" },
+                        { question: "Ghép âm 'nh' và vần 'a' ta được tiếng gì?", options: ["na", "anh", "nha", "han"], answer: "nha" },
                         { question: "Tìm từ có vần 'ươn'.", options: ["Vườn", "Cơm", "Cam", "Bánh"], answer: "Vườn" },
                         { question: "Điền vào chỗ trống: '...à nội em hiền.'", options: ["Bà", "Bò", "Ba"], answer: "Bà" },
                         { question: "Sắp xếp các từ 'sàn', 'nhà', 'em', 'ở' thành câu có nghĩa.", options: ["Em ở nhà sàn.", "Nhà em ở sàn.", "Sàn nhà em ở."], answer: "Em ở nhà sàn." },
                         { question: "Trong câu 'Nhà bà có gà. Gà có lông vàng.', gà có lông màu gì?", options: ["Vàng", "Nâu", "Đen"], answer: "Vàng" },
+                        { question: "Tiếng 'sách' có âm đầu là gì?", options: ["s", "a", "ch"], answer: "s" },
+                        { question: "Vần 'eo' có trong từ nào?", options: ["Cái kéo", "Cái ca", "Con bò"], answer: "Cái kéo" },
+                        { question: "Điền 'g' hay 'gh' vào chỗ trống: 'Cái ...ế'", options: ["g", "gh"], answer: "gh" },
+                        { question: "Câu 'Bé vẽ' có mấy tiếng?", options: [1, 2, 3], answer: 2 },
+                        { question: "Tìm từ chỉ đồ vật trong nhà.", options: ["Cây bàng", "Cái bàn", "Con đường"], answer: "Cái bàn" },
+                        { question: "Điền vần 'ay' hoặc 'ây' vào chỗ trống: 'Máy c...'", options: ["ay", "ây"], answer: "ây" },
                     ],
                     hocky2: [
                         { question: "Từ nào có tiếng 'sách'?", options: ["Quyển vở", "Bút chì", "Sách giáo khoa", "Cái bàn"], answer: "Sách giáo khoa" },
-                        { question: "Từ nào đồng nghĩa với 'vui vẻ'?", options: ["Buồn bã", "Hạnh phúc", "Tức giận", "Sợ hãi"], answer: "Hạnh phúc" },
-                        { question: "Điền từ còn thiếu: 'Bầu trời ...'", options: ["xanh", "đỏ", "vàng", "đen"], answer: "xanh" },
+                        { question: "Từ nào đồng nghĩa với 'vui vẻ'?", options: ["Buồn bã", "Hân hoan", "Tức giận", "Sợ hãi"], answer: "Hân hoan" },
+                        { question: "Điền từ còn thiếu: 'Bầu trời cao và ...'", options: ["xanh", "đỏ", "vàng", "đen"], answer: "xanh" },
                         { question: "Đặt câu với từ 'trường học'.", options: ["Em đi học.", "Trường học của em rất đẹp.", "Cây phượng nở hoa."], answer: "Trường học của em rất đẹp." },
                         { question: "Từ nào trái nghĩa với 'sạch sẽ'?", options: ["Ngăn nắp", "Gọn gàng", "Bẩn thỉu"], answer: "Bẩn thỉu" },
                         { question: "Điền dấu câu thích hợp: 'Mẹ em là cô giáo_'", options: [".", "?", "!"], answer: "." },
@@ -257,6 +322,11 @@
                         { question: "Đồ vật nào sau đây có trong lớp học?", options: ["Cái giường", "Cái bàn", "Cái tủ lạnh"], answer: "Cái bàn" },
                         { question: "Điền 'ch' hay 'tr' vào chỗ trống: '...ăm học'", options: ["ch", "tr"], answer: "ch" },
                         { question: "Từ nào chỉ một loài cây?", options: ["Con chó", "Cây bàng", "Cái nhà"], answer: "Cây bàng" },
+                        { question: "Câu 'Ai trồng cây?' là loại câu gì?", options: ["Câu kể", "Câu hỏi", "Câu cảm"], answer: "Câu hỏi" },
+                        { question: "Từ nào chỉ hoạt động của học sinh?", options: ["Buôn bán", "Dạy học", "Học bài"], answer: "Học bài" },
+                        { question: "Sắp xếp lại câu: 'em, rất, yêu, trường, của, em'", options: ["Em yêu rất trường của em.", "Em rất yêu trường của em."], answer: "Em rất yêu trường của em." },
+                        { question: "Từ 'chăm chỉ' là từ chỉ gì?", options: ["Chỉ người", "Chỉ hoạt động", "Chỉ tính nết"], answer: "Chỉ tính nết" },
+                        { question: "Điền dấu chấm than (!) vào cuối câu nào?", options: ["Bạn tên là gì", "Ôi, bông hoa đẹp quá", "Em đang học bài"], answer: "Ôi, bông hoa đẹp quá" },
                     ]
                 },
                 lop2: {
@@ -271,18 +341,27 @@
                         { question: "Điền 's' hay 'x' vào chỗ trống: '...inh đẹp'", options: ["s", "x"], answer: "x" },
                         { question: "Đặt câu hỏi cho bộ phận được gạch chân: '<u>Bạn Lan</u> là một học sinh giỏi.'", options: ["Ai là một học sinh giỏi?", "Bạn Lan là gì?", "Bạn Lan thế nào?"], answer: "Ai là một học sinh giỏi?" },
                         { question: "Trong câu 'Trên cành cây, chim hót líu lo.', dấu phẩy dùng để làm gì?", options: ["Kết thúc câu", "Ngăn cách trạng ngữ với nòng cốt câu", "Liệt kê"], answer: "Ngăn cách trạng ngữ với nòng cốt câu" },
+                        { question: "Từ nào là từ chỉ đặc điểm?", options: ["Cái cây", "Cao", "Đi bộ"], answer: "Cao" },
+                        { question: "Câu 'Đàn cá tung tăng bơi lội.' thuộc mẫu câu nào?", options: ["Ai là gì?", "Con gì làm gì?", "Ai thế nào?"], answer: "Con gì làm gì?" },
+                        { question: "Tìm từ trái nghĩa với 'cao'.", options: ["To", "Thấp", "Dài"], answer: "Thấp" },
+                        { question: "Bộ phận trả lời câu hỏi 'Ở đâu?' trong câu 'Em học bài ở trong phòng.' là gì?", options: ["Em", "học bài", "ở trong phòng"], answer: "ở trong phòng" },
+                        { question: "Điền 'r', 'd' hay 'gi' vào chỗ trống: '...ữ gìn'", options: ["r", "d", "gi"], answer: "gi" },
                     ],
                     hocky2: [
-                        { question: "Từ nào là từ chỉ số lượng?", options: ["Nhanh", "Đẹp", "Năm", "Ăn"], answer: "Năm" },
-                        { question: "Từ nào là từ chỉ thời gian?", options: ["Hôm nay", "Sách", "Bút", "Cái ghế"], answer: "Hôm nay" },
                         { question: "Câu 'Ông mặt trời thức dậy' sử dụng biện pháp nghệ thuật gì?", options: ["So sánh", "Nhân hóa", "Ẩn dụ"], answer: "Nhân hóa" },
                         { question: "Tìm từ trái nghĩa với 'dũng cảm'.", options: ["Gan dạ", "Anh hùng", "Nhút nhát"], answer: "Nhút nhát" },
                         { question: "Câu 'Đàn bò đang gặm cỏ.' thuộc mẫu câu nào?", options: ["Ai là gì?", "Ai làm gì?", "Ai thế nào?"], answer: "Ai làm gì?" },
-                        { question: "Kể tên 2 loài hoa.", options: ["Chó, mèo", "Hồng, cúc", "Bàn, ghế"], answer: "Hồng, cúc" },
-                        { question: "Điền 'r', 'd' hay 'gi' vào chỗ trống: '...ao hàng'", options: ["r", "d", "gi"], answer: "gi" },
-                        { question: "Đặt câu hỏi cho câu: 'Vì trời mưa to, em phải nghỉ học.'", options: ["Khi nào em nghỉ học?", "Em nghỉ học ở đâu?", "Vì sao em phải nghỉ học?"], answer: "Vì sao em phải nghỉ học?" },
                         { question: "Dấu hai chấm trong câu 'Bà kể: Ngày xưa có một nàng công chúa.' dùng để làm gì?", options: ["Kết thúc câu", "Báo hiệu lời nói trực tiếp của nhân vật", "Ngắt nghỉ"], answer: "Báo hiệu lời nói trực tiếp của nhân vật" },
                         { question: "Tìm từ chỉ đặc điểm trong câu: 'Mặt biển xanh biếc.'", options: ["Mặt biển", "xanh biếc", "biển"], answer: "xanh biếc" },
+                        { question: "Câu 'Trường em xanh, sạch, đẹp.' sử dụng dấu phẩy để làm gì?", options: ["Ngăn cách các bộ phận cùng chức vụ", "Ngăn cách trạng ngữ", "Báo hiệu lời nói"], answer: "Ngăn cách các bộ phận cùng chức vụ" },
+                        { question: "Trong câu 'Những chú gà con lon ton chạy theo mẹ.', từ nào là từ láy?", options: ["Gà con", "Chạy theo", "Lon ton"], answer: "Lon ton" },
+                        { question: "Đặt câu hỏi cho bộ phận gạch chân: 'Em tặng mẹ một bông hoa <u>vì hôm nay là sinh nhật mẹ</u>.'", options: ["Em tặng mẹ một bông hoa khi nào?", "Vì sao em tặng mẹ một bông hoa?", "Em tặng mẹ cái gì?"], answer: "Vì sao em tặng mẹ một bông hoa?" },
+                        { question: "Câu 'Bạn có thích đọc truyện không?' là loại câu gì?", options: ["Câu kể", "Câu hỏi", "Câu khiến"], answer: "Câu hỏi" },
+                        { question: "Từ 'Tổ quốc' viết hoa vì lý do gì?", options: ["Đứng đầu câu", "Là danh từ riêng", "Là từ khó"], answer: "Là danh từ riêng" },
+                        { question: "Biện pháp so sánh được sử dụng trong câu nào sau đây?", options: ["Mặt trời đỏ như quả cầu lửa.", "Gió thổi ào ào.", "Chị tre chải tóc bên ao."], answer: "Mặt trời đỏ như quả cầu lửa." },
+                        { question: "Chủ ngữ trong câu 'Những bông hoa trong vườn đang khoe sắc.' là gì?", options: ["Những bông hoa", "Những bông hoa trong vườn", "đang khoe sắc"], answer: "Những bông hoa trong vườn" },
+                        { question: "Hãy lao động thật tốt! - là câu gì?", options: ["Câu kể", "Câu cảm", "Câu khiến"], answer: "Câu khiến" },
+                        { question: "Từ nào viết sai chính tả?", options: ["Nghỉ ngơi", "Ngoằn ngoèo", "Nghoẹo cổ"], answer: "Nghoẹo cổ" },
                     ]
                 }
             }
@@ -311,7 +390,7 @@
 
         // --- FIREBASE & DATA LOADING ---
         async function initializeFirebase() { try { let firebaseConfig; if (typeof __firebase_config !== 'undefined' && __firebase_config) { firebaseConfig = JSON.parse(__firebase_config); appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.appId; } else { console.warn("Using hardcoded fallback Firebase config."); firebaseConfig = { apiKey: "AIzaSyDJBY6U0LUtmnk4PrfNeA7UE7qq1FZ84X8", authDomain: "data-chung-a62ee.firebaseapp.com", projectId: "data-chung-a62ee", storageBucket: "data-chung-a62ee.appspot.com", messagingSenderId: "453115303161", appId: "1:453115303161:web:c885f876f4914829863e28" }; appId = firebaseConfig.appId; } if (!firebaseConfig.projectId) throw new Error("Firebase config is missing projectId."); const app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app); if (typeof __initial_auth_token !== 'undefined') { await signInWithCustomToken(auth, __initial_auth_token); } else { await signInAnonymously(auth); } onAuthStateChanged(auth, (user) => { if (user) { console.log("User authenticated, loading questions..."); loadAndSeedQuestions(); } }); } catch (error) { console.error("Firebase initialization error:", error); document.getElementById('loading-questions').textContent = "Lỗi kết nối đến cơ sở dữ liệu."; } }
-        async function loadAndSeedQuestions() { if (!db || !appId) { console.error("Firestore DB or App ID not initialized."); return; } const questionBankRef = doc(db, `artifacts/${appId}/public/data/questions`, 'mainBank'); try { const docSnap = await getDoc(questionBankRef); if (docSnap.exists() && docSnap.data().toan) { questionBank = docSnap.data(); } else { await setDoc(questionBankRef, localQuestionSeedData); questionBank = localQuestionSeedData; } document.getElementById('loading-questions').classList.add('hidden'); document.getElementById('selections-container').classList.remove('hidden'); updateStartButtonState(); } catch (error) { console.error("Error loading or seeding questions:", error); document.getElementById('loading-questions').textContent = "Lỗi khi tải câu hỏi."; } }
+        async function loadAndSeedQuestions() { if (!db || !appId) { console.error("Firestore DB or App ID not initialized."); return; } const questionBankRef = doc(db, `artifacts/${appId}/public/data/questions`, 'mainBank'); try { const docSnap = await getDoc(questionBankRef); if (docSnap.exists() && docSnap.data().version === 2.0) { questionBank = docSnap.data(); console.log("Loaded question bank version 2.0 from Firestore."); } else { console.log("Old question bank version or no data found. Seeding with new version 2.0."); await setDoc(questionBankRef, localQuestionSeedData); questionBank = localQuestionSeedData; } document.getElementById('loading-questions').classList.add('hidden'); document.getElementById('selections-container').classList.remove('hidden'); updateStartButtonState(); } catch (error) { console.error("Error loading or seeding questions:", error); document.getElementById('loading-questions').textContent = "Lỗi khi tải câu hỏi."; } }
         
         // --- AI EXPLANATION WITH CACHING ---
         async function getExplanationFromAI(question, answer, grade) {
@@ -319,40 +398,35 @@
             const explanationTextEl = document.getElementById('explanation-text');
             const readExplanationBtn = document.getElementById('read-explanation-btn');
 
-            // Show initial loading state
             explanationTextEl.textContent = 'Đang tìm giải thích...';
             readExplanationBtn.style.display = 'none';
             explanationContainer.classList.remove('hidden');
 
-            // 1. Create a unique, safe ID for the explanation document
             const explanationId = btoa(encodeURIComponent(`${grade}-${question}`)).replace(/[^a-zA-Z0-9]/g, '');
             const explanationRef = doc(db, `artifacts/${appId}/public/data/explanations`, explanationId);
 
             try {
-                // 2. Check for a cached explanation in Firestore
                 const docSnap = await getDoc(explanationRef);
 
                 if (docSnap.exists()) {
-                    // 3a. If cached, use it immediately
                     const cachedExplanation = docSnap.data().text;
                     explanationTextEl.textContent = `💡 Giải thích: ${cachedExplanation}`;
                     readExplanationBtn.onclick = () => speakText(cachedExplanation);
                     readExplanationBtn.style.display = 'block';
                     console.log("Loaded explanation from cache.");
-                    return; // Finished
+                    return;
                 }
 
-                // 3b. If not cached, show generating state and call AI
                 console.log("Cache miss. Generating new explanation from AI.");
                 explanationTextEl.textContent = 'Đang tạo giải thích mới...';
 
                 const gradeMap = { lop1: "lớp 1", lop2: "lớp 2" };
-                const gradeText = gradeMap[grade] || "học sinh tiểu học"; // Fallback
+                const gradeText = gradeMap[grade] || "học sinh tiểu học";
 
                 const prompt = `Hãy giải thích đáp án cho câu hỏi sau một cách thật ngắn gọn và dễ hiểu, phù hợp với trình độ của học sinh ${gradeText}. Câu hỏi: "${question}" Đáp án đúng là: "${answer}".`;
 
                 const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-                const apiKey = "AIzaSyCUdFAmMK4IYlnW50bh4fZutWgvD9nuGY4"; // This is handled by the execution environment
+                const apiKey = ""; 
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                 const response = await fetch(apiUrl, {
@@ -367,12 +441,10 @@
                 const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
                 if (generatedText) {
-                    // Display the new explanation
                     explanationTextEl.textContent = `💡 Giải thích: ${generatedText}`;
                     readExplanationBtn.onclick = () => speakText(generatedText);
                     readExplanationBtn.style.display = 'block';
 
-                    // 4. Asynchronously save the new explanation to the cache for next time
                     await setDoc(explanationRef, {
                         text: generatedText,
                         question: question,
@@ -398,7 +470,44 @@
         
         // --- GAME LOGIC ---
         function updateStartButtonState() { if (selectedSubject && selectedGrade && selectedSemester && questionBank) { document.getElementById('start-btn').disabled = false; document.getElementById('start-btn').classList.remove('bg-gray-500/50', 'cursor-not-allowed'); document.getElementById('start-btn').classList.add('bg-blue-600/70', 'hover:bg-blue-600/90'); } else { document.getElementById('start-btn').disabled = true; document.getElementById('start-btn').classList.add('bg-gray-500/50', 'cursor-not-allowed'); document.getElementById('start-btn').classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90'); } }
-        function startGame() { if (!questionBank || !questionBank[selectedSubject] || !questionBank[selectedSubject][selectedGrade] || !questionBank[selectedSubject][selectedGrade][selectedSemester]) return; let allQuestions = questionBank[selectedSubject][selectedGrade][selectedSemester]; currentQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, NUM_OF_QUESTIONS_PER_GAME); currentQuestionIndex = 0; score = 0; showScreen('game'); displayQuestion(); }
+        
+        function startGame() {
+            const errorEl = document.getElementById('start-error');
+            errorEl.textContent = ''; // Xóa lỗi cũ
+
+            // Kiểm tra kỹ hơn xem bộ câu hỏi có tồn tại và hợp lệ không
+            const questionsExist = questionBank &&
+                                   questionBank[selectedSubject] &&
+                                   questionBank[selectedSubject][selectedGrade] &&
+                                   questionBank[selectedSubject][selectedGrade][selectedSemester] &&
+                                   Array.isArray(questionBank[selectedSubject][selectedGrade][selectedSemester]) &&
+                                   questionBank[selectedSubject][selectedGrade][selectedSemester].length > 0;
+
+            if (!questionsExist) {
+                console.error("Không tìm thấy bộ câu hỏi cho:", selectedSubject, selectedGrade, selectedSemester);
+                errorEl.textContent = "Lỗi: Không tìm thấy bộ câu hỏi. Vui lòng chọn lại.";
+                // Tự động xóa lỗi sau 4 giây
+                setTimeout(() => { errorEl.textContent = ''; }, 4000);
+                return; // Dừng thực thi
+            }
+
+            // Nếu câu hỏi tồn tại, tiếp tục trò chơi
+            let allQuestions = questionBank[selectedSubject][selectedGrade][selectedSemester];
+            currentQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, NUM_OF_QUESTIONS_PER_GAME);
+            
+            if (currentQuestions.length === 0) {
+                 console.error("Không đủ câu hỏi để bắt đầu game:", selectedSubject, selectedGrade, selectedSemester);
+                 errorEl.textContent = "Lỗi: Không đủ câu hỏi để bắt đầu. Vui lòng chọn lại.";
+                 setTimeout(() => { errorEl.textContent = ''; }, 4000);
+                 return;
+            }
+
+            currentQuestionIndex = 0;
+            score = 0;
+            showScreen('game');
+            displayQuestion();
+        }
+
         function displayQuestion() { document.getElementById('feedback-container').innerHTML = ''; document.getElementById('explanation-container').classList.add('hidden'); document.getElementById('next-btn').classList.add('hidden'); const questionData = currentQuestions[currentQuestionIndex]; document.getElementById('question-container').querySelector('p').textContent = questionData.question; const optionsContainer = document.getElementById('options-container'); optionsContainer.innerHTML = ''; const shuffledOptions = [...questionData.options].sort(() => Math.random() - 0.5); shuffledOptions.forEach(option => { const button = document.createElement('button'); button.textContent = option; button.className = 'answer-option w-full p-4 rounded-2xl font-semibold glass-btn bg-white/20 hover:bg-white/40 text-gray-800'; button.onclick = (e) => { playSound('click'); checkAnswer(e.target, questionData.answer); }; optionsContainer.appendChild(button); }); document.getElementById('progress-text').textContent = `Câu ${currentQuestionIndex + 1}/${currentQuestions.length}`; document.getElementById('score-text').textContent = `Điểm: ${score}`; document.getElementById('read-question-btn').onclick = () => speakText(questionData.question); }
         
         function checkAnswer(selectedButton, correctAnswer) {
@@ -416,7 +525,6 @@
                 document.querySelectorAll('.answer-option').forEach(btn => { if (btn.textContent == correctAnswer) btn.classList.add('correct'); });
             }
             
-            // Call AI for explanation, passing the selected grade
             getExplanationFromAI(questionData.question, questionData.answer, selectedGrade);
 
             document.getElementById('score-text').textContent = `Điểm: ${score}`;
