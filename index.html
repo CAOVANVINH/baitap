@@ -30,7 +30,7 @@
             transition: all 0.2s ease-in-out;
             color: #2d3748;
         }
-        #start-btn, #next-btn, #admin-login-btn, #logout-btn, #view-history-btn, #back-to-admin-btn, #leaderboard-btn, #back-to-menu-btn, .name-btn {
+        #start-btn, #next-btn, #admin-login-btn, #logout-btn, #view-history-btn, #back-to-admin-btn, #leaderboard-btn, #back-to-menu-btn, .name-btn, #save-settings-btn {
             color: white;
         }
         #admin-login-btn, #leaderboard-btn {
@@ -55,7 +55,7 @@
         .modal-overlay {
             transition: opacity 0.3s ease;
         }
-        #history-table-container, #leaderboard-table-container {
+        #history-table-container, #leaderboard-table-container, #history-detail-content {
             max-height: 400px;
             overflow-y: auto;
         }
@@ -118,44 +118,67 @@
         <!-- Game Screen -->
         <div id="game-screen" class="hidden">
              <div class="flex justify-between items-center mb-4 text-white">
-                <div id="progress-text" class="font-semibold">Câu 1/10</div>
-                <div id="score-text" class="font-bold text-lg">Điểm: 0</div>
-            </div>
-            <div id="question-container" class="bg-black/10 p-6 rounded-2xl text-center mb-6 min-h-[100px] flex items-center justify-center relative">
-                <p class="text-xl md:text-2xl font-semibold text-white"></p>
-                <button id="read-question-btn" class="speaker-btn absolute top-4 right-4 text-white focus:outline-none">
-                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06ZM5.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
-                </button>
-            </div>
-            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-            <div id="feedback-container" class="text-center mt-4 font-bold text-2xl h-8 text-white"></div>
-            <div id="explanation-container" class="hidden relative mt-2 bg-black/10 p-4 rounded-2xl text-white text-center font-medium">
-                 <p id="explanation-text" class="pr-10"></p>
-                 <button id="read-explanation-btn" class="speaker-btn absolute top-1/2 -translate-y-1/2 right-3 text-white focus:outline-none">
-                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06ZM5.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
+                 <div id="progress-text" class="font-semibold">Câu 1/10</div>
+                 <div id="timer-display" class="font-bold text-lg hidden"></div>
+                 <div id="score-text" class="font-bold text-lg">Điểm: 0</div>
+             </div>
+             <div id="question-container" class="bg-black/10 p-6 rounded-2xl text-center mb-6 min-h-[100px] flex items-center justify-center relative">
+                 <p class="text-xl md:text-2xl font-semibold text-white"></p>
+                 <button id="read-question-btn" class="speaker-btn absolute top-4 right-4 text-white focus:outline-none">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06ZM5.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
                  </button>
-            </div>
-            <button id="next-btn" class="hidden w-full mt-4 glass-btn bg-blue-500/60 text-white font-bold py-3 rounded-2xl shadow-lg hover:bg-blue-500/80">Câu tiếp theo</button>
+             </div>
+             <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+             <div id="feedback-container" class="text-center mt-4 font-bold text-2xl h-8 text-white"></div>
+             <div id="explanation-container" class="hidden relative mt-2 bg-black/10 p-4 rounded-2xl text-white text-center font-medium">
+                  <p id="explanation-text" class="pr-10"></p>
+                  <button id="read-explanation-btn" class="speaker-btn absolute top-1/2 -translate-y-1/2 right-3 text-white focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06ZM5.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
+                  </button>
+             </div>
+             <button id="next-btn" class="hidden w-full mt-4 glass-btn bg-blue-500/60 text-white font-bold py-3 rounded-2xl shadow-lg hover:bg-blue-500/80">Câu tiếp theo</button>
         </div>
         
         <!-- Admin & History Panels -->
-        <div id="admin-panel" class="hidden"><h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Bảng điều khiển Admin</h2><div class="space-y-4"><button id="view-history-btn" class="w-full glass-btn bg-indigo-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-indigo-500/80">Xem Lịch Sử Thi</button><button id="logout-btn" class="w-full glass-btn bg-red-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-500/80">Đăng xuất</button></div></div>
+        <div id="admin-panel" class="hidden">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Bảng điều khiển Admin</h2>
+            <div class="space-y-4">
+                <button id="view-history-btn" class="w-full glass-btn bg-indigo-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-indigo-500/80">Xem Lịch Sử Thi</button>
+                <div class="mt-8 border-t pt-6">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">Cài đặt Đồng hồ</h3>
+                    <div class="space-y-4 max-w-sm mx-auto">
+                        <div class="flex items-center justify-between p-3 bg-white/20 rounded-xl">
+                            <label for="timer-toggle" class="font-medium text-gray-800">Bật Đồng hồ đếm ngược</label>
+                            <input type="checkbox" id="timer-toggle" class="h-6 w-6 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-white/20 rounded-xl">
+                            <label for="timer-duration" class="font-medium text-gray-800">Thời gian (giây)</label>
+                            <input type="number" id="timer-duration" min="5" max="120" class="w-24 px-3 py-1 border border-gray-300/50 rounded-lg bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
+                        </div>
+                        <button id="save-settings-btn" class="w-full glass-btn bg-green-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-green-500/80">Lưu Cài Đặt</button>
+                        <p id="settings-feedback" class="text-center text-sm text-green-800 font-bold h-4"></p>
+                    </div>
+                </div>
+                <button id="logout-btn" class="w-full glass-btn bg-red-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-500/80 mt-8">Đăng xuất</button>
+            </div>
+        </div>
         <div id="history-panel" class="hidden"><h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Lịch Sử Làm Bài</h2><div id="history-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4"></div><button id="back-to-admin-btn" class="w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button></div>
         
         <!-- Leaderboard Panel -->
         <div id="leaderboard-panel" class="hidden">
             <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">🏆 Bảng Xếp Hạng 🏆</h2>
-            <div class="flex flex-wrap justify-center gap-4 mb-4">
-                <select id="leaderboard-subject-filter" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold">
+            <div class="flex flex-wrap justify-center items-center gap-4 mb-4">
+                <select id="leaderboard-subject-filter" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800">
                     <option value="all">Tất cả môn</option>
                     <option value="toan">Toán Học</option>
                     <option value="tiengviet">Tiếng Việt</option>
                 </select>
-                <select id="leaderboard-grade-filter" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold">
+                <select id="leaderboard-grade-filter" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800">
                     <option value="all">Tất cả lớp</option>
                     <option value="lop1">Lớp 1</option>
                     <option value="lop2">Lớp 2</option>
                 </select>
+                <input type="text" id="leaderboard-name-filter" placeholder="Lọc theo tên..." class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800 placeholder-gray-600">
             </div>
             <div id="leaderboard-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4"></div>
             <button id="back-to-menu-btn" class="w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Chơi Lại</button>
@@ -175,6 +198,17 @@
                 <button data-name="Hằng Nga" class="name-btn w-full glass-btn bg-indigo-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-indigo-500/80">Hằng Nga</button>
             </div>
             <button id="skip-and-play-again-btn" class="w-full mt-6 text-gray-600 font-semibold hover:text-gray-800 text-sm">Chơi Lại (Không lưu)</button>
+        </div>
+    </div>
+
+    <div id="history-detail-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0">
+        <div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-2xl relative">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">Chi Tiết Lần Chơi</h2>
+            <div id="history-detail-summary" class="text-center text-gray-700 mb-4"></div>
+            <div id="history-detail-content" class="space-y-3 bg-white/30 p-4 rounded-2xl">
+                <!-- Detailed results will be injected here -->
+            </div>
+            <button id="close-history-detail-btn" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-3xl">&times;</button>
         </div>
     </div>
 
@@ -369,8 +403,9 @@
 
         // --- STATE & DOM VARIABLES ---
         let db, auth, appId, questionBank, selectedSubject, selectedGrade, selectedSemester;
-        let currentQuestions = [], currentQuestionIndex = 0, score = 0;
+        let currentQuestions = [], currentQuestionIndex = 0, score = 0, sessionAnswers = [];
         const NUM_OF_QUESTIONS_PER_GAME = 10;
+        let timerEnabled = false, timerDuration = 30, timerInterval;
 
         const screens = {
             selection: document.getElementById('selection-screen'),
@@ -381,16 +416,19 @@
         };
         const modals = {
             login: document.getElementById('login-modal'),
-            nameSelection: document.getElementById('name-selection-modal')
+            nameSelection: document.getElementById('name-selection-modal'),
+            historyDetail: document.getElementById('history-detail-modal')
         };
         const leaderboardBtn = document.getElementById('leaderboard-btn');
         const backToMenuBtn = document.getElementById('back-to-menu-btn');
         const leaderboardSubjectFilter = document.getElementById('leaderboard-subject-filter');
         const leaderboardGradeFilter = document.getElementById('leaderboard-grade-filter');
+        const leaderboardNameFilter = document.getElementById('leaderboard-name-filter');
 
         // --- FIREBASE & DATA LOADING ---
-        async function initializeFirebase() { try { let firebaseConfig; if (typeof __firebase_config !== 'undefined' && __firebase_config) { firebaseConfig = JSON.parse(__firebase_config); appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.appId; } else { console.warn("Using hardcoded fallback Firebase config."); firebaseConfig = { apiKey: "AIzaSyDJBY6U0LUtmnk4PrfNeA7UE7qq1FZ84X8", authDomain: "data-chung-a62ee.firebaseapp.com", projectId: "data-chung-a62ee", storageBucket: "data-chung-a62ee.appspot.com", messagingSenderId: "453115303161", appId: "1:453115303161:web:c885f876f4914829863e28" }; appId = firebaseConfig.appId; } if (!firebaseConfig.projectId) throw new Error("Firebase config is missing projectId."); const app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app); if (typeof __initial_auth_token !== 'undefined') { await signInWithCustomToken(auth, __initial_auth_token); } else { await signInAnonymously(auth); } onAuthStateChanged(auth, (user) => { if (user) { console.log("User authenticated, loading questions..."); loadAndSeedQuestions(); } }); } catch (error) { console.error("Firebase initialization error:", error); document.getElementById('loading-questions').textContent = "Lỗi kết nối đến cơ sở dữ liệu."; } }
+        async function initializeFirebase() { try { let firebaseConfig; if (typeof __firebase_config !== 'undefined' && __firebase_config) { firebaseConfig = JSON.parse(__firebase_config); appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.appId; } else { console.warn("Using hardcoded fallback Firebase config."); firebaseConfig = { apiKey: "AIzaSyDJBY6U0LUtmnk4PrfNeA7UE7qq1FZ84X8", authDomain: "data-chung-a62ee.firebaseapp.com", projectId: "data-chung-a62ee", storageBucket: "data-chung-a62ee.appspot.com", messagingSenderId: "453115303161", appId: "1:453115303161:web:c885f876f4914829863e28" }; appId = firebaseConfig.appId; } if (!firebaseConfig.projectId) throw new Error("Firebase config is missing projectId."); const app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app); if (typeof __initial_auth_token !== 'undefined') { await signInWithCustomToken(auth, __initial_auth_token); } else { await signInAnonymously(auth); } onAuthStateChanged(auth, (user) => { if (user) { console.log("User authenticated, loading data..."); Promise.all([loadAndSeedQuestions(), loadAdminSettings()]); } }); } catch (error) { console.error("Firebase initialization error:", error); document.getElementById('loading-questions').textContent = "Lỗi kết nối đến cơ sở dữ liệu."; } }
         async function loadAndSeedQuestions() { if (!db || !appId) { console.error("Firestore DB or App ID not initialized."); return; } const questionBankRef = doc(db, `artifacts/${appId}/public/data/questions`, 'mainBank'); try { const docSnap = await getDoc(questionBankRef); if (docSnap.exists() && docSnap.data().version === 2.0) { questionBank = docSnap.data(); console.log("Loaded question bank version 2.0 from Firestore."); } else { console.log("Old question bank version or no data found. Seeding with new version 2.0."); await setDoc(questionBankRef, localQuestionSeedData); questionBank = localQuestionSeedData; } document.getElementById('loading-questions').classList.add('hidden'); document.getElementById('selections-container').classList.remove('hidden'); updateStartButtonState(); } catch (error) { console.error("Error loading or seeding questions:", error); document.getElementById('loading-questions').textContent = "Lỗi khi tải câu hỏi."; } }
+        async function loadAdminSettings() { if (!db || !appId) { return; } const settingsRef = doc(db, `artifacts/${appId}/public/data/adminSettings`, 'config'); try { const docSnap = await getDoc(settingsRef); if (docSnap.exists()) { const settings = docSnap.data(); timerEnabled = settings.timerEnabled ?? false; timerDuration = settings.timerDuration ?? 30; console.log("Admin settings loaded:", {timerEnabled, timerDuration}); } else { console.log("No admin settings found, using defaults."); } } catch (error) { console.error("Error loading admin settings:", error); } }
         
         // --- AI EXPLANATION WITH CACHING ---
         async function getExplanationFromAI(question, answer, grade) {
@@ -464,76 +502,260 @@
 
 
         // --- HISTORY & LEADERBOARD FUNCTIONS ---
-        async function saveResult(resultData, playerName = null) { if (!db || !appId || !auth.currentUser) return; const dataToSave = { ...resultData, name: playerName }; if (playerName) { try { const leaderboardCollectionRef = collection(db, `artifacts/${appId}/public/data/leaderboard`); await addDoc(leaderboardCollectionRef, dataToSave); console.log("Score saved to leaderboard!"); } catch (e) { console.error("Error writing to leaderboard:", e); } } try { const historyCollectionRef = collection(db, `artifacts/${appId}/public/data/quizResults`); await addDoc(historyCollectionRef, dataToSave); console.log("Quiz result saved to history!"); } catch (e) { console.error("Error writing to history:", e); } }
-        async function displayHistory() { showScreen('history'); const container = document.getElementById('history-table-container'); container.innerHTML = '<p class="text-center text-gray-500">Đang tải lịch sử...</p>'; if (!db || !appId) { container.innerHTML = '<p class="text-center text-red-500">Lỗi CSDL.</p>'; return; } try { const q = query(collection(db, `artifacts/${appId}/public/data/quizResults`)); const querySnapshot = await getDocs(q); if (querySnapshot.empty) { container.innerHTML = '<p class="text-center text-gray-500">Chưa có lịch sử làm bài.</p>'; return; } const results = []; querySnapshot.forEach(doc => results.push(doc.data())); results.sort((a, b) => { const dateA = a.date?.toDate() || new Date(0); const dateB = b.date?.toDate() || new Date(0); return dateB - dateA; }); const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' }; let tableHTML = '<table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden"><thead class="bg-gray-100/50"><tr><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Ngày Giờ</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Môn</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Lớp</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th></tr></thead><tbody class="bg-white/30 divide-y divide-gray-200 text-gray-800">'; results.forEach(r => { const date = r.date?.toDate() ? r.date.toDate().toLocaleString('vi-VN') : 'N/A'; const scoreDisplay = `${r.score}/${r.totalQuestions || 10}`; tableHTML += `<tr><td class="px-3 py-2 text-sm">${date}</td><td class="px-3 py-2 text-sm font-semibold">${r.name || 'Không lưu'}</td><td class="px-3 py-2 text-sm">${nameMap[r.subject] || r.subject}</td><td class="px-3 py-2 text-sm">${nameMap[r.grade] || r.grade}</td><td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td></tr>`; }); tableHTML += '</tbody></table>'; container.innerHTML = tableHTML; } catch (error) { console.error("Error fetching history:", error); container.innerHTML = '<p class="text-center text-red-500">Không thể tải lịch sử.</p>'; } }
-        async function displayLeaderboard() { showScreen('leaderboard'); const container = document.getElementById('leaderboard-table-container'); container.innerHTML = '<p class="text-center text-gray-500">Đang tải bảng xếp hạng...</p>'; if (!db || !appId) { container.innerHTML = '<p class="text-center text-red-500">Lỗi CSDL.</p>'; return; } const subjectFilter = leaderboardSubjectFilter.value; const gradeFilter = leaderboardGradeFilter.value; try { let queryConstraints = []; if (subjectFilter !== 'all') queryConstraints.push(where("subject", "==", subjectFilter)); if (gradeFilter !== 'all') queryConstraints.push(where("grade", "==", gradeFilter)); const q = query(collection(db, `artifacts/${appId}/public/data/leaderboard`), ...queryConstraints); const querySnapshot = await getDocs(q); if (querySnapshot.empty) { container.innerHTML = '<p class="text-center text-gray-500">Chưa có ai trên bảng xếp hạng cho mục này.</p>'; return; } let results = []; querySnapshot.forEach(doc => { results.push(doc.data()); }); results.sort((a, b) => { if (b.score !== a.score) { return b.score - a.score; } const dateA = a.date?.toDate() || new Date(0); const dateB = b.date?.toDate() || new Date(0); return dateB - dateA; }); const topResults = results.slice(0, 10); let tableHTML = '<table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden"><thead class="bg-gray-100/50"><tr><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Hạng</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên Bé</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th></tr></thead><tbody class="bg-white/30 divide-y divide-gray-200 text-gray-800">'; let rank = 1; topResults.forEach(data => { const scoreDisplay = `${data.score}/${data.totalQuestions || 10}`; const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank; tableHTML += `<tr><td class="px-3 py-2 text-center text-sm font-bold">${rankIcon}</td><td class="px-3 py-2 text-sm font-semibold">${data.name}</td><td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td></tr>`; rank++; }); tableHTML += '</tbody></table>'; container.innerHTML = tableHTML; } catch (error) { console.error("Error fetching leaderboard:", error); container.innerHTML = '<p class="text-center text-red-500">Không thể tải bảng xếp hạng.</p>'; } }
+        async function saveResult(resultData, playerName = null) {
+            if (!db || !appId || !auth.currentUser) return;
+            const dataToSaveForHistory = { ...resultData, name: playerName };
+            // Leaderboard only needs score and name
+            const dataToSaveForLeaderboard = {
+                name: playerName,
+                score: resultData.score,
+                totalQuestions: resultData.totalQuestions,
+                subject: resultData.subject,
+                grade: resultData.grade,
+                date: resultData.date
+            };
+
+            if (playerName) {
+                try {
+                    const leaderboardCollectionRef = collection(db, `artifacts/${appId}/public/data/leaderboard`);
+                    await addDoc(leaderboardCollectionRef, dataToSaveForLeaderboard);
+                    console.log("Score saved to leaderboard!");
+                } catch (e) {
+                    console.error("Error writing to leaderboard:", e);
+                }
+            }
+            try {
+                const historyCollectionRef = collection(db, `artifacts/${appId}/public/data/quizResults`);
+                await addDoc(historyCollectionRef, dataToSaveForHistory);
+                console.log("Full quiz result saved to history!");
+            } catch (e) {
+                console.error("Error writing to history:", e);
+            }
+        }
+
+        async function displayHistory() {
+            showScreen('history');
+            const container = document.getElementById('history-table-container');
+            container.innerHTML = '<p class="text-center text-gray-500">Đang tải lịch sử...</p>';
+            if (!db || !appId) {
+                container.innerHTML = '<p class="text-center text-red-500">Lỗi CSDL.</p>';
+                return;
+            }
+            try {
+                const q = query(collection(db, `artifacts/${appId}/public/data/quizResults`));
+                const querySnapshot = await getDocs(q);
+                if (querySnapshot.empty) {
+                    container.innerHTML = '<p class="text-center text-gray-500">Chưa có lịch sử làm bài.</p>';
+                    return;
+                }
+                const results = [];
+                querySnapshot.forEach(doc => results.push(doc.data()));
+                results.sort((a, b) => (b.date?.toDate() || 0) - (a.date?.toDate() || 0));
+
+                const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
+                let tableHTML = '<table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden"><thead class="bg-gray-100/50"><tr><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Ngày Giờ</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Môn</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Chi tiết</th></tr></thead><tbody id="history-table-body" class="bg-white/30 divide-y divide-gray-200 text-gray-800">';
+                results.forEach((r, index) => {
+                    const date = r.date?.toDate() ? r.date.toDate().toLocaleString('vi-VN') : 'N/A';
+                    const scoreDisplay = `${r.score}/${r.totalQuestions || 10}`;
+                    tableHTML += `<tr>
+                        <td class="px-3 py-2 text-sm">${date}</td>
+                        <td class="px-3 py-2 text-sm font-semibold">${r.name || 'Không lưu'}</td>
+                        <td class="px-3 py-2 text-sm">${nameMap[r.subject] || r.subject}</td>
+                        <td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td>
+                        <td class="px-3 py-2 text-sm"><button data-index="${index}" class="view-detail-btn bg-blue-500 text-white px-2 py-1 rounded-md text-xs hover:bg-blue-600">Xem</button></td>
+                    </tr>`;
+                });
+                tableHTML += '</tbody></table>';
+                container.innerHTML = tableHTML;
+                
+                document.getElementById('history-table-body').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('view-detail-btn')) {
+                        const index = e.target.dataset.index;
+                        showHistoryDetail(results[index]);
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error fetching history:", error);
+                container.innerHTML = '<p class="text-center text-red-500">Không thể tải lịch sử.</p>';
+            }
+        }
+
+        function showHistoryDetail(result) {
+            const summaryEl = document.getElementById('history-detail-summary');
+            const contentEl = document.getElementById('history-detail-content');
+            
+            summaryEl.innerHTML = `<strong>Tên:</strong> ${result.name || 'Không lưu'} | <strong>Điểm:</strong> ${result.score}/${result.totalQuestions}`;
+            
+            contentEl.innerHTML = '';
+            if (result.questions && Array.isArray(result.questions)) {
+                result.questions.forEach((q, index) => {
+                    const isCorrect = q.isCorrect;
+                    const itemEl = document.createElement('div');
+                    itemEl.className = `p-3 rounded-lg border ${isCorrect ? 'border-green-500 bg-green-100/50' : 'border-red-500 bg-red-100/50'}`;
+                    itemEl.innerHTML = `
+                        <p class="font-bold text-gray-800">${index + 1}. ${q.questionText}</p>
+                        <p class="text-sm ${isCorrect ? 'text-green-700' : 'text-red-700'}"><strong>Bé chọn:</strong> ${q.userAnswer || 'Không trả lời'}</p>
+                        ${!isCorrect ? `<p class="text-sm text-blue-700"><strong>Đáp án đúng:</strong> ${q.correctAnswer}</p>` : ''}
+                    `;
+                    contentEl.appendChild(itemEl);
+                });
+            } else {
+                contentEl.innerHTML = '<p>Không có dữ liệu chi tiết cho lần chơi này.</p>';
+            }
+
+            showModal('historyDetail');
+        }
+
+        async function displayLeaderboard() { showScreen('leaderboard'); const container = document.getElementById('leaderboard-table-container'); container.innerHTML = '<p class="text-center text-gray-500">Đang tải bảng xếp hạng...</p>'; if (!db || !appId) { container.innerHTML = '<p class="text-center text-red-500">Lỗi CSDL.</p>'; return; } const subjectFilter = leaderboardSubjectFilter.value; const gradeFilter = leaderboardGradeFilter.value; const nameFilter = leaderboardNameFilter.value.trim().toLowerCase(); try { let queryConstraints = []; if (subjectFilter !== 'all') queryConstraints.push(where("subject", "==", subjectFilter)); if (gradeFilter !== 'all') queryConstraints.push(where("grade", "==", gradeFilter)); const q = query(collection(db, `artifacts/${appId}/public/data/leaderboard`), ...queryConstraints); const querySnapshot = await getDocs(q); if (querySnapshot.empty) { container.innerHTML = '<p class="text-center text-gray-500">Chưa có ai trên bảng xếp hạng cho mục này.</p>'; return; } let results = []; querySnapshot.forEach(doc => { results.push(doc.data()); }); if (nameFilter) { results = results.filter(r => r.name && r.name.toLowerCase().includes(nameFilter)); } results.sort((a, b) => { if (b.score !== a.score) { return b.score - a.score; } const dateA = a.date?.toDate() || new Date(0); const dateB = b.date?.toDate() || new Date(0); return dateB - dateA; }); const topResults = results.slice(0, 10); if (topResults.length === 0) { container.innerHTML = '<p class="text-center text-gray-500">Không tìm thấy kết quả phù hợp.</p>'; return; } let tableHTML = '<table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden"><thead class="bg-gray-100/50"><tr><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Hạng</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên Bé</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th></tr></thead><tbody class="bg-white/30 divide-y divide-gray-200 text-gray-800">'; topResults.forEach((data, index) => { const scoreDisplay = `${data.score}/${data.totalQuestions || 10}`; tableHTML += `<tr><td class="px-3 py-2 text-center text-sm font-bold">${index + 1}</td><td class="px-3 py-2 text-sm font-semibold">${data.name}</td><td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td></tr>`; }); tableHTML += '</tbody></table>'; container.innerHTML = tableHTML; } catch (error) { console.error("Error fetching leaderboard:", error); container.innerHTML = '<p class="text-center text-red-500">Không thể tải bảng xếp hạng.</p>'; } }
         
         // --- GAME LOGIC ---
         function updateStartButtonState() { if (selectedSubject && selectedGrade && selectedSemester && questionBank) { document.getElementById('start-btn').disabled = false; document.getElementById('start-btn').classList.remove('bg-gray-500/50', 'cursor-not-allowed'); document.getElementById('start-btn').classList.add('bg-blue-600/70', 'hover:bg-blue-600/90'); } else { document.getElementById('start-btn').disabled = true; document.getElementById('start-btn').classList.add('bg-gray-500/50', 'cursor-not-allowed'); document.getElementById('start-btn').classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90'); } }
         
         function startGame() {
+            clearInterval(timerInterval);
+            sessionAnswers = []; // Reset session answers
             const errorEl = document.getElementById('start-error');
-            errorEl.textContent = ''; // Xóa lỗi cũ
-
-            // Kiểm tra kỹ hơn xem bộ câu hỏi có tồn tại và hợp lệ không
-            const questionsExist = questionBank &&
-                                   questionBank[selectedSubject] &&
-                                   questionBank[selectedSubject][selectedGrade] &&
-                                   questionBank[selectedSubject][selectedGrade][selectedSemester] &&
-                                   Array.isArray(questionBank[selectedSubject][selectedGrade][selectedSemester]) &&
-                                   questionBank[selectedSubject][selectedGrade][selectedSemester].length > 0;
-
+            errorEl.textContent = ''; 
+            const questionsExist = questionBank?.[selectedSubject]?.[selectedGrade]?.[selectedSemester]?.length > 0;
             if (!questionsExist) {
-                console.error("Không tìm thấy bộ câu hỏi cho:", selectedSubject, selectedGrade, selectedSemester);
+                console.error("Could not find question set for:", selectedSubject, selectedGrade, selectedSemester);
                 errorEl.textContent = "Lỗi: Không tìm thấy bộ câu hỏi. Vui lòng chọn lại.";
-                // Tự động xóa lỗi sau 4 giây
                 setTimeout(() => { errorEl.textContent = ''; }, 4000);
-                return; // Dừng thực thi
+                return;
             }
-
-            // Nếu câu hỏi tồn tại, tiếp tục trò chơi
             let allQuestions = questionBank[selectedSubject][selectedGrade][selectedSemester];
             currentQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, NUM_OF_QUESTIONS_PER_GAME);
-            
             if (currentQuestions.length === 0) {
-                 console.error("Không đủ câu hỏi để bắt đầu game:", selectedSubject, selectedGrade, selectedSemester);
+                 console.error("Not enough questions to start the game:", selectedSubject, selectedGrade, selectedSemester);
                  errorEl.textContent = "Lỗi: Không đủ câu hỏi để bắt đầu. Vui lòng chọn lại.";
                  setTimeout(() => { errorEl.textContent = ''; }, 4000);
                  return;
             }
-
             currentQuestionIndex = 0;
             score = 0;
             showScreen('game');
             displayQuestion();
         }
 
-        function displayQuestion() { document.getElementById('feedback-container').innerHTML = ''; document.getElementById('explanation-container').classList.add('hidden'); document.getElementById('next-btn').classList.add('hidden'); const questionData = currentQuestions[currentQuestionIndex]; document.getElementById('question-container').querySelector('p').textContent = questionData.question; const optionsContainer = document.getElementById('options-container'); optionsContainer.innerHTML = ''; const shuffledOptions = [...questionData.options].sort(() => Math.random() - 0.5); shuffledOptions.forEach(option => { const button = document.createElement('button'); button.textContent = option; button.className = 'answer-option w-full p-4 rounded-2xl font-semibold glass-btn bg-white/20 hover:bg-white/40 text-gray-800'; button.onclick = (e) => { playSound('click'); checkAnswer(e.target, questionData.answer); }; optionsContainer.appendChild(button); }); document.getElementById('progress-text').textContent = `Câu ${currentQuestionIndex + 1}/${currentQuestions.length}`; document.getElementById('score-text').textContent = `Điểm: ${score}`; document.getElementById('read-question-btn').onclick = () => speakText(questionData.question); }
+        function displayQuestion() { 
+            clearInterval(timerInterval);
+            document.getElementById('feedback-container').innerHTML = ''; 
+            document.getElementById('explanation-container').classList.add('hidden'); 
+            document.getElementById('next-btn').classList.add('hidden'); 
+            const questionData = currentQuestions[currentQuestionIndex]; 
+            document.getElementById('question-container').querySelector('p').textContent = questionData.question; 
+            const optionsContainer = document.getElementById('options-container'); 
+            optionsContainer.innerHTML = ''; 
+            const shuffledOptions = [...questionData.options].sort(() => Math.random() - 0.5); 
+            shuffledOptions.forEach(option => { 
+                const button = document.createElement('button'); 
+                button.textContent = option; 
+                button.className = 'answer-option w-full p-4 rounded-2xl font-semibold glass-btn bg-white/20 hover:bg-white/40 text-gray-800'; 
+                button.onclick = (e) => { playSound('click'); checkAnswer(e.target, questionData.answer); }; 
+                optionsContainer.appendChild(button); 
+            }); 
+            document.getElementById('progress-text').textContent = `Câu ${currentQuestionIndex + 1}/${currentQuestions.length}`; 
+            document.getElementById('score-text').textContent = `Điểm: ${score}`; 
+            document.getElementById('read-question-btn').onclick = () => speakText(questionData.question); 
+            
+            const timerDisplay = document.getElementById('timer-display');
+            if (timerEnabled) {
+                timerDisplay.classList.remove('hidden');
+                let timeLeft = timerDuration;
+                timerDisplay.textContent = `⏰ ${timeLeft}`;
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    timerDisplay.textContent = `⏰ ${timeLeft}`;
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        document.getElementById('feedback-container').textContent = '⌛ Hết giờ!';
+                        checkAnswer({ textContent: null }, questionData.answer);
+                    }
+                }, 1000);
+            } else {
+                timerDisplay.classList.add('hidden');
+            }
+        }
         
         function checkAnswer(selectedButton, correctAnswer) {
+            clearInterval(timerInterval);
             document.querySelectorAll('.answer-option').forEach(btn => btn.disabled = true);
             const questionData = currentQuestions[currentQuestionIndex];
-            if (selectedButton.textContent == correctAnswer) {
+            const userAnswer = selectedButton.textContent;
+            const isCorrect = userAnswer == correctAnswer;
+
+            if (isCorrect) {
                 score++;
                 selectedButton.classList.add('correct');
                 document.getElementById('feedback-container').textContent = '🎉 Đúng rồi!';
                 playSound('correct');
             } else {
-                selectedButton.classList.add('incorrect');
-                document.getElementById('feedback-container').textContent = '😥 Sai rồi!';
+                if (userAnswer) {
+                    selectedButton.classList.add('incorrect');
+                }
+                if (document.getElementById('feedback-container').textContent === '') {
+                    document.getElementById('feedback-container').textContent = '😥 Sai rồi!';
+                }
                 playSound('incorrect');
                 document.querySelectorAll('.answer-option').forEach(btn => { if (btn.textContent == correctAnswer) btn.classList.add('correct'); });
             }
+
+            sessionAnswers.push({
+                questionText: questionData.question,
+                userAnswer: userAnswer,
+                correctAnswer: correctAnswer,
+                isCorrect: isCorrect
+            });
             
             getExplanationFromAI(questionData.question, questionData.answer, selectedGrade);
-
             document.getElementById('score-text').textContent = `Điểm: ${score}`;
             document.getElementById('next-btn').classList.remove('hidden');
             if (speechSynthesis.speaking) speechSynthesis.cancel();
         }
 
         function nextQuestion() { currentQuestionIndex++; if (currentQuestionIndex < currentQuestions.length) { displayQuestion(); } else { showResults(); } }
-        function showResults() { playSound('complete'); const finalScore = score; const totalQuestions = currentQuestions.length; document.getElementById('modal-final-score').textContent = `${finalScore}/${totalQuestions}`; const percentage = (finalScore / totalQuestions) * 100; const finalMessageElement = document.getElementById('modal-final-message'); if (percentage === 100) finalMessageElement.textContent = "Xuất sắc! Bé thật là giỏi! Hãy chọn tên để lưu điểm nhé."; else if (percentage >= 70) finalMessageElement.textContent = "Giỏi lắm! Hãy chọn tên để lưu điểm nhé."; else if (percentage >= 50) finalMessageElement.textContent = "Làm tốt lắm! Hãy chọn tên để lưu điểm nhé."; else finalMessageElement.textContent = "Cố gắng hơn lần sau nhé! Chọn tên để lưu điểm nào."; showModal('nameSelection'); }
+        function showResults() { 
+            playSound('complete'); 
+            const finalScore = score; 
+            const totalQuestions = currentQuestions.length; 
+            document.getElementById('modal-final-score').textContent = `${finalScore}/${totalQuestions}`; 
+            const percentage = (finalScore / totalQuestions) * 100; 
+            const finalMessageElement = document.getElementById('modal-final-message'); 
+            if (percentage === 100) finalMessageElement.textContent = "Xuất sắc! Bé thật là giỏi! Hãy chọn tên để lưu điểm nhé."; 
+            else if (percentage >= 70) finalMessageElement.textContent = "Giỏi lắm! Hãy chọn tên để lưu điểm nhé."; 
+            else if (percentage >= 50) finalMessageElement.textContent = "Làm tốt lắm! Hãy chọn tên để lưu điểm nhé."; 
+            else finalMessageElement.textContent = "Cố gắng hơn lần sau nhé! Chọn tên để lưu điểm nào."; 
+            
+            // Save result immediately before showing name selection
+            const resultData = { 
+                date: serverTimestamp(), 
+                subject: selectedSubject, 
+                grade: selectedGrade, 
+                semester: selectedSemester, 
+                score: score, 
+                totalQuestions: currentQuestions.length,
+                questions: sessionAnswers // Add detailed answers
+            };
+            
+            document.getElementById('name-selection-container').onclick = (e) => {
+                if (e.target.classList.contains('name-btn')) {
+                    playSound('click');
+                    const playerName = e.target.dataset.name;
+                    saveResult(resultData, playerName);
+                    hideModal('nameSelection');
+                    displayLeaderboard();
+                }
+            };
+            document.getElementById('skip-and-play-again-btn').onclick = () => {
+                playSound('click');
+                saveResult(resultData, null); // Save with null name
+                hideModal('nameSelection');
+                resetGame();
+            };
+
+            showModal('nameSelection'); 
+        }
         function resetGame() { showScreen('selection'); selectedSubject = null; selectedGrade = null; selectedSemester = null; document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('selected')); updateStartButtonState(); }
 
         // --- UI & MODAL MANAGEMENT ---
@@ -548,18 +770,48 @@
         document.querySelectorAll('.choice-btn').forEach(btn => btn.addEventListener('click', (e) => { playSound('click'); const type = Object.keys(e.target.dataset)[0]; const value = e.target.dataset[type]; if (type === 'subject') selectedSubject = value; if (type === 'grade') selectedGrade = value; if (type === 'semester') selectedSemester = value; document.querySelectorAll(`[data-${type}]`).forEach(b => b.classList.remove('selected')); e.target.classList.add('selected'); updateStartButtonState(); }));
         document.getElementById('start-btn').addEventListener('click', () => { if (!document.getElementById('start-btn').disabled) { playSound('click'); startGame(); } });
         document.getElementById('next-btn').addEventListener('click', () => { playSound('click'); nextQuestion(); });
-        document.getElementById('name-selection-container').addEventListener('click', (e) => { if (e.target.classList.contains('name-btn')) { playSound('click'); const playerName = e.target.dataset.name; const resultData = { date: serverTimestamp(), subject: selectedSubject, grade: selectedGrade, semester: selectedSemester, score: score, totalQuestions: currentQuestions.length }; saveResult(resultData, playerName); hideModal('nameSelection'); displayLeaderboard(); } });
-        document.getElementById('skip-and-play-again-btn').addEventListener('click', () => { playSound('click'); const resultData = { date: serverTimestamp(), subject: selectedSubject, grade: selectedGrade, semester: selectedSemester, score: score, totalQuestions: currentQuestions.length }; saveResult(resultData, null); hideModal('nameSelection'); resetGame(); });
+
         leaderboardBtn.addEventListener('click', () => { playSound('click'); displayLeaderboard(); });
         backToMenuBtn.addEventListener('click', () => { playSound('click'); resetGame(); });
         leaderboardSubjectFilter.addEventListener('change', displayLeaderboard);
         leaderboardGradeFilter.addEventListener('change', displayLeaderboard);
+        leaderboardNameFilter.addEventListener('input', displayLeaderboard);
         document.getElementById('admin-login-btn').addEventListener('click',_=> { playSound('click'); showModal('login'); });
         document.getElementById('close-modal-btn').addEventListener('click', () => hideModal('login'));
-        document.getElementById('login-form').addEventListener('submit', (e) => { e.preventDefault(); playSound('click'); const u = document.getElementById('username').value; const p = document.getElementById('password').value; if (u === 'admin' && p === 'admin') { hideModal('login'); showScreen('admin'); } else { document.getElementById('login-error').textContent = 'Tên đăng nhập hoặc mật khẩu không đúng.'; } });
+        document.getElementById('close-history-detail-btn').addEventListener('click', () => hideModal('historyDetail'));
+        document.getElementById('login-form').addEventListener('submit', (e) => { e.preventDefault(); playSound('click'); const u = document.getElementById('username').value; const p = document.getElementById('password').value; if (u === 'admin' && p === 'admin') { document.getElementById('timer-toggle').checked = timerEnabled; document.getElementById('timer-duration').value = timerDuration; hideModal('login'); showScreen('admin'); } else { document.getElementById('login-error').textContent = 'Tên đăng nhập hoặc mật khẩu không đúng.'; } });
         document.getElementById('logout-btn').addEventListener('click', () => { playSound('click'); showScreen('selection'); });
         document.getElementById('view-history-btn').addEventListener('click', () => { playSound('click'); displayHistory(); });
         document.getElementById('back-to-admin-btn').addEventListener('click', () => { playSound('click'); showScreen('admin'); });
+        document.getElementById('save-settings-btn').addEventListener('click', async () => {
+            playSound('click');
+            const newTimerEnabled = document.getElementById('timer-toggle').checked;
+            const newTimerDuration = parseInt(document.getElementById('timer-duration').value, 10);
+            const feedbackEl = document.getElementById('settings-feedback');
+
+            if (isNaN(newTimerDuration) || newTimerDuration < 5 || newTimerDuration > 120) {
+                feedbackEl.textContent = "Thời gian phải từ 5 đến 120 giây.";
+                feedbackEl.classList.remove('text-green-800');
+                feedbackEl.classList.add('text-red-600');
+                return;
+            }
+
+            const settingsRef = doc(db, `artifacts/${appId}/public/data/adminSettings`, 'config');
+            try {
+                await setDoc(settingsRef, { timerEnabled: newTimerEnabled, timerDuration: newTimerDuration });
+                timerEnabled = newTimerEnabled;
+                timerDuration = newTimerDuration;
+                feedbackEl.textContent = "Đã lưu cài đặt!";
+                feedbackEl.classList.add('text-green-800');
+                feedbackEl.classList.remove('text-red-600');
+                setTimeout(() => feedbackEl.textContent = '', 3000);
+            } catch (error) {
+                console.error("Error saving settings:", error);
+                feedbackEl.textContent = "Lỗi khi lưu.";
+                feedbackEl.classList.remove('text-green-800');
+                feedbackEl.classList.add('text-red-600');
+            }
+        });
 
     </script>
 </body>
