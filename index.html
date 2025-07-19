@@ -277,7 +277,7 @@
         <div id="history-panel" class="hidden"><h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Lịch Sử Làm Bài</h2><div id="history-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4 custom-scrollbar"></div><button class="back-to-admin-btn w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button></div>
         
         <div id="leaderboard-panel" class="hidden">
-            <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">� Bảng Xếp Hạng 🏆</h2>
+            <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">🏆 Bảng Xếp Hạng 🏆</h2>
             <div class="flex flex-wrap justify-center items-center gap-4 mb-4">
                 <select id="leaderboard-subject-filter" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả môn</option><option value="toan">Toán Học</option><option value="tiengviet">Tiếng Việt</option></select>
                 <select id="leaderboard-grade-filter" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả lớp</option><option value="lop1">Lớp 1</option><option value="lop2">Lớp 2</option></select>
@@ -336,6 +336,11 @@
 
 
     <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp, doc, getDoc, setDoc, where, deleteDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
         // --- SOUND EFFECTS SETUP ---
         let soundsEnabled = true;
         const synths = {
@@ -361,18 +366,15 @@
         }
 
         // --- STATE & DOM VARIABLES ---
-        // Removed Firebase related variables (db, auth, appId)
-        let questionBank = {}; // Stores questions by subject, grade, semester
-        let userDefinedApiKey = null; // API key for Gemini, now in-memory only
+        let db, auth, appId, questionBank = {}, userDefinedApiKey = null;
         let selectedSubject, selectedGrade, selectedSemester;
         let currentQuestions = [], currentQuestionIndex = 0, score = 0, sessionAnswers = [];
         const NUM_OF_QUESTIONS_PER_GAME = 10;
         let timerEnabled = false, timerDuration = 30, timerInterval;
-        let fullQuestionCollection = []; // Stores all questions for admin management (in-memory)
-        let studentList = []; // Stores student names (in-memory)
-        let quizHistory = []; // Stores quiz results (in-memory)
-        let leaderboardData = []; // Stores leaderboard data (in-memory)
-
+        let fullQuestionCollection = []; // Stores all questions from Firestore for admin management
+        let studentList = []; // Stores student names from Firestore
+        let quizHistory = []; // Stores quiz results from Firestore
+        let leaderboardData = []; // Stores leaderboard data from Firestore
 
         // References to main screen elements
         const screens = {
@@ -402,39 +404,107 @@
         const leaderboardGradeFilter = document.getElementById('leaderboard-grade-filter');
         const leaderboardNameFilter = document.getElementById('leaderboard-name-filter');
 
-        // --- DATA LOADING & INITIALIZATION (now in-memory) ---
+        // --- FIREBASE & DATA LOADING ---
         /**
-         * Initializes application data. Replaces Firebase initialization.
+         * Initializes Firebase app, authentication, and Firestore.
+         * Authenticates the user (anonymously) and loads initial data.
          */
-        async function initializeAppData() {
-            // Simulate loading data by seeding it directly
-            await seedInitialQuestions(); // Populates fullQuestionCollection and questionBank
-            loadAdminSettings(); // Populates timer settings
-            loadApiKey(); // Populates userDefinedApiKey (from a hardcoded default or previous session if localStorage was used)
-            loadStudentList(); // Populates studentList
-            
-            document.getElementById('loading-questions').classList.add('hidden');
-            document.getElementById('selections-container').classList.remove('hidden');
-            updateStartButtonState();
+        async function initializeFirebase() {
+            try {
+                // Your custom Firebase configuration
+                const firebaseConfig = {
+                    apiKey: "AIzaSyDxld3JTTxw1_2XmZLIirt4nc8WQ-xNB7o",
+                    authDomain: "du-an-a95c9.firebaseapp.com",
+                    projectId: "du-an-a95c9",
+                    storageBucket: "du-an-a95c9.firebasestorage.app",
+                    messagingSenderId: "395670033549",
+                    appId: "1:395670033549:web:9a216a987b3223b08dfec4",
+                    measurementId: "G-196PYQPECC"
+                };
+                
+                // Set appId from your provided config
+                appId = firebaseConfig.projectId; // Using projectId as appId for collection path consistency
+
+                // Initialize Firebase services
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                // Sign in anonymously as there's no custom token from this environment
+                await signInAnonymously(auth);
+
+                // Listen for authentication state changes and load data once authenticated
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        console.log("User authenticated, loading data...");
+                        // Load all necessary data concurrently
+                        Promise.all([
+                            loadQuestionsFromFirestore(),
+                            loadAdminSettings(),
+                            loadApiKey(),
+                            loadStudentList()
+                        ]).then(() => {
+                            document.getElementById('loading-questions').classList.add('hidden');
+                            document.getElementById('selections-container').classList.remove('hidden');
+                            updateStartButtonState();
+                        }).catch(error => {
+                            console.error("Error loading initial data:", error);
+                            document.getElementById('loading-questions').textContent = "Lỗi khi tải dữ liệu ban đầu.";
+                        });
+                    } else {
+                        document.getElementById('loading-questions').textContent = "Không thể xác thực người dùng.";
+                    }
+                });
+            } catch (error) {
+                console.error("Firebase initialization error:", error);
+                document.getElementById('loading-questions').textContent = "Lỗi kết nối đến cơ sở dữ liệu.";
+            }
         }
 
         /**
-         * Seeds initial questions into the in-memory collection.
+         * Loads questions from Firestore and restructures them into questionBank.
+         * If no questions are found, seeds initial data.
+         */
+        async function loadQuestionsFromFirestore() {
+            if (!db || !appId) return; // Ensure db and appId are initialized
+            const qCollection = collection(db, `artifacts/${appId}/public/data/questions`);
+            try {
+                const querySnapshot = await getDocs(query(qCollection)); // Use query(collection) to fetch all documents
+                if (querySnapshot.empty) {
+                    console.log("No questions found in Firestore. Seeding initial data...");
+                    await seedInitialQuestions(); // Seed data if collection is empty
+                } else {
+                    fullQuestionCollection = []; // Clear existing collection
+                    querySnapshot.forEach(doc => {
+                        fullQuestionCollection.push({ id: doc.id, ...doc.data() });
+                    });
+                    restructureQuestionBank(); // Organize questions by subject, grade, semester
+                    console.log("Successfully loaded questions from Firestore.");
+                }
+            } catch (error) {
+                console.error("Error loading questions from Firestore:", error);
+                throw error; // Re-throw to propagate the error to Promise.all
+            }
+        }
+
+        /**
+         * Seeds initial questions into Firestore if the collection is empty.
          */
         async function seedInitialQuestions() {
             const seedData = [
-                { id: 'q1', subject: 'toan', grade: 'lop1', semester: 'hocky1', question: "1 + 1 = ?", options: ["1", "2", "3", "4"], answer: "2" },
-                { id: 'q2', subject: 'tiengviet', grade: 'lop1', semester: 'hocky1', question: "Chữ cái đầu tiên trong bảng chữ cái là?", options: ["b", "c", "a", "d"], answer: "a" },
-                { id: 'q3', subject: 'toan', grade: 'lop2', semester: 'hocky1', question: "2 + 3 = ?", options: ["4", "5", "6", "7"], answer: "5" },
-                { id: 'q4', subject: 'tiengviet', grade: 'lop2', semester: 'hocky1', question: "Từ nào sau đây là danh từ chỉ người?", options: ["bàn", "sách", "giáo viên", "cây"], answer: "giáo viên" },
-                { id: 'q5', subject: 'toan', grade: 'lop1', semester: 'hocky2', question: "5 - 2 = ?", options: ["2", "3", "4", "5"], answer: "3" },
-                { id: 'q6', subject: 'tiengviet', grade: 'lop1', semester: 'hocky2', question: "Điền vào chỗ trống: 'Con ... hú dài'", options: ["chó", "mèo", "sói", "gà"], answer: "sói" },
-                { id: 'q7', subject: 'toan', grade: 'lop2', semester: 'hocky2', question: "10 - 4 = ?", options: ["5", "6", "7", "8"], answer: "6" },
-                { id: 'q8', subject: 'tiengviet', grade: 'lop2', semester: 'hocky2', question: "Từ nào trái nghĩa với 'buồn'?", options: ["vui", "khóc", "ngủ", "ăn"], answer: "vui" },
+                { subject: 'toan', grade: 'lop1', semester: 'hocky1', question: "1 + 1 = ?", options: ["1", "2", "3", "4"], answer: "2" },
+                { subject: 'tiengviet', grade: 'lop1', semester: 'hocky1', question: "Chữ cái đầu tiên trong bảng chữ cái là?", options: ["b", "c", "a", "d"], answer: "a" },
+                { subject: 'toan', grade: 'lop2', semester: 'hocky1', question: "2 + 3 = ?", options: ["4", "5", "6", "7"], answer: "5" },
+                { subject: 'tiengviet', grade: 'lop2', semester: 'hocky1', question: "Từ nào sau đây là danh từ chỉ người?", options: ["bàn", "sách", "giáo viên", "cây"], answer: "giáo viên" },
+                { subject: 'toan', grade: 'lop1', semester: 'hocky2', question: "5 - 2 = ?", options: ["2", "3", "4", "5"], answer: "3" },
+                { subject: 'tiengviet', grade: 'lop1', semester: 'hocky2', question: "Điền vào chỗ trống: 'Con ... hú dài'", options: ["chó", "mèo", "sói", "gà"], answer: "sói" },
+                { subject: 'toan', grade: 'lop2', semester: 'hocky2', question: "10 - 4 = ?", options: ["5", "6", "7", "8"], answer: "6" },
+                { subject: 'tiengviet', grade: 'lop2', semester: 'hocky2', question: "Từ nào trái nghĩa với 'buồn'?", options: ["vui", "khóc", "ngủ", "ăn"], answer: "vui" },
             ];
-            fullQuestionCollection = seedData.map((q, index) => ({ ...q, id: `q${index + 1}` })); // Assign simple IDs
-            restructureQuestionBank();
-            console.log("Initial questions seeded into memory.");
+            const qCollection = collection(db, `artifacts/${appId}/public/data/questions`);
+            const promises = seedData.map(q => addDoc(qCollection, q));
+            await Promise.all(promises);
+            await loadQuestionsFromFirestore(); // Reload questions after seeding
         }
 
         /**
@@ -454,17 +524,23 @@
         }
 
         /**
-         * Loads admin settings (like timer configuration) from in-memory defaults.
+         * Loads admin settings (like timer configuration) from Firestore.
          */
-        function loadAdminSettings() {
-            // Default settings, no persistence
-            timerEnabled = false;
-            timerDuration = 30;
-            console.log("Admin settings loaded from defaults.");
+        async function loadAdminSettings() {
+            if (!db || !appId) return;
+            const settingsRef = doc(db, `artifacts/${appId}/public/data/adminSettings`, 'config');
+            try {
+                const docSnap = await getDoc(settingsRef);
+                if (docSnap.exists()) {
+                    const settings = docSnap.data();
+                    timerEnabled = settings.timerEnabled ?? false;
+                    timerDuration = settings.timerDuration ?? 30;
+                }
+            } catch (error) { console.error("Error loading admin settings:", error); throw error; }
         }
 
         /**
-         * Saves admin settings (timer configuration) to in-memory variables.
+         * Saves admin settings (timer configuration) to Firestore.
          * @param {HTMLButtonElement} button - The button element that triggered the save, used for loading state.
          */
         async function saveAdminSettings(button) {
@@ -481,28 +557,43 @@
                 return;
             }
 
-            // Update in-memory settings
-            timerEnabled = newTimerEnabled;
-            timerDuration = newTimerDuration;
-            feedbackEl.textContent = "Đã lưu cài đặt!";
-            feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
-            setTimeout(() => feedbackEl.textContent = '', 3000); // Clear message after 3 seconds
-            setButtonLoading(button, false); // Always reset button loading state
-            console.log("Admin settings saved to memory.");
+            const settingsRef = doc(db, `artifacts/${appId}/public/data/adminSettings`, 'config');
+            try {
+                await setDoc(settingsRef, { timerEnabled: newTimerEnabled, timerDuration: newTimerDuration }, { merge: true });
+                // Update local state after successful save
+                timerEnabled = newTimerEnabled;
+                timerDuration = newTimerDuration;
+                feedbackEl.textContent = "Đã lưu cài đặt!";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                setTimeout(() => feedbackEl.textContent = '', 3000); // Clear message after 3 seconds
+            } catch (error) {
+                console.error("Error saving settings:", error);
+                feedbackEl.textContent = "Lỗi khi lưu cài đặt.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+            } finally {
+                setButtonLoading(button, false); // Always reset button loading state
+            }
         }
 
         /**
-         * Loads the user-defined Gemini API key from in-memory (or a hardcoded default).
+         * Loads the user-defined Gemini API key from Firestore.
          */
-        function loadApiKey() {
-            // API key is not persisted without Firebase. It will be null by default.
-            userDefinedApiKey = null; 
-            document.getElementById('gemini-api-key-input').placeholder = "Nhập Gemini API Key của bạn...";
-            console.log("API key loaded (from memory/default).");
+        async function loadApiKey() {
+            const keyRef = doc(db, `artifacts/${appId}/public/data/adminSettings`, 'geminiKey');
+            try {
+                const docSnap = await getDoc(keyRef);
+                if (docSnap.exists() && docSnap.data().key) {
+                    userDefinedApiKey = docSnap.data().key;
+                    document.getElementById('gemini-api-key-input').placeholder = "API Key đã được lưu. Nhập để thay thế.";
+                } else {
+                    userDefinedApiKey = null;
+                    document.getElementById('gemini-api-key-input').placeholder = "Nhập Gemini API Key của bạn...";
+                }
+            } catch (error) { console.error("Error loading API key:", error); throw error; }
         }
 
         /**
-         * Saves the user-provided Gemini API key to an in-memory variable.
+         * Saves the user-provided Gemini API key to Firestore.
          * @param {HTMLButtonElement} button - The button element that triggered the save, used for loading state.
          */
         async function saveApiKey(button) {
@@ -515,31 +606,45 @@
                 setButtonLoading(button, false);
                 return;
             }
-            // Save to in-memory variable
-            userDefinedApiKey = newKey;
-            feedbackEl.textContent = "Đã lưu API Key thành công!";
-            feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
-            document.getElementById('gemini-api-key-input').value = ""; // Clear input after saving
-            document.getElementById('gemini-api-key-input').placeholder = "API Key đã được lưu. Nhập để thay thế.";
-            setButtonLoading(button, false);
-            console.log("API key saved to memory.");
+            const keyRef = doc(db, `artifacts/${appId}/public/data/adminSettings`, 'geminiKey');
+            try {
+                await setDoc(keyRef, { key: newKey });
+                userDefinedApiKey = newKey;
+                feedbackEl.textContent = "Đã lưu API Key thành công!";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                document.getElementById('gemini-api-key-input').value = ""; // Clear input after saving
+                document.getElementById('gemini-api-key-input').placeholder = "API Key đã được lưu. Nhập để thay thế.";
+            } catch (error) {
+                console.error("Error saving API key:", error);
+                feedbackEl.textContent = "Lỗi khi lưu API Key.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+            } finally {
+                setButtonLoading(button, false);
+            }
         }
 
         /**
-         * Deletes the stored Gemini API key from the in-memory variable.
+         * Deletes the stored Gemini API key from Firestore.
          * @param {HTMLButtonElement} button - The button element that triggered the delete, used for loading state.
          */
         async function deleteApiKey(button) {
             setButtonLoading(button, true);
+            const keyRef = doc(db, `artifacts/${appId}/public/data/adminSettings`, 'geminiKey');
             const feedbackEl = document.getElementById('settings-feedback');
-            // Clear in-memory variable
-            userDefinedApiKey = null;
-            feedbackEl.textContent = "Đã xóa API Key. Hệ thống sẽ dùng key mặc định.";
-            feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
-            document.getElementById('gemini-api-key-input').value = "";
-            document.getElementById('gemini-api-key-input').placeholder = "Nhập Gemini API Key của bạn...";
-            setButtonLoading(button, false);
-            console.log("API key deleted from memory.");
+            try {
+                await deleteDoc(keyRef);
+                userDefinedApiKey = null;
+                feedbackEl.textContent = "Đã xóa API Key. Hệ thống sẽ dùng key mặc định.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                document.getElementById('gemini-api-key-input').value = "";
+                document.getElementById('gemini-api-key-input').placeholder = "Nhập Gemini API Key của bạn...";
+            } catch (error) {
+                console.error("Error deleting API key:", error);
+                feedbackEl.textContent = "Lỗi khi xóa API Key.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+            } finally {
+                setButtonLoading(button, false);
+            }
         }
         
         // --- AI EXPLANATION & GENERATION ---
@@ -610,95 +715,118 @@
             return generatedContent;
         }
 
-        // --- HISTORY & LEADERBOARD (now in-memory only) ---
+        // --- HISTORY & LEADERBOARD ---
         /**
-         * Saves quiz results to in-memory arrays for history and leaderboard.
-         * Data will be lost on page refresh.
+         * Saves quiz results to Firestore for both history and leaderboard.
          * @param {object} resultData - The data object containing quiz results.
          * @param {string|null} playerName - The name of the player, or null if not saved.
          */
         async function saveResult(resultData, playerName = null) {
-            // Add a timestamp for in-memory sorting
-            const timestamp = new Date(); 
+            if (!db || !appId || !auth.currentUser) return;
 
-            const dataToSaveForHistory = { ...resultData, name: playerName, date: timestamp };
+            const dataToSaveForHistory = { ...resultData, name: playerName };
             const dataToSaveForLeaderboard = {
                 name: playerName,
                 score: resultData.score,
                 totalQuestions: resultData.totalQuestions,
                 subject: resultData.subject,
                 grade: resultData.grade,
-                date: timestamp
+                date: resultData.date // Use serverTimestamp from resultData
             };
 
-            // Save to in-memory leaderboard if a player name is provided
+            // Save to leaderboard if a player name is provided
             if (playerName) {
-                leaderboardData.push(dataToSaveForLeaderboard);
-                console.log("Score saved to in-memory leaderboard!");
+                try {
+                    await addDoc(collection(db, `artifacts/${appId}/public/data/leaderboard`), dataToSaveForLeaderboard);
+                    console.log("Score saved to leaderboard!");
+                } catch (e) {
+                    console.error("Error writing to leaderboard:", e);
+                }
             }
             
-            // Always save full quiz result to in-memory history
-            quizHistory.push(dataToSaveForHistory);
-            console.log("Full quiz result saved to in-memory history!");
+            // Always save full quiz result to history
+            try {
+                await addDoc(collection(db, `artifacts/${appId}/public/data/quizResults`), dataToSaveForHistory);
+                console.log("Full quiz result saved to history!");
+            } catch (e) {
+                console.error("Error writing to history:", e);
+            }
         }
 
         /**
-         * Displays the quiz history from in-memory data in a table.
+         * Displays the quiz history in a table from Firestore.
          */
         async function displayHistory() {
             showScreen('history');
             const container = document.getElementById('history-table-container');
             container.innerHTML = '<p class="text-center text-gray-500">Đang tải lịch sử...</p>';
 
-            if (quizHistory.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-500">Chưa có lịch sử làm bài.</p>';
+            if (!db || !appId) {
+                container.innerHTML = '<p class="text-center text-red-500">Lỗi CSDL.</p>';
                 return;
             }
 
-            // Sort by date in descending order (most recent first)
-            const results = [...quizHistory].sort((a, b) => b.date.getTime() - a.date.getTime());
+            try {
+                const q = query(collection(db, `artifacts/${appId}/public/data/quizResults`));
+                const querySnapshot = await getDocs(q);
 
-            const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
-
-            let tableHTML = `
-                <table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden">
-                    <thead class="bg-gray-100/50">
-                        <tr>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Ngày Giờ</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Môn</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Chi tiết</th>
-                        </tr>
-                    </thead>
-                    <tbody id="history-table-body" class="bg-white/30 divide-y divide-gray-200 text-gray-800">
-            `;
-
-            results.forEach((r, index) => {
-                const date = r.date ? r.date.toLocaleString('vi-VN') : 'N/A';
-                const scoreDisplay = `${r.score}/${r.totalQuestions || 10}`;
-                tableHTML += `
-                    <tr>
-                        <td class="px-3 py-2 text-sm">${date}</td>
-                        <td class="px-3 py-2 text-sm font-semibold">${r.name || 'Không lưu'}</td>
-                        <td class="px-3 py-2 text-sm">${nameMap[r.subject] || r.subject}</td>
-                        <td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td>
-                        <td class="px-3 py-2 text-sm">
-                            <button data-index="${index}" class="view-detail-btn bg-blue-500 text-white px-2 py-1 rounded-md text-xs hover:bg-blue-600">Xem</button>
-                        </td>
-                    </tr>
-                `;
-            });
-            tableHTML += '</tbody></table>';
-            container.innerHTML = tableHTML;
-
-            // Add event listeners for detail buttons
-            document.getElementById('history-table-body').addEventListener('click', (e) => {
-                if (e.target.classList.contains('view-detail-btn')) {
-                    const index = e.target.dataset.index;
-                    showHistoryDetail(results[index]);
+                if (querySnapshot.empty) {
+                    container.innerHTML = '<p class="text-center text-gray-500">Chưa có lịch sử làm bài.</p>';
+                    return;
                 }
-            });
+
+                const results = [];
+                querySnapshot.forEach(doc => results.push({id: doc.id, ...doc.data()}));
+                // Sort by date in descending order (most recent first)
+                results.sort((a, b) => (b.date?.toDate() || 0) - (a.date?.toDate() || 0));
+                quizHistory = results; // Update in-memory cache for detail view
+
+                const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
+
+                let tableHTML = `
+                    <table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden">
+                        <thead class="bg-gray-100/50">
+                            <tr>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Ngày Giờ</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Môn</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Chi tiết</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body" class="bg-white/30 divide-y divide-gray-200 text-gray-800">
+                `;
+
+                results.forEach((r, index) => {
+                    const date = r.date?.toDate() ? r.date.toDate().toLocaleString('vi-VN') : 'N/A';
+                    const scoreDisplay = `${r.score}/${r.totalQuestions || 10}`;
+                    tableHTML += `
+                        <tr>
+                            <td class="px-3 py-2 text-sm">${date}</td>
+                            <td class="px-3 py-2 text-sm font-semibold">${r.name || 'Không lưu'}</td>
+                            <td class="px-3 py-2 text-sm">${nameMap[r.subject] || r.subject}</td>
+                            <td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td>
+                            <td class="px-3 py-2 text-sm">
+                                <button data-index="${index}" class="view-detail-btn bg-blue-500 text-white px-2 py-1 rounded-md text-xs hover:bg-blue-600">Xem</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                tableHTML += '</tbody></table>';
+                container.innerHTML = tableHTML;
+
+                // Add event listeners for detail buttons
+                document.getElementById('history-table-body').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('view-detail-btn')) {
+                        const index = e.target.dataset.index;
+                        showHistoryDetail(results[index]);
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error fetching history:", error);
+                container.innerHTML = '<p class="text-center text-red-500">Không thể tải lịch sử.</p>';
+            }
         }
 
         /**
@@ -731,15 +859,15 @@
         }
 
         /**
-         * Displays the leaderboard based on selected filters from in-memory data.
+         * Displays the leaderboard based on selected filters from Firestore.
          */
         async function displayLeaderboard() {
             showScreen('leaderboard');
             const container = document.getElementById('leaderboard-table-container');
             container.innerHTML = '<p class="text-center text-gray-500">Đang tải bảng xếp hạng...</p>';
 
-            if (leaderboardData.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-500">Chưa có ai trên bảng xếp hạng cho mục này.</p>';
+            if (!db || !appId) {
+                container.innerHTML = '<p class="text-center text-red-500">Lỗi CSDL.</p>';
                 return;
             }
 
@@ -747,55 +875,78 @@
             const gradeFilter = leaderboardGradeFilter.value;
             const nameFilter = leaderboardNameFilter.value.trim().toLowerCase();
 
-            let results = [...leaderboardData]; // Work with a copy
+            try {
+                let queryConstraints = [];
+                if (subjectFilter !== 'all') queryConstraints.push(where("subject", "==", subjectFilter));
+                if (gradeFilter !== 'all') queryConstraints.push(where("grade", "==", gradeFilter));
+                
+                // Firestore does not support orderBy on multiple fields without composite indexes.
+                // We will fetch and sort client-side.
+                const q = query(collection(db, `artifacts/${appId}/public/data/leaderboard`), ...queryConstraints);
+                const querySnapshot = await getDocs(q);
 
-            // Apply filters
-            if (subjectFilter !== 'all') results = results.filter(r => r.subject === subjectFilter);
-            if (gradeFilter !== 'all') results = results.filter(r => r.grade === gradeFilter);
-            if (nameFilter) results = results.filter(r => r.name && r.name.toLowerCase().includes(nameFilter));
-            
-            // Sort results: primary by score (desc), secondary by date (desc)
-            results.sort((a, b) => {
-                if (b.score !== a.score) {
-                    return b.score - a.score;
+                if (querySnapshot.empty) {
+                    container.innerHTML = '<p class="text-center text-gray-500">Chưa có ai trên bảng xếp hạng cho mục này.</p>';
+                    return;
                 }
-                const dateA = a.date ? a.date.getTime() : 0; 
-                const dateB = b.date ? b.date.getTime() : 0;
-                return dateB - dateA;
-            });
 
-            // Display only top 10 results
-            const topResults = results.slice(0, 10);
+                let results = [];
+                querySnapshot.forEach(doc => {
+                    results.push(doc.data());
+                });
 
-            if (topResults.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-500">Không tìm thấy kết quả phù hợp.</p>';
-                return;
-            }
+                // Apply name filter client-side
+                if (nameFilter) {
+                    results = results.filter(r => r.name && r.name.toLowerCase().includes(nameFilter));
+                }
 
-            let tableHTML = `
-                <table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden">
-                    <thead class="bg-gray-100/50">
-                        <tr>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Hạng</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên Bé</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white/30 divide-y divide-gray-200 text-gray-800">
-            `;
+                // Sort results: primary by score (desc), secondary by date (desc)
+                results.sort((a, b) => {
+                    if (b.score !== a.score) {
+                        return b.score - a.score;
+                    }
+                    const dateA = a.date?.toDate() || new Date(0); // Handle missing/invalid dates
+                    const dateB = b.date?.toDate() || new Date(0);
+                    return dateB - dateA;
+                });
 
-            topResults.forEach((data, index) => {
-                const scoreDisplay = `${data.score}/${data.totalQuestions || 10}`;
-                tableHTML += `
-                    <tr>
-                        <td class="px-3 py-2 text-center text-sm font-bold">${index + 1}</td>
-                        <td class="px-3 py-2 text-sm font-semibold">${data.name}</td>
-                        <td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td>
-                    </tr>
+                // Display only top 10 results
+                const topResults = results.slice(0, 10);
+
+                if (topResults.length === 0) {
+                    container.innerHTML = '<p class="text-center text-gray-500">Không tìm thấy kết quả phù hợp.</p>';
+                    return;
+                }
+
+                let tableHTML = `
+                    <table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden">
+                        <thead class="bg-gray-100/50">
+                            <tr>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Hạng</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên Bé</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white/30 divide-y divide-gray-200 text-gray-800">
                 `;
-            });
-            tableHTML += '</tbody></table>';
-            container.innerHTML = tableHTML;
+
+                topResults.forEach((data, index) => {
+                    const scoreDisplay = `${data.score}/${data.totalQuestions || 10}`;
+                    tableHTML += `
+                        <tr>
+                            <td class="px-3 py-2 text-center text-sm font-bold">${index + 1}</td>
+                            <td class="px-3 py-2 text-sm font-semibold">${data.name}</td>
+                            <td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td>
+                        </tr>
+                    `;
+                });
+                tableHTML += '</tbody></table>';
+                container.innerHTML = tableHTML;
+
+            } catch (error) {
+                console.error("Error fetching leaderboard:", error);
+                container.innerHTML = '<p class="text-center text-red-500">Không thể tải bảng xếp hạng.</p>';
+            }
         }
         
         // --- GAME LOGIC ---
@@ -992,9 +1143,9 @@
             else if (percentage >= 50) finalMessageElement.textContent = "Làm tốt lắm! Hãy chọn tên để lưu điểm nhé.";
             else finalMessageElement.textContent = "Cố gắng hơn lần sau nhé! Chọn tên để lưu điểm nào.";
 
-            // Prepare result data for saving (now in-memory)
+            // Prepare result data for saving
             const resultData = {
-                date: new Date(), // Use current Date object for in-memory timestamp
+                date: serverTimestamp(), // Firestore timestamp
                 subject: selectedSubject,
                 grade: selectedGrade,
                 semester: selectedSemester,
@@ -1010,7 +1161,7 @@
                 if (e.target.classList.contains('name-btn')) {
                     playSound('click');
                     const playerName = e.target.dataset.name;
-                    saveResult(resultData, playerName); // Save with selected name to in-memory
+                    saveResult(resultData, playerName); // Save with selected name
                     hideModal('nameSelection');
                     displayLeaderboard(); // Show leaderboard after saving
                 }
@@ -1019,7 +1170,7 @@
             // Event listener for skipping and playing again
             document.getElementById('skip-and-play-again-btn').onclick = () => {
                 playSound('click');
-                saveResult(resultData, null); // Save without a specific name to in-memory
+                saveResult(resultData, null); // Save without a specific name
                 hideModal('nameSelection');
                 resetGame(); // Reset game to selection screen
             };
@@ -1108,8 +1259,8 @@
         }
 
         /**
-         * Clears all documents from a specified in-memory collection.
-         * @param {string} collectionName - The name of the collection to clear ('leaderboard', 'quizResults').
+         * Clears all documents from a specified Firestore collection.
+         * @param {string} collectionName - The name of the collection to clear (e.g., 'leaderboard', 'quizResults').
          * @param {HTMLButtonElement} button - The button element that triggered the action, for loading state.
          */
         async function clearCollection(collectionName, button) {
@@ -1119,18 +1270,25 @@
             feedbackEl.textContent = `Đang xóa ${friendlyName}...`;
             feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-gray-700';
 
-            // Clear the respective in-memory array
-            if (collectionName === 'leaderboard') {
-                leaderboardData = [];
-            } else if (collectionName === 'quizResults') {
-                quizHistory = [];
+            const collectionRef = collection(db, `artifacts/${appId}/public/data/${collectionName}`);
+            try {
+                const querySnapshot = await getDocs(query(collectionRef)); // Use query to get all docs
+                const deletePromises = [];
+                querySnapshot.forEach((doc) => {
+                    deletePromises.push(deleteDoc(doc.ref));
+                });
+                await Promise.all(deletePromises); // Execute all delete operations concurrently
+                console.log(`${collectionName} cleared successfully.`);
+                feedbackEl.textContent = `Đã xóa thành công ${friendlyName}!`;
+                feedbackEl.classList.add('text-green-800');
+                setTimeout(() => feedbackEl.textContent = '', 4000); // Clear message after 4 seconds
+            } catch (error) {
+                console.error(`Error clearing ${collectionName}:`, error);
+                feedbackEl.textContent = `Lỗi khi xóa ${friendlyName}.`;
+                feedbackEl.classList.add('text-red-600');
+            } finally {
+                setButtonLoading(button, false); // Always reset button loading state
             }
-            
-            console.log(`${collectionName} cleared successfully from memory.`);
-            feedbackEl.textContent = `Đã xóa thành công ${friendlyName}!`;
-            feedbackEl.classList.add('text-green-800');
-            setTimeout(() => feedbackEl.textContent = '', 4000); // Clear message after 4 seconds
-            setButtonLoading(button, false); // Always reset button loading state
         }
 
         /**
@@ -1149,14 +1307,27 @@
             }
         }
 
-        // --- ADMIN STUDENT MANAGEMENT (now in-memory) ---
+        // --- ADMIN STUDENT MANAGEMENT ---
         /**
-         * Loads the list of student names from in-memory defaults.
+         * Loads the list of student names from Firestore.
          */
-        function loadStudentList() {
-            // Default student list, no persistence
-            studentList = ["Thảo Huyền", "Hằng Nga"];
-            console.log("Student list loaded from defaults.");
+        async function loadStudentList() {
+            const docRef = doc(db, `artifacts/${appId}/public/data/students`, 'studentList');
+            try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists() && docSnap.data().names) {
+                    studentList = docSnap.data().names;
+                } else {
+                    // If no list exists, create one with default names
+                    studentList = ["Thảo Huyền", "Hằng Nga"]; 
+                    await setDoc(docRef, { names: studentList }); // Save default list
+                }
+                console.log("Student list loaded:", studentList);
+            } catch (error) {
+                console.error("Error loading student list:", error);
+                studentList = ["Thảo Huyền", "Hằng Nga"]; // Fallback to default names on error
+                throw error; // Re-throw to propagate the error to Promise.all
+            }
         }
 
         /**
@@ -1193,7 +1364,7 @@
         }
 
         /**
-         * Adds a new student name to the in-memory list.
+         * Adds a new student name to the list in Firestore.
          * @param {string} name - The name of the student to add.
          */
         async function addStudent(name) {
@@ -1207,28 +1378,47 @@
                 return;
             }
 
-            studentList.push(name); // Add to in-memory array
-            populateStudentList(); // Update UI
-            feedbackEl.textContent = `Đã thêm học sinh "${name}" thành công!`;
-            feedbackEl.className = 'text-center text-sm font-bold h-4 text-green-800';
-            setTimeout(() => feedbackEl.textContent = '', 3000);
-            console.log("Student added to memory.");
+            const docRef = doc(db, `artifacts/${appId}/public/data/students`, 'studentList');
+            try {
+                // Use arrayUnion to add the name to the array without overwriting
+                await updateDoc(docRef, { names: arrayUnion(name) });
+                // Update local list for immediate UI refresh
+                studentList.push(name);
+                populateStudentList(); // Update UI
+                feedbackEl.textContent = `Đã thêm học sinh "${name}" thành công!`;
+                feedbackEl.className = 'text-center text-sm font-bold h-4 text-green-800';
+                setTimeout(() => feedbackEl.textContent = '', 3000);
+            } catch (error) {
+                console.error("Error adding student:", error);
+                feedbackEl.textContent = "Lỗi khi thêm học sinh.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 text-red-600';
+                setTimeout(() => feedbackEl.textContent = '', 3000);
+            }
         }
 
         /**
-         * Deletes a student name from the in-memory list.
+         * Deletes a student name from the list in Firestore.
          * @param {string} name - The name of the student to delete.
          */
         async function deleteStudent(name) {
+            const docRef = doc(db, `artifacts/${appId}/public/data/students`, 'studentList');
             const feedbackEl = document.getElementById('student-manager-feedback');
             feedbackEl.textContent = ''; // Clear previous feedback
-            
-            studentList = studentList.filter(s => s !== name); // Remove from in-memory array
-            populateStudentList(); // Update UI
-            feedbackEl.textContent = `Đã xóa học sinh "${name}" thành công!`;
-            feedbackEl.className = 'text-center text-sm font-bold h-4 text-green-800';
-            setTimeout(() => feedbackEl.textContent = '', 3000);
-            console.log("Student deleted from memory.");
+            try {
+                // Use arrayRemove to delete the name from the array
+                await updateDoc(docRef, { names: arrayRemove(name) });
+                // Update local list for immediate UI refresh
+                studentList = studentList.filter(s => s !== name);
+                populateStudentList(); // Update UI
+                feedbackEl.textContent = `Đã xóa học sinh "${name}" thành công!`;
+                feedbackEl.className = 'text-center text-sm font-bold h-4 text-green-800';
+                setTimeout(() => feedbackEl.textContent = '', 3000);
+            } catch (error) {
+                console.error("Error deleting student:", error);
+                feedbackEl.textContent = "Lỗi khi xóa học sinh.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 text-red-600';
+                setTimeout(() => feedbackEl.textContent = '', 3000);
+            }
         }
 
         /**
@@ -1248,7 +1438,7 @@
             });
         }
 
-        // --- ADMIN QUESTION MANAGEMENT (now in-memory) ---
+        // --- ADMIN QUESTION MANAGEMENT ---
         /**
          * Displays the question management panel and populates the question list based on filters.
          */
@@ -1268,7 +1458,7 @@
             const grade = document.getElementById('q-manager-grade-filter').value;
             const semester = document.getElementById('q-manager-semester-filter').value;
 
-            // Filter questions based on selected criteria from in-memory collection
+            // Filter questions based on selected criteria
             const filteredQuestions = fullQuestionCollection.filter(q =>
                 (subject === 'all' || q.subject === subject) &&
                 (grade === 'all' || q.grade === grade) &&
@@ -1351,7 +1541,6 @@
 
         /**
          * Handles the submission of the question add/edit form.
-         * Updates or adds questions to the in-memory collection.
          * @param {Event} e - The form submission event.
          */
         async function handleQuestionFormSubmit(e) {
@@ -1391,39 +1580,50 @@
             }
 
             const questionData = { subject, grade, semester, question: questionText, options, answer };
+            const qCollection = collection(db, `artifacts/${appId}/public/data/questions`);
 
-            if (questionId) {
-                // Update existing question in-memory
-                const index = fullQuestionCollection.findIndex(q => q.id === questionId);
-                if (index !== -1) {
-                    fullQuestionCollection[index] = { ...fullQuestionCollection[index], ...questionData };
+            try {
+                if (questionId) {
+                    // Update existing question
+                    await updateDoc(doc(qCollection, questionId), questionData);
+                } else {
+                    // Add new question
+                    await addDoc(qCollection, questionData);
                 }
-            } else {
-                // Add new question to in-memory
-                questionData.id = `q${Date.now()}`; // Generate a simple unique ID
-                fullQuestionCollection.push(questionData);
+                hideModal('questionEdit');
+                await loadQuestionsFromFirestore(); // Reload all questions
+                populateQuestionList(); // Refresh the displayed list
             }
-            hideModal('questionEdit');
-            restructureQuestionBank(); // Re-organize the in-memory question bank
-            populateQuestionList(); // Refresh the displayed list
-            console.log("Question saved/updated in memory.");
-            setButtonLoading(button, false);
+            catch (error) {
+                console.error("Error saving question:", error);
+                errorEl.textContent = 'Lỗi khi lưu câu hỏi vào CSDL.';
+            } finally {
+                setButtonLoading(button, false);
+            }
         }
 
         /**
-         * Deletes a question from the in-memory collection.
+         * Deletes a question from Firestore.
          * @param {string} questionId - The ID of the question to delete.
          */
         async function deleteQuestion(questionId) {
-            fullQuestionCollection = fullQuestionCollection.filter(q => q.id !== questionId); // Remove from in-memory
-            restructureQuestionBank(); // Re-organize the in-memory question bank
-            populateQuestionList(); // Refresh the displayed list
-            console.log("Question deleted from memory.");
-            // Display temporary feedback
-            const feedbackEl = document.getElementById('question-form-error'); 
-            feedbackEl.textContent = "Đã xóa câu hỏi.";
-            feedbackEl.className = 'text-center text-sm font-bold h-4 text-green-800';
-            setTimeout(() => feedbackEl.textContent = '', 3000);
+            const qDoc = doc(db, `artifacts/${appId}/public/data/questions`, questionId);
+            try { 
+                await deleteDoc(qDoc); 
+                await loadQuestionsFromFirestore(); 
+                populateQuestionList(); 
+                // Display temporary feedback
+                const feedbackEl = document.getElementById('question-form-error'); 
+                feedbackEl.textContent = "Đã xóa câu hỏi.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 text-green-800';
+                setTimeout(() => feedbackEl.textContent = '', 3000);
+            } catch (error) { 
+                console.error("Error deleting question:", error); 
+                const feedbackEl = document.getElementById('question-form-error'); 
+                feedbackEl.textContent = "Lỗi khi xóa câu hỏi.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 text-red-600';
+                setTimeout(() => feedbackEl.textContent = '', 3000);
+            } 
         }
 
         /**
@@ -1488,7 +1688,7 @@
                 generatedQuestions.forEach(q => {
                     const itemEl = document.createElement('div');
                     itemEl.className = 'p-3 bg-black/10 rounded-lg text-sm';
-                    itemEl.innerHTML = `
+                    item.innerHTML = `
                         <p class="font-bold">${q.question}</p>
                         <p>Đáp án: ${q.answer}</p>
                         <p>Lựa chọn: ${q.options.join(', ')}</p>
@@ -1512,7 +1712,7 @@
         }
 
         /**
-         * Saves the AI-generated questions to the in-memory collection.
+         * Saves the AI-generated questions to Firestore.
          * @param {Array<object>} questions - An array of question objects generated by AI.
          * @param {string} subject - The subject for these questions.
          * @param {string} grade - The grade for these questions.
@@ -1522,26 +1722,30 @@
             const feedbackEl = document.getElementById('ai-generation-feedback');
             feedbackEl.textContent = 'Đang lưu câu hỏi...';
 
-            const newQuestionsToAdd = questions.map(q => {
-                if (q.options.includes(q.answer)) {
-                    return { ...q, subject, grade, semester, id: `q${Date.now()}-${Math.random().toString(36).substring(2, 9)}` };
-                }
+            const qCollection = collection(db, `artifacts/${appId}/public/data/questions`);
+            const promises = questions.map(q => { 
+                if (q.options.includes(q.answer)) { 
+                    return addDoc(qCollection, { ...q, subject, grade, semester }); 
+                } 
                 console.warn("Skipping question due to invalid answer/options:", q);
-                return null;
+                return null; 
             }).filter(p => p !== null); 
 
-            fullQuestionCollection.push(...newQuestionsToAdd); // Add to in-memory collection
-            restructureQuestionBank(); // Re-organize the in-memory question bank
-
-            feedbackEl.textContent = `Đã lưu thành công ${newQuestionsToAdd.length} câu hỏi!`;
-            document.getElementById('ai-results-container').classList.add('hidden'); // Hide results container
-            console.log("AI-generated questions saved to memory.");
+            try { 
+                await Promise.all(promises); 
+                feedbackEl.textContent = `Đã lưu thành công ${promises.length} câu hỏi!`; 
+                document.getElementById('ai-results-container').classList.add('hidden'); 
+                await loadQuestionsFromFirestore(); 
+            } catch (error) { 
+                console.error("Error saving AI questions:", error); 
+                feedbackEl.textContent = 'Lỗi khi lưu câu hỏi.'; 
+            } 
         }
 
         // --- EVENT LISTENERS ---
-        // Initialize app data on DOMContentLoaded
+        // Initialize Firebase and start audio context on DOMContentLoaded
         document.addEventListener('DOMContentLoaded', async () => {
-            await initializeAppData();
+            await initializeFirebase();
             // Start Tone.js audio context on first user interaction
             document.body.addEventListener('click', async () => {
                 if (Tone.context.state !== 'running') {
@@ -1697,10 +1901,10 @@
             deleteApiKey(e.currentTarget);
         });
         document.getElementById('clear-leaderboard-btn').addEventListener('click', (e) => {
-            showConfirmationModal('Bạn có chắc chắn muốn xóa TOÀN BỘ bảng xếp hạng không? Dữ liệu sẽ mất khi làm mới trang.', () => clearCollection('leaderboard', e.currentTarget));
+            showConfirmationModal('Bạn có chắc chắn muốn xóa TOÀN BỘ bảng xếp hạng không?', () => clearCollection('leaderboard', e.currentTarget));
         });
         document.getElementById('clear-history-btn').addEventListener('click', (e) => {
-            showConfirmationModal('Bạn có chắc chắn muốn xóa TOÀN BỘ lịch sử thi không? Dữ liệu sẽ mất khi làm mới trang.', () => clearCollection('quizResults', e.currentTarget));
+            showConfirmationModal('Bạn có chắc chắn muốn xóa TOÀN BỘ lịch sử thi không?', () => clearCollection('quizResults', e.currentTarget));
         });
 
         // Student Manager actions
