@@ -62,10 +62,20 @@
         .speaker-btn, #sound-toggle-btn {
             cursor: pointer;
             transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
+            display: block; /* Ensure speaker buttons are always visible by default */
         }
         .speaker-btn:hover, #sound-toggle-btn:hover {
             transform: scale(1.1);
             color: #6366f1;
+        }
+        .speaker-btn.speaking-active {
+            color: #ef4444; /* Red color when speaking */
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
         .custom-scrollbar::-webkit-scrollbar {
             width: 8px;
@@ -149,7 +159,7 @@
              <div id="question-container" class="bg-black/10 p-6 rounded-2xl text-center mb-6 min-h-[100px] flex items-center justify-center relative">
                 <p class="text-xl md:text-2xl font-semibold text-white"></p>
                 <button id="read-question-btn" class="speaker-btn absolute top-4 right-4 text-white focus:outline-none">
-                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
                 </button>
              </div>
              <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
@@ -157,7 +167,7 @@
              <div id="explanation-container" class="hidden relative mt-2 bg-black/10 p-4 rounded-2xl text-white text-center font-medium">
                   <p id="explanation-text" class="pr-10"></p>
                   <button id="read-explanation-btn" class="speaker-btn absolute top-1/2 -translate-y-1/2 right-3 text-white focus:outline-none">
-                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
+                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
                   </button>
              </div>
              <button id="next-btn" class="hidden w-full mt-4 glass-btn bg-blue-500/60 text-white font-bold py-3 rounded-2xl shadow-lg hover:bg-blue-500/80">Câu tiếp theo</button>
@@ -211,7 +221,7 @@
                     <div class="space-y-4 max-w-sm mx-auto p-4 bg-white/20 rounded-xl">
                         <div class="flex items-center justify-between">
                             <label for="quiz-question-limit" class="font-medium text-gray-800">Số câu hỏi mỗi lần chơi</label>
-                            <input type="number" id="quiz-question-limit" min="1" max="50" class="w-24 px-3 py-1 border border-gray-300/50 rounded-lg bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
+                            <input type="number" id="quiz-question-limit" value="10" min="1" max="50" class="w-24 px-3 py-1 border border-gray-300/50 rounded-lg bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
                         </div>
                     </div>
                 </div>
@@ -265,7 +275,7 @@
             </div>
             <div class="flex gap-4 mt-6">
                     <button id="add-new-question-btn" class="w-full glass-btn bg-green-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-green-500/80">Thêm câu hỏi mới</button>
-                    <button id="delete-filtered-questions-btn" class="w-full glass-btn bg-red-600/70 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-600/90">Xóa Câu hỏi Đang Hiển thị</button>
+                    <!-- Removed delete-filtered-questions-btn as per user request -->
                     <button class="back-to-admin-btn w-full glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
             </div>
         </div>
@@ -367,7 +377,8 @@
         import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp, doc, getDoc, setDoc, where, deleteDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- SOUND EFFECTS SETUP ---
-        let soundsEnabled = true;
+        // Tone.js is now accessed globally, assuming it's loaded by the script tag
+        let soundsEnabled = true; 
         const synths = {
             click: new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 0.1 } }).toDestination(),
             correct: new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.005, decay: 0.2, sustain: 0.1, release: 0.2 } }).toDestination(),
@@ -379,7 +390,18 @@
          * @param {string} soundType - The type of sound to play ('click', 'correct', 'incorrect', 'complete').
          */
         function playSound(soundType) {
-            if (!soundsEnabled || !Tone.context.state === 'running') return;
+            if (!soundsEnabled) return;
+            // Ensure Tone.js context is running before playing sounds
+            if (Tone.context.state !== 'running') {
+                Tone.start().then(() => {
+                    _triggerSound(soundType);
+                }).catch(e => console.error("Failed to start audio context:", e));
+            } else {
+                _triggerSound(soundType);
+            }
+        }
+
+        function _triggerSound(soundType) {
             try {
                 switch (soundType) {
                     case 'click': synths.click.triggerAttackRelease("C5", "8n"); break;
@@ -389,6 +411,7 @@
                 }
             } catch (error) { console.error("Sound play error:", error); }
         }
+
 
         // --- STATE & DOM VARIABLES ---
         let db, auth, appId, questionBank = {}, userDefinedApiKey = null;
@@ -610,8 +633,8 @@
                     timerDuration = settings.timerDuration ?? 30; // Default to 30 seconds if not present.
                     // quizQuestionLimit = settings.quizQuestionLimit ?? 10; // Removed as it's now fixed
                 }
-            } catch (error) { 
-                console.error("Error loading admin settings:", error); 
+            } catch (error) 
+                {console.error("Error loading admin settings:", error); 
                 throw error; // Re-throw to propagate the error.
             }
         }
@@ -763,8 +786,12 @@
         async function getExplanationFromAI(question, answer, grade) {
             const explanationContainer = document.getElementById('explanation-container');
             const explanationTextEl = document.getElementById('explanation-text');
+            const readExplanationBtn = document.getElementById('read-explanation-btn'); // Get the button
+
             explanationTextEl.textContent = 'Đang tạo giải thích...'; // Show loading message.
             explanationContainer.classList.remove('hidden'); // Make container visible.
+            readExplanationBtn.classList.remove('speaking-active'); // Remove active state
+            readExplanationBtn.style.display = 'block'; // Ensure explanation speaker is visible
 
             const gradeMap = { lop1: "lớp 1", lop2: "lớp 2" };
             const gradeText = gradeMap[grade] || "học sinh tiểu học"; // Default to general primary student if grade is unknown.
@@ -773,13 +800,16 @@
             try {
                 const generatedText = await callGeminiAPI(prompt); // Call Gemini API for explanation.
                 explanationTextEl.textContent = `💡 Giải thích: ${generatedText}`;
+                
                 // Set up text-to-speech for the explanation.
-                document.getElementById('read-explanation-btn').onclick = () => speakText(generatedText);
-                document.getElementById('read-explanation-btn').style.display = 'block'; // Show speaker button.
+                readExplanationBtn.onclick = () => {
+                    speakText(generatedText, readExplanationBtn); // Pass the button reference
+                };
+                readExplanationBtn.style.display = 'block'; // Show speaker button after explanation is ready
             } catch (error) {
                 console.error("Error in explanation process:", error);
                 explanationTextEl.textContent = 'Không thể tạo giải thích lúc này.';
-                document.getElementById('read-explanation-btn').style.display = 'none'; // Hide speaker button on error.
+                readExplanationBtn.style.display = 'none'; // Hide speaker button on error.
             }
         }
 
@@ -1166,7 +1196,7 @@
                 button.className = 'answer-option w-full p-4 rounded-2xl font-semibold glass-btn bg-white/20 hover:bg-white/40 text-gray-800';
                 // Attach event listener to check the answer when an option is clicked.
                 button.onclick = (e) => {
-                    playSound('click'); // Play click sound.
+                    playSound('click'); // Play click sound
                     checkAnswer(e.target, questionData.answer);
                 };
                 optionsContainer.appendChild(button);
@@ -1178,7 +1208,7 @@
 
             // Set up text-to-speech for reading the question aloud.
             const readQuestionBtn = document.getElementById('read-question-btn');
-            readQuestionBtn.onclick = () => speakText(questionData.question);
+            readQuestionBtn.onclick = () => speakText(questionData.question, readQuestionBtn); // Pass button reference
             readQuestionBtn.style.display = 'block'; // Ensure the speaker button is visible
 
             // Timer logic: display and start countdown if enabled.
@@ -1222,14 +1252,14 @@
                 score++; // Increment score if correct.
                 if (selectedButton) selectedButton.classList.add('correct'); // Highlight correct answer.
                 document.getElementById('feedback-container').textContent = '🎉 Đúng rồi!';
-                playSound('correct'); // Play correct answer sound.
+                playSound('correct'); // Play correct sound
             } else {
                 if (selectedButton) selectedButton.classList.add('incorrect'); // Highlight incorrect selected answer.
                 // Only show "Sai rồi!" if no other feedback is present (e.g., from timer).
                 if (document.getElementById('feedback-container').textContent === '') {
                     document.getElementById('feedback-container').textContent = '😥 Sai rồi!';
                 }
-                playSound('incorrect'); // Play incorrect answer sound.
+                playSound('incorrect'); // Play incorrect sound
                 // Highlight the correct answer among all options.
                 document.querySelectorAll('.answer-option').forEach(btn => {
                     if (btn.textContent == correctAnswer) btn.classList.add('correct');
@@ -1244,14 +1274,17 @@
                 isCorrect: isCorrect
             });
 
-            // Request an AI explanation for the answer.
-            getExplanationFromAI(questionData.question, questionData.answer, selectedGrade);
+            // Removed AI explanation call as per user request
+            getExplanationFromAI(questionData.question, questionData.answer, selectedGrade); // Re-added AI explanation call
 
             document.getElementById('score-text').textContent = `Điểm: ${score}`; // Update score display.
             document.getElementById('next-btn').classList.remove('hidden'); // Show the "Next" button.
 
-            // Stop any ongoing speech synthesis to prevent overlapping audio.
-            if (speechSynthesis.speaking) speechSynthesis.cancel();
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel(); // Stop any ongoing speech.
+                // Remove speaking-active class from all speaker buttons when speech is cancelled
+                document.querySelectorAll('.speaker-btn').forEach(btn => btn.classList.remove('speaking-active'));
+            }
         }
 
         /**
@@ -1271,7 +1304,7 @@
          * Displays the final quiz results in a modal and prompts the user to save their score.
          */
         function showResults() {
-            playSound('complete'); // Play completion sound.
+            playSound('complete'); // Play completion sound
             const finalScore = score;
             const totalQuestions = currentQuestions.length;
             document.getElementById('modal-final-score').textContent = `${finalScore}/${totalQuestions}`;
@@ -1301,7 +1334,7 @@
             // Event listener for selecting a student name to save the score.
             document.getElementById('name-selection-container').onclick = (e) => {
                 if (e.target.classList.contains('name-btn')) {
-                    playSound('click');
+                    playSound('click'); // Play click sound
                     const playerName = e.target.dataset.name;
                     saveResult(resultData, playerName); // Save result with the selected player name.
                     hideModal('nameSelection');
@@ -1311,7 +1344,7 @@
 
             // Event listener for skipping score saving and playing again.
             document.getElementById('skip-and-play-again-btn').onclick = () => {
-                playSound('click');
+                playSound('click'); // Play click sound
                 saveResult(resultData, null); // Save result without a specific name.
                 hideModal('nameSelection');
                 resetGame(); // Reset the game to the selection screen.
@@ -1376,19 +1409,43 @@
          * Uses the Web Speech API to speak the given text.
          * Provides a warning if speech synthesis is not supported by the browser.
          * @param {string} text - The text to be spoken.
+         * @param {HTMLElement} [buttonElement] - Optional button element to apply active class.
          */
-        function speakText(text) {
+        function speakText(text, buttonElement = null) {
             if (!'speechSynthesis' in window) {
-                console.warn("Speech synthesis not supported.");
+                console.error("Speech synthesis not supported in this browser.");
                 return;
             }
-            if (speechSynthesis.speaking) speechSynthesis.cancel(); // Stop any ongoing speech.
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'vi-VN'; // Set language to Vietnamese.
-            // Try to find a Vietnamese voice for better pronunciation.
-            const voice = speechSynthesis.getVoices().find(v => v.lang === 'vi-VN');
-            if (voice) utterance.voice = voice;
-            speechSynthesis.speak(utterance);
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel(); // Stop any ongoing speech.
+                // Remove speaking-active class from all speaker buttons when speech is cancelled
+                document.querySelectorAll('.speaker-btn').forEach(btn => btn.classList.remove('speaking-active'));
+            }
+            try {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'vi-VN'; // Set language to Vietnamese.
+                // Try to find a Vietnamese voice for better pronunciation.
+                const voice = speechSynthesis.getVoices().find(v => v.lang === 'vi-VN');
+                if (voice) {
+                    utterance.voice = voice;
+                } else {
+                    console.warn("Vietnamese voice not found, using default voice.");
+                }
+
+                if (buttonElement) {
+                    buttonElement.classList.add('speaking-active');
+                    utterance.onend = () => {
+                        buttonElement.classList.remove('speaking-active');
+                    };
+                    utterance.onerror = (event) => {
+                        console.error("Speech synthesis error:", event.error);
+                        buttonElement.classList.remove('speaking-active');
+                    };
+                }
+                speechSynthesis.speak(utterance);
+            } catch (error) {
+                console.error("Error speaking text:", error);
+            }
         }
 
         let confirmCallback = null; // Stores the callback function for the confirmation modal.
@@ -2028,8 +2085,9 @@
             // Start Tone.js audio context on the first user interaction (click anywhere on the body).
             document.body.addEventListener('click', async () => {
                 if (Tone.context.state !== 'running') {
-                    await Tone.start();
-                    console.log('Audio context started');
+                    Tone.context.resume().then(() => { // Ensure context is resumed
+                        console.log('Audio context resumed');
+                    }).catch(e => console.error("Failed to resume audio context:", e));
                 }
             }, { once: true }); // This listener will only fire once.
         });
@@ -2220,80 +2278,80 @@
                 showConfirmationModal('Bạn có chắc chắn muốn xóa câu hỏi này không?', () => deleteQuestion(e.target.dataset.id));
             }
         });
-        // New "Delete Filtered Questions" button listener
-        document.getElementById('delete-filtered-questions-btn').addEventListener('click', async (e) => {
-            const subjectFilter = document.getElementById('q-manager-subject-filter').value;
-            const gradeFilter = document.getElementById('q-manager-grade-filter').value;
-            const semesterFilter = document.getElementById('q-manager-semester-filter').value;
+        // Removed "Delete Filtered Questions" button listener as requested.
+        // document.getElementById('delete-filtered-questions-btn').addEventListener('click', async (e) => {
+        //     const subjectFilter = document.getElementById('q-manager-subject-filter').value;
+        //     const gradeFilter = document.getElementById('q-manager-grade-filter').value;
+        //     const semesterFilter = document.getElementById('q-manager-semester-filter').value;
 
-            // Prepare query constraints based on selected filters
-            const queryConstraints = [];
-            if (subjectFilter !== 'all') queryConstraints.push(where("subject", "==", subjectFilter));
-            if (gradeFilter !== 'all') queryConstraints.push(where("grade", "==", gradeFilter));
-            if (semesterFilter !== 'all') queryConstraints.push(where("semester", "==", semesterFilter));
+        //     // Prepare query constraints based on selected filters
+        //     const queryConstraints = [];
+        //     if (subjectFilter !== 'all') queryConstraints.push(where("subject", "==", subjectFilter));
+        //     if (gradeFilter !== 'all') queryConstraints.push(where("grade", "==", gradeFilter));
+        //     if (semesterFilter !== 'all') queryConstraints.push(where("semester", "==", semesterFilter));
 
-            const feedbackEl = document.getElementById('settings-feedback'); // Using settings-feedback for consistency
-            feedbackEl.textContent = ''; // Clear previous messages
+        //     const feedbackEl = document.getElementById('settings-feedback'); // Using settings-feedback for consistency
+        //     feedbackEl.textContent = ''; // Clear previous messages
 
-            // Construct a readable message for the confirmation modal
-            let filterDescription = [];
-            const nameMap = {
-                toan: 'Toán Học', tiengviet: 'Tiếng Việt',
-                lop1: 'Lớp 1', lop2: 'Lớp 2',
-                hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2'
-            };
+        //     // Construct a readable message for the confirmation modal
+        //     let filterDescription = [];
+        //     const nameMap = {
+        //         toan: 'Toán Học', tiengviet: 'Tiếng Việt',
+        //         lop1: 'Lớp 1', lop2: 'Lớp 2',
+        //         hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2'
+        //     };
 
-            if (subjectFilter !== 'all') filterDescription.push(`Môn: ${nameMap[subjectFilter] || subjectFilter}`);
-            if (gradeFilter !== 'all') filterDescription.push(`Lớp: ${nameMap[gradeFilter] || gradeFilter}`);
-            if (semesterFilter !== 'all') filterDescription.push(`Học kỳ: ${nameMap[semesterFilter] || semesterFilter}`);
+        //     if (subjectFilter !== 'all') filterDescription.push(`Môn: ${nameMap[subjectFilter] || subjectFilter}`);
+        //     if (gradeFilter !== 'all') filterDescription.push(`Lớp: ${nameMap[gradeFilter] || gradeFilter}`);
+        //     if (semesterFilter !== 'all') filterDescription.push(`Học kỳ: ${nameMap[semesterFilter] || semesterFilter}`);
 
-            let confirmationMessage = `Bạn có chắc chắn muốn xóa TẤT CẢ câu hỏi `;
-            if (filterDescription.length > 0) {
-                confirmationMessage += `cho ${filterDescription.join(', ')} `;
-            }
-            confirmationMessage += `không? Hành động này không thể hoàn tác.`;
+        //     let confirmationMessage = `Bạn có chắc chắn muốn xóa TẤT CẢ câu hỏi `;
+        //     if (filterDescription.length > 0) {
+        //         confirmationMessage += `cho ${filterDescription.join(', ')} `;
+        //     }
+        //     confirmationMessage += `không? Hành động này không thể hoàn tác.`;
 
-            showConfirmationModal(confirmationMessage, async () => {
-                const qCollectionRef = collection(db, `artifacts/${appId}/public/data/questions`);
-                const qToDelete = query(qCollectionRef, ...queryConstraints); // Create query with filters
+        //     showConfirmationModal(confirmationMessage, async () => {
+        //         const qCollectionRef = collection(db, `artifacts/${appId}/public/data/questions`);
+        //         const qToDelete = query(qCollectionRef, ...queryConstraints); // Create query with filters
 
-                try {
-                    setButtonLoading(e.currentTarget, true);
-                    feedbackEl.textContent = `Đang xóa câu hỏi...`;
-                    feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-gray-700';
+        //         try {
+        //             setButtonLoading(e.currentTarget, true);
+        //             feedbackEl.textContent = `Đang xóa câu hỏi...`;
+        //             feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-gray-700';
 
-                    const querySnapshot = await getDocs(qToDelete); // Fetch documents based on the filter
-                    const deletePromises = [];
-                    querySnapshot.forEach(doc => {
-                        deletePromises.push(deleteDoc(doc.ref));
-                    });
+        //             const querySnapshot = await getDocs(qToDelete); // Fetch documents based on the filter
+        //             const deletePromises = [];
+        //             querySnapshot.forEach(doc => {
+        //                 deletePromises.push(deleteDoc(doc.ref));
+        //             });
 
-                    if (deletePromises.length === 0) {
-                        feedbackEl.textContent = 'Không có câu hỏi nào phù hợp với bộ lọc để xóa.';
-                        feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
-                        setTimeout(() => feedbackEl.textContent = '', 3000);
-                        return;
-                    }
+        //             if (deletePromises.length === 0) {
+        //                 feedbackEl.textContent = 'Không có câu hỏi nào phù hợp với bộ lọc để xóa.';
+        //                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+        //                 setTimeout(() => feedbackEl.textContent = '', 3000);
+        //                 return;
+        //             }
 
-                    await Promise.all(deletePromises); // Execute all delete operations
+        //             await Promise.all(deletePromises); // Execute all delete operations
                     
-                    feedbackEl.textContent = `Đã xóa thành công ${deletePromises.length} câu hỏi.`;
-                    feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
-                    setTimeout(() => feedbackEl.textContent = '', 3000);
+        //             feedbackEl.textContent = `Đã xóa thành công ${deletePromises.length} câu hỏi.`;
+        //             feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+        //             setTimeout(() => feedbackEl.textContent = '', 3000);
 
-                    // Reload all questions and refresh the display after deletion
-                    await loadQuestionsFromFirestore();
-                    populateQuestionList();
-                } catch (error) {
-                    console.error("Error deleting filtered questions:", error);
-                    feedbackEl.textContent = "Lỗi khi xóa câu hỏi đang hiển thị.";
-                    feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
-                    setTimeout(() => feedbackEl.textContent = '', 3000);
-                } finally {
-                    setButtonLoading(e.currentTarget, false);
-                }
-            });
-        });
+        //             // Reload all questions and refresh the display after deletion
+        //             await loadQuestionsFromFirestore();
+        //             populateQuestionList();
+        //         } catch (error) {
+        //             console.error("Error deleting filtered questions:", error);
+        //             feedbackEl.textContent = "Lỗi khi xóa câu hỏi đang hiển thị.";
+        //             feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+        //             setTimeout(() => feedbackEl.textContent = '', 3000);
+        //         } finally {
+        //             setButtonLoading(e.currentTarget, false);
+        //         }
+        //     });
+        // });
 
         document.getElementById('question-form').addEventListener('submit', handleQuestionFormSubmit); // Handle question form submission.
         document.getElementById('close-question-modal-btn').addEventListener('click', () => hideModal('questionEdit')); // Close question modal.
