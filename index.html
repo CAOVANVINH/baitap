@@ -149,16 +149,16 @@
              <div id="question-container" class="bg-black/10 p-6 rounded-2xl text-center mb-6 min-h-[100px] flex items-center justify-center relative">
                 <p class="text-xl md:text-2xl font-semibold text-white"></p>
                 <button id="read-question-btn" class="speaker-btn absolute top-4 right-4 text-white focus:outline-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06ZM5.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
                 </button>
              </div>
              <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
              <div id="feedback-container" class="text-center mt-4 font-bold text-2xl h-8 text-white"></div>
              <div id="explanation-container" class="hidden relative mt-2 bg-black/10 p-4 rounded-2xl text-white text-center font-medium">
-                 <p id="explanation-text" class="pr-10"></p>
-                 <button id="read-explanation-btn" class="speaker-btn absolute top-1/2 -translate-y-1/2 right-3 text-white focus:outline-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
-                 </button>
+                  <p id="explanation-text" class="pr-10"></p>
+                  <button id="read-explanation-btn" class="speaker-btn absolute top-1/2 -translate-y-1/2 right-3 text-white focus:outline-none">
+                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
+                  </button>
              </div>
              <button id="next-btn" class="hidden w-full mt-4 glass-btn bg-blue-500/60 text-white font-bold py-3 rounded-2xl shadow-lg hover:bg-blue-500/80">Câu tiếp theo</button>
         </div>
@@ -170,7 +170,7 @@
                 <button id="manage-questions-btn" class="admin-action-btn w-full glass-btn bg-blue-500/60 py-4 rounded-2xl text-lg shadow-lg hover:bg-blue-500/80">📝 Quản lý câu hỏi</button>
                 <button id="manage-students-btn" class="admin-action-btn w-full glass-btn bg-cyan-500/60 py-4 rounded-2xl text-lg shadow-lg hover:bg-cyan-500/80">🧑‍🎓 Quản lý học sinh</button>
                 <button id="ai-generate-btn" class="admin-action-btn w-full glass-btn bg-teal-500/60 py-4 rounded-2xl text-lg shadow-lg hover:bg-teal-500/80">🤖 Tạo câu hỏi bằng AI</button>
-                <button id="view-history-btn" class="admin-action-btn w-full glass-btn bg-indigo-500/60 py-4 rounded-2xl text-lg shadow-lg hover:bg-indigo-500/80">📊 Xem Lịch Sử Thi</button>
+                <button id="view-history-btn" class="admin-action-btn w-full glass-btn bg-indigo-500/60 py-4 rounded-2xl text-lg shadow-lg hover:bg-indigo-500/80">📊 Xem Lịch SỬ Thi</button>
                 <button id="manage-settings-btn" class="admin-action-btn w-full glass-btn bg-purple-500/60 py-4 rounded-2xl text-lg shadow-lg hover:bg-purple-500/80 md:col-span-2">⚙️ Cài đặt chung</button>
             </div>
             <button id="logout-btn" class="w-full glass-btn bg-red-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-500/80 mt-8">Đăng xuất</button>
@@ -203,6 +203,16 @@
                             <button id="save-api-key-btn" class="w-full glass-btn bg-green-500/60 text-white font-bold py-2 rounded-xl shadow-lg hover:bg-green-500/80 flex justify-center items-center">Lưu Key</button>
                             <button id="delete-api-key-btn" class="w-full glass-btn bg-gray-500/60 text-white font-bold py-2 rounded-xl shadow-lg hover:bg-gray-500/80 flex justify-center items-center">Xóa Key</button>
                         </div>
+                     </div>
+                </div>
+                <!-- Game Settings -->
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">Cài đặt Trò Chơi</h3>
+                    <div class="space-y-4 max-w-sm mx-auto p-4 bg-white/20 rounded-xl">
+                        <div class="flex items-center justify-between">
+                            <label for="quiz-question-limit" class="font-medium text-gray-800">Số câu hỏi mỗi lần chơi</label>
+                            <input type="number" id="quiz-question-limit" min="1" max="50" class="w-24 px-3 py-1 border border-gray-300/50 rounded-lg bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
+                        </div>
                     </div>
                 </div>
                 <!-- Dangerous Actions -->
@@ -210,7 +220,7 @@
                     <h3 class="text-xl font-semibold text-red-700 mb-4 text-center">Tác Vụ Nguy Hiểm</h3>
                     <div class="space-y-4 max-w-sm mx-auto p-4 bg-red-500/10 rounded-xl">
                         <button id="clear-leaderboard-btn" class="w-full glass-btn bg-amber-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-amber-500/80 flex justify-center items-center">Xóa Bảng Xếp Hạng</button>
-                        <button id="clear-history-btn" class="w-full glass-btn bg-amber-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-amber-500/80 flex justify-center items-center">Xóa Lịch Sử Thi</button>
+                        <button id="clear-history-btn" class="w-full glass-btn bg-amber-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-amber-500/80 flex justify-center items-center">Xóa Lịch SỬ Thi</button>
                         <button id="clear-all-questions-btn" class="w-full glass-btn bg-red-600/70 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-600/90 flex justify-center items-center">Xóa TẤT CẢ Câu Hỏi</button>
                     </div>
                 </div>
@@ -247,11 +257,7 @@
             </div>
             <div class="flex flex-wrap justify-center items-center gap-2 md:gap-4 mb-4 p-2 bg-black/10 rounded-xl">
                 <select id="q-manager-subject-filter" class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả môn</option><option value="toan">Toán Học</option><option value="tiengviet">Tiếng Việt</option></select>
-                <select id="q-manager-grade-filter" class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800">
-                    <option value="all">Tất cả lớp</option>
-                    <option value="lop1">Lớp 1</option>
-                    <option value="lop2">Lớp 2</option>
-                </select>
+                <select id="q-manager-grade-filter" class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả lớp</option><option value="lop1">Lớp 1</option><option value="lop2">Lớp 2</option></select>
                 <select id="q-manager-semester-filter" class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả kỳ</option><option value="hocky1">Học Kỳ 1</option><option value="hocky2">Học Kỳ 2</option></select>
             </div>
             <div id="question-list-container" class="space-y-3 p-3 bg-white/20 rounded-2xl custom-scrollbar">
@@ -270,16 +276,13 @@
                 <p class="text-center text-gray-700 font-medium">Chọn chủ đề và để AI tự động tạo ra các câu hỏi trắc nghiệm mới!</p>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <select id="ai-gen-subject" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="toan">Toán Học</option><option value="tiengviet">Tiếng Việt</option></select>
-                    <select id="ai-gen-grade" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800">
-                        <option value="lop1">Lớp 1</option>
-                        <option value="lop2">Lớp 2</option>
-                    </select>
+                    <select id="ai-gen-grade" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="lop1">Lớp 1</option><option value="lop2">Lớp 2</option></select>
                     <select id="ai-gen-semester" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="hocky1">Học Kỳ 1</option><option value="hocky2">Học Kỳ 2</option></select>
                 </div>
                 <!-- New input for number of questions -->
                 <div>
-                    <label for="ai-gen-num-questions" class="block text-gray-700 font-semibold mb-1">Số lượng câu hỏi AI tạo (mặc định 30)</label>
-                    <input type="number" id="ai-gen-num-questions" value="30" min="1" max="500" class="w-full glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800 placeholder-gray-600">
+                    <label for="ai-gen-num-questions" class="block text-gray-700 font-semibold mb-1">Số lượng câu hỏi AI tạo (mặc định 200)</label>
+                    <input type="number" id="ai-gen-num-questions" value="200" min="1" max="1000" class="w-full glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800 placeholder-gray-600">
                 </div>
                 <input type="text" id="ai-gen-topic" placeholder="Nhập chủ đề cụ thể (ví dụ: phép cộng phạm vi 20)" class="w-full glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800 placeholder-gray-600">
                 <button id="ai-execute-generation-btn" class="w-full glass-btn bg-blue-500/70 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-blue-500/90 flex justify-center items-center">🚀 Bắt đầu tạo!</button>
@@ -302,11 +305,7 @@
             <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">🏆 Bảng Xếp Hạng 🏆</h2>
             <div class="flex flex-wrap justify-center items-center gap-4 mb-4">
                 <select id="leaderboard-subject-filter" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả môn</option><option value="toan">Toán Học</option><option value="tiengviet">Tiếng Việt</option></select>
-                <select id="leaderboard-grade-filter" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800">
-                    <option value="all">Tất cả lớp</option>
-                    <option value="lop1">Lớp 1</option>
-                    <option value="lop2">Lớp 2</option>
-                </select>
+                <select id="leaderboard-grade-filter" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả lớp</option><option value="lop1">Lớp 1</option><option value="lop2">Lớp 2</option></select>
                 <input type="text" id="leaderboard-name-filter" placeholder="Lọc theo tên..." class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800 placeholder-gray-600">
             </div>
             <div id="leaderboard-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4 custom-scrollbar"></div>
@@ -364,7 +363,7 @@
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp, doc, getDoc, setDoc, where, deleteDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- SOUND EFFECTS SETUP ---
@@ -433,25 +432,33 @@
         // --- FIREBASE & DATA LOADING ---
         /**
          * Initializes Firebase app, authentication, and Firestore.
-         * Authenticates the user (anonymously or with custom token) and loads initial data.
+         * Authenticates the user (anonymously) and loads initial data.
          */
         async function initializeFirebase() {
             try {
-                // MANDATORY: Use __app_id and __firebase_config global variables
-                appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+                // Your custom Firebase configuration
+                const firebaseConfig = {
+                    apiKey: "AIzaSyB6e_dhy8Z4zFGL-rAf572rgdyFG-dAMbI",
+                    authDomain: "congviec-cfa50.firebaseapp.com",
+                    projectId: "congviec-cfa50",
+                    storageBucket: "congviec-cfa50.firebasestorage.app",
+                    messagingSenderId: "320610123969",
+                    appId: "1:320610123969:web:00b68ee05d228fd8c21440",
+                    measurementId: "G-0V5KEJF57S"
+                };
+                
+                // Set appId from your provided config
+                // Using projectId as appId for collection path consistency in this specific Canvas environment.
+                appId = firebaseConfig.projectId; 
 
                 // Initialize Firebase services
                 const app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                // MANDATORY: Use __initial_auth_token for authentication
-                if (typeof __initial_auth_token !== 'undefined') {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
+                // Sign in anonymously as there's no custom token from this environment.
+                // This allows the app to interact with Firestore based on public rules.
+                await signInAnonymously(auth);
 
                 // Listen for authentication state changes and load data once authenticated.
                 // This ensures data is loaded only after Firebase is ready.
@@ -473,17 +480,17 @@
                         }).catch(error => {
                             // Handle any errors during initial data loading.
                             console.error("Error loading initial data:", error);
-                            document.getElementById('loading-questions').textContent = "Lỗi khi tải dữ liệu ban đầu.";
+                            document.getElementById('loading-questions').textContent = "Lỗi khi tải dữ liệu ban đầu. Vui lòng kiểm tra console để biết chi tiết Firebase Security Rules.";
                         });
                     } else {
                         // Display error if user authentication fails.
-                        document.getElementById('loading-questions').textContent = "Không thể xác thực người dùng.";
+                        document.getElementById('loading-questions').textContent = "Không thể xác thực người dùng. Vui lòng kiểm tra kết nối hoặc cấu hình Firebase.";
                     }
                 });
             } catch (error) {
                 // Catch any errors during Firebase app initialization.
                 console.error("Firebase initialization error:", error);
-                document.getElementById('loading-questions').textContent = "Lỗi kết nối đến cơ sở dữ liệu.";
+                document.getElementById('loading-questions').textContent = "Lỗi kết nối đến cơ sở dữ liệu. Vui lòng kiểm tra cấu hình Firebase.";
             }
         }
 
@@ -601,6 +608,7 @@
                     const settings = docSnap.data();
                     timerEnabled = settings.timerEnabled ?? false; // Default to false if not present.
                     timerDuration = settings.timerDuration ?? 30; // Default to 30 seconds if not present.
+                    // quizQuestionLimit = settings.quizQuestionLimit ?? 10; // Removed as it's now fixed
                 }
             } catch (error) { 
                 console.error("Error loading admin settings:", error); 
@@ -618,6 +626,7 @@
             setButtonLoading(button, true); // Show loading spinner on the button.
             const newTimerEnabled = document.getElementById('timer-toggle').checked;
             const newTimerDuration = parseInt(document.getElementById('timer-duration').value, 10);
+            // const newQuizQuestionLimit = parseInt(document.getElementById('quiz-question-limit').value, 10); // Removed
             const feedbackEl = document.getElementById('settings-feedback');
 
             // Validate the input for timer duration.
@@ -627,14 +636,26 @@
                 setButtonLoading(button, false);
                 return;
             }
+            // Removed quiz question limit validation as it's now fixed
+            // if (isNaN(newQuizQuestionLimit) || newQuizQuestionLimit < 1 || newQuizQuestionLimit > 50) {
+            //     feedbackEl.textContent = "Số câu hỏi mỗi lần chơi phải từ 1 đến 50.";
+            //     feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+            //     setButtonLoading(button, false);
+            //     return;
+            // }
 
             const settingsRef = doc(db, `artifacts/${appId}/public/data/adminSettings`, 'config');
             try {
                 // Save the new settings to Firestore. `merge: true` ensures existing fields are not overwritten.
-                await setDoc(settingsRef, { timerEnabled: newTimerEnabled, timerDuration: newTimerDuration }, { merge: true });
+                await setDoc(settingsRef, { 
+                    timerEnabled: newTimerEnabled, 
+                    timerDuration: newTimerDuration,
+                    // quizQuestionLimit: newQuizQuestionLimit // Removed
+                }, { merge: true });
                 // Update local state after successful save.
                 timerEnabled = newTimerEnabled;
                 timerDuration = newTimerDuration;
+                // quizQuestionLimit = newQuizQuestionLimit; // Removed
                 feedbackEl.textContent = "Đã lưu cài đặt!";
                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
                 setTimeout(() => feedbackEl.textContent = '', 3000); // Clear message after 3 seconds.
@@ -745,7 +766,7 @@
             explanationTextEl.textContent = 'Đang tạo giải thích...'; // Show loading message.
             explanationContainer.classList.remove('hidden'); // Make container visible.
 
-            const gradeMap = { lop1: "lớp 1", lop2: "lớp 2" }; // Updated gradeMap to remove lop3, lop4
+            const gradeMap = { lop1: "lớp 1", lop2: "lớp 2" };
             const gradeText = gradeMap[grade] || "học sinh tiểu học"; // Default to general primary student if grade is unknown.
             const prompt = `Hãy giải thích đáp án cho câu hỏi sau một cách thật ngắn gọn và dễ hiểu, phù hợp với trình độ của học sinh ${gradeText}. Câu hỏi: "${question}" Đáp án đúng là: "${answer}".`;
 
@@ -884,8 +905,7 @@
                 quizHistory = results; // Cache results for detailed view.
 
                 // Mapping for display names (e.g., 'toan' to 'Toán').
-                const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' }; // Updated nameMap
-                // Removed lop3, lop4 from display names
+                const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
 
                 let tableHTML = `
                     <table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden">
@@ -1061,32 +1081,26 @@
         /**
          * Updates the state (enabled/disabled) of the "Start" button.
          * The button is enabled only if a subject, grade, and semester are selected,
-         * and there are at least NUM_OF_QUESTIONS_PER_GAME questions available for the selected criteria.
+         * and there are questions available for the selected criteria.
          */
         function updateStartButtonState() {
-            const startBtn = document.getElementById('start-btn');
-            const startError = document.getElementById('start-error');
-            startError.textContent = ''; // Clear previous errors
-
             if (selectedSubject && selectedGrade && selectedSemester && questionBank) {
-                const questionsForSelection = questionBank[selectedSubject]?.[selectedGrade]?.[selectedSemester];
-                if (questionsForSelection && questionsForSelection.length >= NUM_OF_QUESTIONS_PER_GAME) {
-                    startBtn.disabled = false;
-                    startBtn.classList.remove('bg-gray-500/50', 'cursor-not-allowed');
-                    startBtn.classList.add('bg-blue-600/70', 'hover:bg-blue-600/90');
+                // Check if there are actual questions for the selected criteria.
+                const questionsExist = questionBank[selectedSubject]?.[selectedGrade]?.[selectedSemester]?.length > 0;
+                if (questionsExist) {
+                    document.getElementById('start-btn').disabled = false;
+                    document.getElementById('start-btn').classList.remove('bg-gray-500/50', 'cursor-not-allowed');
+                    document.getElementById('start-btn').classList.add('bg-blue-600/70', 'hover:bg-blue-600/90');
                 } else {
-                    startBtn.disabled = true;
-                    startBtn.classList.add('bg-gray-500/50', 'cursor-not-allowed');
-                    startBtn.classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90');
-                    if (selectedSubject && selectedGrade && selectedSemester) { // Only show error if all selected
-                        startError.textContent = `Không đủ ${NUM_OF_QUESTIONS_PER_GAME} câu hỏi cho lựa chọn này. Vui lòng chọn lại hoặc thêm câu hỏi.`;
-                    }
-                }
-            } else {
-                startBtn.disabled = true;
-                startBtn.classList.add('bg-gray-500/50', 'cursor-not-allowed');
-                startBtn.classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90');
+                    document.getElementById('start-btn').disabled = true;
+                    document.getElementById('start-btn').classList.add('bg-gray-500/50', 'cursor-not-allowed');
+                    document.getElementById('start-btn').classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90');
             }
+        } else {
+            document.getElementById('start-btn').disabled = true;
+            document.getElementById('start-btn').classList.add('bg-gray-500/50', 'cursor-not-allowed');
+            document.getElementById('start-btn').classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90');
+        }
         }
 
         /**
@@ -1103,14 +1117,23 @@
             // Get questions relevant to the selected subject, grade, and semester.
             const questionsForSelection = questionBank?.[selectedSubject]?.[selectedGrade]?.[selectedSemester];
 
-            if (!questionsForSelection || questionsForSelection.length < NUM_OF_QUESTIONS_PER_GAME) {
-                errorEl.textContent = `Lỗi: Không đủ ${NUM_OF_QUESTIONS_PER_GAME} câu hỏi cho lựa chọn này. Vui lòng chọn lại.`;
+            if (!questionsForSelection || questionsForSelection.length === 0) {
+                errorEl.textContent = "Lỗi: Không tìm thấy bộ câu hỏi cho lựa chọn này. Vui lòng chọn lại.";
                 setTimeout(() => { errorEl.textContent = '', 4000 }); // Clear error after 4 seconds.
                 return;
             }
 
-            // Shuffle all available questions for the selected criteria and take only NUM_OF_QUESTIONS_PER_GAME.
-            currentQuestions = questionsForSelection.sort(() => 0.5 - Math.random()).slice(0, NUM_OF_QUESTIONS_PER_GAME);
+            // Shuffle all available questions for the selected criteria.
+            let allAvailableQuestions = questionsForSelection.sort(() => Math.random() - 0.5);
+
+            // Limit to the fixed number of questions (NUM_OF_QUESTIONS_PER_GAME)
+            currentQuestions = allAvailableQuestions.slice(0, NUM_OF_QUESTIONS_PER_GAME);
+
+            if (currentQuestions.length === 0) {
+                errorEl.textContent = "Lỗi: Không đủ câu hỏi để bắt đầu. Vui lòng chọn lại.";
+                setTimeout(() => { errorEl.textContent = '', 4000 }); // Clear error after 4 seconds.
+                return;
+            }
 
             currentQuestionIndex = 0; // Reset question index to the first question.
             score = 0; // Reset score.
@@ -1150,11 +1173,13 @@
             });
 
             // Update progress and score display in the UI.
-            document.getElementById('progress-text').textContent = `Câu ${currentQuestionIndex + 1}/${NUM_OF_QUESTIONS_PER_GAME}`; // Updated to show X/10
+            document.getElementById('progress-text').textContent = `Câu ${currentQuestionIndex + 1}/${currentQuestions.length}`;
             document.getElementById('score-text').textContent = `Điểm: ${score}`;
 
             // Set up text-to-speech for reading the question aloud.
-            document.getElementById('read-question-btn').onclick = () => speakText(questionData.question);
+            const readQuestionBtn = document.getElementById('read-question-btn');
+            readQuestionBtn.onclick = () => speakText(questionData.question);
+            readQuestionBtn.style.display = 'block'; // Ensure the speaker button is visible
 
             // Timer logic: display and start countdown if enabled.
             const timerDisplay = document.getElementById('timer-display');
@@ -1235,7 +1260,7 @@
          */
         function nextQuestion() {
             currentQuestionIndex++; // Increment to the next question.
-            if (currentQuestionIndex < NUM_OF_QUESTIONS_PER_GAME) { // Check against NUM_OF_QUESTIONS_PER_GAME
+            if (currentQuestionIndex < currentQuestions.length) {
                 displayQuestion(); // Display the next question.
             } else {
                 showResults(); // All questions answered, show results.
@@ -1248,7 +1273,7 @@
         function showResults() {
             playSound('complete'); // Play completion sound.
             const finalScore = score;
-            const totalQuestions = NUM_OF_QUESTIONS_PER_GAME; // Use NUM_OF_QUESTIONS_PER_GAME for total
+            const totalQuestions = currentQuestions.length;
             document.getElementById('modal-final-score').textContent = `${finalScore}/${totalQuestions}`;
 
             const percentage = (finalScore / totalQuestions) * 100;
@@ -1267,7 +1292,7 @@
                 grade: selectedGrade,
                 semester: selectedSemester,
                 score: score,
-                totalQuestions: totalQuestions, // Use NUM_OF_QUESTIONS_PER_GAME for total
+                totalQuestions: currentQuestions.length,
                 questions: sessionAnswers // Include detailed answers for history viewing.
             };
 
@@ -1346,24 +1371,6 @@
                 setTimeout(() => modals[modalName].classList.add('hidden'), 300); 
             }
         }
-        
-        // Global variable to store voices
-        let availableVoices = [];
-
-        // Function to load voices
-        function loadVoices() {
-            availableVoices = speechSynthesis.getVoices();
-            console.log("Voices loaded:", availableVoices);
-        }
-
-        // Listen for voices to be loaded/changed
-        if ('speechSynthesis' in window) {
-            speechSynthesis.onvoiceschanged = loadVoices;
-            // Load voices immediately if they are already available (e.g., after initial page load)
-            if (speechSynthesis.getVoices().length > 0) {
-                loadVoices();
-            }
-        }
 
         /**
          * Uses the Web Speech API to speak the given text.
@@ -1371,27 +1378,16 @@
          * @param {string} text - The text to be spoken.
          */
         function speakText(text) {
-            if (!('speechSynthesis' in window)) {
+            if (!'speechSynthesis' in window) {
                 console.warn("Speech synthesis not supported.");
                 return;
             }
             if (speechSynthesis.speaking) speechSynthesis.cancel(); // Stop any ongoing speech.
-
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'vi-VN'; // Set language to Vietnamese.
-
             // Try to find a Vietnamese voice for better pronunciation.
-            // Ensure voices are loaded before trying to find one.
-            if (availableVoices.length === 0) {
-                loadVoices(); // Attempt to load voices again if empty
-            }
-            const voice = availableVoices.find(v => v.lang === 'vi-VN' || v.lang.startsWith('vi')); // More robust language check
-            if (voice) {
-                utterance.voice = voice;
-            } else {
-                console.warn("Vietnamese voice not found, using default voice.");
-            }
-            
+            const voice = speechSynthesis.getVoices().find(v => v.lang === 'vi-VN');
+            if (voice) utterance.voice = voice;
             speechSynthesis.speak(utterance);
         }
 
@@ -1410,7 +1406,7 @@
 
         /**
          * Clears all documents from a specified Firestore collection.
-         * This is a "dangerous action" usually performed by an "admin".
+         * This is a "dangerous action" usually performed by an admin.
          * @param {string} collectionName - The name of the collection to clear (e.g., 'leaderboard', 'quizResults', 'questions').
          * @param {HTMLButtonElement} button - The button element that triggered the action, used for showing loading state.
          * @returns {Promise<void>} A promise that resolves when the collection is cleared.
@@ -1913,7 +1909,7 @@
             // Get selected criteria and topic for the AI prompt.
             const subjectValue = document.getElementById('ai-gen-subject').value; // Get value (e.g., 'toan')
             const subjectText = document.getElementById('ai-gen-subject').options[document.getElementById('ai-gen-subject').selectedIndex].text; // Get text (e.g., 'Toán Học')
-            const gradeValue = document.getElementById('ai-gen-grade').value;    // Get value (e.g., 'lop1')
+            const gradeValue = document.getElementById('ai-gen-grade').value;     // Get value (e.g., 'lop1')
             const gradeText = document.getElementById('ai-gen-grade').options[document.getElementById('ai-gen-grade').selectedIndex].text; // Get text (e.g., 'Lớp 1')
             const semesterValue = document.getElementById('ai-gen-semester').value; // Get value (e.g., 'hocky1')
             const semesterText = document.getElementById('ai-gen-semester').options[document.getElementById('ai-gen-semester').selectedIndex].text; // Get text (e.g., 'Học Kỳ 1')
@@ -1922,8 +1918,8 @@
             const numQuestions = parseInt(document.getElementById('ai-gen-num-questions').value, 10); // Get number of questions.
 
             // Validate number of questions input.
-            if (isNaN(numQuestions) || numQuestions < 1 || numQuestions > 500) { // Max changed to 500
-                feedbackEl.textContent = 'Số lượng câu hỏi phải là một số từ 1 đến 500.'; // Message changed
+            if (isNaN(numQuestions) || numQuestions < 1 || numQuestions > 1000) { // Max changed to 1000
+                feedbackEl.textContent = 'Số lượng câu hỏi phải là một số từ 1 đến 1000.'; // Message changed
                 setButtonLoading(button, false);
                 return;
             }
@@ -2146,12 +2142,13 @@
             playSound('click');
             displayHistory(); // Display quiz history.
         });
-        document.getElementById('manage-settings-btn').addEventListener('click', () => { 
+        document.getElementById('manage-settings-btn').addEventListener('click', () => { // Corrected from addEventListener(() => {
             playSound('click');
             showScreen('settings'); // Show settings panel.
             // Populate settings inputs with current values.
             document.getElementById('timer-toggle').checked = timerEnabled;
             document.getElementById('timer-duration').value = timerDuration;
+            document.getElementById('quiz-question-limit').value = NUM_OF_QUESTIONS_PER_GAME; // Populate with fixed value
         });
         document.getElementById('manage-students-btn').addEventListener('click', () => {
             playSound('click');
@@ -2224,7 +2221,7 @@
             }
         });
         // New "Delete Filtered Questions" button listener
-        document.getElementById('delete-filtered-questions-btn').addEventListener('click', (e) => {
+        document.getElementById('delete-filtered-questions-btn').addEventListener('click', async (e) => {
             const subjectFilter = document.getElementById('q-manager-subject-filter').value;
             const gradeFilter = document.getElementById('q-manager-grade-filter').value;
             const semesterFilter = document.getElementById('q-manager-semester-filter').value;
