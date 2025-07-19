@@ -157,7 +157,7 @@
              <div id="explanation-container" class="hidden relative mt-2 bg-black/10 p-4 rounded-2xl text-white text-center font-medium">
                   <p id="explanation-text" class="pr-10"></p>
                   <button id="read-explanation-btn" class="speaker-btn absolute top-1/2 -translate-y-1/2 right-3 text-white focus:outline-none">
-                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06ZM5.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
+                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
                   </button>
              </div>
              <button id="next-btn" class="hidden w-full mt-4 glass-btn bg-blue-500/60 text-white font-bold py-3 rounded-2xl shadow-lg hover:bg-blue-500/80">Câu tiếp theo</button>
@@ -211,6 +211,7 @@
                     <div class="space-y-4 max-w-sm mx-auto p-4 bg-red-500/10 rounded-xl">
                         <button id="clear-leaderboard-btn" class="w-full glass-btn bg-amber-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-amber-500/80 flex justify-center items-center">Xóa Bảng Xếp Hạng</button>
                         <button id="clear-history-btn" class="w-full glass-btn bg-amber-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-amber-500/80 flex justify-center items-center">Xóa Lịch Sử Thi</button>
+                        <button id="clear-all-questions-btn" class="w-full glass-btn bg-red-600/70 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-600/90 flex justify-center items-center">Xóa TẤT CẢ Câu Hỏi</button>
                     </div>
                 </div>
             </div>
@@ -236,6 +237,14 @@
 
         <div id="question-manager-panel" class="hidden">
             <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Quản lý câu hỏi</h2>
+            <!-- Question counts summary -->
+            <div id="question-counts-summary" class="p-4 bg-white/20 rounded-2xl mb-4 text-gray-800">
+                <p class="font-semibold text-lg mb-2">Tổng số câu hỏi: <span id="total-questions-count" class="font-bold">0</span></p>
+                <div id="subject-grade-semester-counts" class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                    <!-- Counts will be populated here -->
+                </div>
+                <p class="font-semibold text-lg mt-2">Câu hỏi đang hiển thị: <span id="filtered-questions-count" class="font-bold">0</span></p>
+            </div>
             <div class="flex flex-wrap justify-center items-center gap-2 md:gap-4 mb-4 p-2 bg-black/10 rounded-xl">
                 <select id="q-manager-subject-filter" class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả môn</option><option value="toan">Toán Học</option><option value="tiengviet">Tiếng Việt</option></select>
                 <select id="q-manager-grade-filter" class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả lớp</option><option value="lop1">Lớp 1</option><option value="lop2">Lớp 2</option></select>
@@ -259,6 +268,11 @@
                     <select id="ai-gen-grade" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="lop1">Lớp 1</option><option value="lop2">Lớp 2</option></select>
                     <select id="ai-gen-semester" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="hocky1">Học Kỳ 1</option><option value="hocky2">Học Kỳ 2</option></select>
                 </div>
+                <!-- New input for number of questions -->
+                <div>
+                    <label for="ai-gen-num-questions" class="block text-gray-700 font-semibold mb-1">Số lượng câu hỏi AI tạo (mặc định 30)</label>
+                    <input type="number" id="ai-gen-num-questions" value="30" min="1" max="500" class="w-full glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800 placeholder-gray-600">
+                </div>
                 <input type="text" id="ai-gen-topic" placeholder="Nhập chủ đề cụ thể (ví dụ: phép cộng phạm vi 20)" class="w-full glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800 placeholder-gray-600">
                 <button id="ai-execute-generation-btn" class="w-full glass-btn bg-blue-500/70 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-blue-500/90 flex justify-center items-center">🚀 Bắt đầu tạo!</button>
             </div>
@@ -274,7 +288,7 @@
              <button class="back-to-admin-btn w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
         </div>
 
-        <div id="history-panel" class="hidden"><h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Lịch Sử Làm Bài</h2><div id="history-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4 custom-scrollbar"></div><button class="back-to-admin-btn w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button></div>
+        <div id="history-panel" class="hidden"><h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Lịch SỬ Làm Bài</h2><div id="history-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4 custom-scrollbar"></div><button class="back-to-admin-btn w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button></div>
         
         <div id="leaderboard-panel" class="hidden">
             <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">🏆 Bảng Xếp Hạng 🏆</h2>
@@ -369,7 +383,7 @@
         let db, auth, appId, questionBank = {}, userDefinedApiKey = null;
         let selectedSubject, selectedGrade, selectedSemester;
         let currentQuestions = [], currentQuestionIndex = 0, score = 0, sessionAnswers = [];
-        const NUM_OF_QUESTIONS_PER_GAME = 10;
+        const NUM_OF_QUESTIONS_PER_GAME = 10; // Default number of questions per game
         let timerEnabled = false, timerDuration = 30, timerInterval;
         let fullQuestionCollection = []; // Stores all questions from Firestore for admin management
         let studentList = []; // Stores student names from Firestore
@@ -423,39 +437,47 @@
                 };
                 
                 // Set appId from your provided config
-                appId = firebaseConfig.projectId; // Using projectId as appId for collection path consistency
+                // Using projectId as appId for collection path consistency in this specific Canvas environment.
+                appId = firebaseConfig.projectId; 
 
                 // Initialize Firebase services
                 const app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                // Sign in anonymously as there's no custom token from this environment
+                // Sign in anonymously as there's no custom token from this environment.
+                // This allows the app to interact with Firestore based on public rules.
                 await signInAnonymously(auth);
 
-                // Listen for authentication state changes and load data once authenticated
+                // Listen for authentication state changes and load data once authenticated.
+                // This ensures data is loaded only after Firebase is ready.
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         console.log("User authenticated, loading data...");
-                        // Load all necessary data concurrently
+                        // Load all necessary data concurrently using Promise.all.
+                        // This improves load time by fetching data in parallel.
                         Promise.all([
                             loadQuestionsFromFirestore(),
                             loadAdminSettings(),
                             loadApiKey(),
                             loadStudentList()
                         ]).then(() => {
+                            // Hide loading message and show main selection screen once all data is loaded.
                             document.getElementById('loading-questions').classList.add('hidden');
                             document.getElementById('selections-container').classList.remove('hidden');
-                            updateStartButtonState();
+                            updateStartButtonState(); // Update start button enablement based on loaded questions.
                         }).catch(error => {
+                            // Handle any errors during initial data loading.
                             console.error("Error loading initial data:", error);
                             document.getElementById('loading-questions').textContent = "Lỗi khi tải dữ liệu ban đầu.";
                         });
                     } else {
+                        // Display error if user authentication fails.
                         document.getElementById('loading-questions').textContent = "Không thể xác thực người dùng.";
                     }
                 });
             } catch (error) {
+                // Catch any errors during Firebase app initialization.
                 console.error("Firebase initialization error:", error);
                 document.getElementById('loading-questions').textContent = "Lỗi kết nối đến cơ sở dữ liệu.";
             }
@@ -464,34 +486,45 @@
         /**
          * Loads questions from Firestore and restructures them into questionBank.
          * If no questions are found, seeds initial data.
+         * @returns {Promise<void>} A promise that resolves when questions are loaded or seeded.
          */
         async function loadQuestionsFromFirestore() {
-            if (!db || !appId) return; // Ensure db and appId are initialized
+            // Ensure db and appId are initialized before proceeding.
+            if (!db || !appId) return; 
+            // Reference to the 'questions' collection within the public data path.
             const qCollection = collection(db, `artifacts/${appId}/public/data/questions`);
             try {
-                const querySnapshot = await getDocs(query(qCollection)); // Use query(collection) to fetch all documents
+                // Fetch all documents from the 'questions' collection.
+                const querySnapshot = await getDocs(query(qCollection)); 
                 if (querySnapshot.empty) {
                     console.log("No questions found in Firestore. Seeding initial data...");
-                    await seedInitialQuestions(); // Seed data if collection is empty
+                    // If no questions exist, populate with default seed data.
+                    await seedInitialQuestions(); 
                 } else {
-                    fullQuestionCollection = []; // Clear existing collection
+                    fullQuestionCollection = []; // Clear any existing in-memory questions.
+                    // Populate fullQuestionCollection with fetched documents, including their IDs.
                     querySnapshot.forEach(doc => {
                         fullQuestionCollection.push({ id: doc.id, ...doc.data() });
                     });
-                    restructureQuestionBank(); // Organize questions by subject, grade, semester
+                    // Restructure the flat list of questions into the nested questionBank object.
+                    restructureQuestionBank(); 
                     console.log("Successfully loaded questions from Firestore.");
                 }
             } catch (error) {
                 console.error("Error loading questions from Firestore:", error);
-                throw error; // Re-throw to propagate the error to Promise.all
+                // Re-throw to propagate the error to the Promise.all in initializeFirebase.
+                throw error; 
             }
         }
 
         /**
          * Seeds initial questions into Firestore if the collection is empty.
+         * This function is called only when the 'questions' collection is found to be empty.
+         * @returns {Promise<void>} A promise that resolves when initial questions are added.
          */
         async function seedInitialQuestions() {
             const seedData = [
+                // Existing questions
                 { subject: 'toan', grade: 'lop1', semester: 'hocky1', question: "1 + 1 = ?", options: ["1", "2", "3", "4"], answer: "2" },
                 { subject: 'tiengviet', grade: 'lop1', semester: 'hocky1', question: "Chữ cái đầu tiên trong bảng chữ cái là?", options: ["b", "c", "a", "d"], answer: "a" },
                 { subject: 'toan', grade: 'lop2', semester: 'hocky1', question: "2 + 3 = ?", options: ["4", "5", "6", "7"], answer: "5" },
@@ -500,56 +533,90 @@
                 { subject: 'tiengviet', grade: 'lop1', semester: 'hocky2', question: "Điền vào chỗ trống: 'Con ... hú dài'", options: ["chó", "mèo", "sói", "gà"], answer: "sói" },
                 { subject: 'toan', grade: 'lop2', semester: 'hocky2', question: "10 - 4 = ?", options: ["5", "6", "7", "8"], answer: "6" },
                 { subject: 'tiengviet', grade: 'lop2', semester: 'hocky2', question: "Từ nào trái nghĩa với 'buồn'?", options: ["vui", "khóc", "ngủ", "ăn"], answer: "vui" },
+                // Additional Vietnamese questions for Grade 1
+                { subject: 'tiengviet', grade: 'lop1', semester: 'hocky1', question: "Từ nào viết đúng chính tả?", options: ["sách vở", "sách vỡ", "sách vờ", "sách vỡ"], answer: "sách vở" },
+                { subject: 'tiengviet', grade: 'lop1', semester: 'hocky1', question: "Điền vần 'ay' hoặc 'ây': 'Cây ... tre'", options: ["cay", "cây", "cai", "câi"], answer: "cây" },
+                { subject: 'tiengviet', grade: 'lop1', semester: 'hocky2', question: "Từ nào chỉ hoạt động?", options: ["cái bàn", "đi học", "quyển sách", "con mèo"], answer: "đi học" },
+                { subject: 'tiengviet', grade: 'lop1', semester: 'hocky2', question: "Điền từ còn thiếu: 'Chim ... hót líu lo'", options: ["sẻ", "mèo", "chó", "cá"], answer: "sẻ" },
+                // Additional Math questions for Grade 1
+                { subject: 'toan', grade: 'lop1', semester: 'hocky1', question: "3 + 2 = ?", options: ["4", "5", "6", "7"], answer: "5" },
+                { subject: 'toan', grade: 'lop1', semester: 'hocky1', question: "Số liền sau của 8 là?", options: ["7", "9", "10", "8"], answer: "9" },
+                { subject: 'toan', grade: 'lop1', semester: 'hocky2', question: "7 - 3 = ?", options: ["3", "4", "5", "6"], answer: "4" },
+                { subject: 'toan', grade: 'lop1', semester: 'hocky2', question: "Có 5 quả táo, ăn đi 2 quả. Còn lại mấy quả?", options: ["2", "3", "4", "5"], answer: "3" },
+                // Additional Vietnamese questions for Grade 2
+                { subject: 'tiengviet', grade: 'lop2', semester: 'hocky1', question: "Từ nào là từ láy?", options: ["xinh đẹp", "lung linh", "nhà cửa", "học bài"], answer: "lung linh" },
+                { subject: 'tiengviet', grade: 'lop2', semester: 'hocky1', question: "Điền vào chỗ trống: 'Mặt trời ... rực rỡ'", options: ["sáng", "chói", "tỏa", "lên"], answer: "chói" },
+                { subject: 'tiengviet', grade: 'lop2', semester: 'hocky2', question: "Từ nào là từ ghép tổng hợp?", options: ["sách vở", "bàn ghế", "học hành", "tất cả"], answer: "tất cả" },
+                { subject: 'tiengviet', grade: 'lop2', semester: 'hocky2', question: "Tìm từ đồng nghĩa với 'chăm chỉ'?", options: ["lười biếng", "siêng năng", "nhanh nhẹn", "thông minh"], answer: "siêng năng" },
+                // Additional Math questions for Grade 2
+                { subject: 'toan', grade: 'lop2', semester: 'hocky1', question: "15 + 7 = ?", options: ["20", "21", "22", "23"], answer: "22" },
+                { subject: 'toan', grade: 'lop2', semester: 'hocky1', question: "Số lớn nhất có hai chữ số là?", options: ["90", "99", "100", "98"], answer: "99" },
+                { subject: 'toan', grade: 'lop2', semester: 'hocky2', question: "30 - 12 = ?", options: ["16", "18", "20", "22"], answer: "18" },
+                { subject: 'toan', grade: 'lop2', semester: 'hocky2', question: "Một tuần có mấy ngày?", options: ["5", "6", "7", "8"], answer: "7" },
             ];
             const qCollection = collection(db, `artifacts/${appId}/public/data/questions`);
+            // Add each seed question as a new document to the Firestore collection.
             const promises = seedData.map(q => addDoc(qCollection, q));
-            await Promise.all(promises);
-            await loadQuestionsFromFirestore(); // Reload questions after seeding
+            await Promise.all(promises); // Wait for all additions to complete.
+            await loadQuestionsFromFirestore(); // Reload questions after seeding to update in-memory state.
         }
 
         /**
-         * Restructures the flat `fullQuestionCollection` into a nested `questionBank` object
-         * for easy access by subject, grade, and semester.
+         * Restructures the flat `fullQuestionCollection` (list of all questions from Firestore)
+         * into a nested `questionBank` object. This allows for quick access to questions
+         * based on selected subject, grade, and semester during gameplay.
          */
         function restructureQuestionBank() {
-            questionBank = {};
+            questionBank = {}; // Reset the questionBank.
             fullQuestionCollection.forEach(q => {
                 const { subject, grade, semester } = q;
-                if (!subject || !grade || !semester) return; // Skip invalid questions
+                // Skip questions that might be missing essential classification data.
+                if (!subject || !grade || !semester) return; 
+                // Create nested objects if they don't already exist.
                 if (!questionBank[subject]) questionBank[subject] = {};
                 if (!questionBank[subject][grade]) questionBank[subject][grade] = {};
                 if (!questionBank[subject][grade][semester]) questionBank[subject][grade][semester] = [];
+                // Add the question to the appropriate category.
                 questionBank[subject][grade][semester].push(q);
             });
         }
 
         /**
          * Loads admin settings (like timer configuration) from Firestore.
+         * These settings control aspects of the game like timer enablement and duration.
+         * @returns {Promise<void>} A promise that resolves when settings are loaded.
          */
         async function loadAdminSettings() {
             if (!db || !appId) return;
+            // Reference to the 'config' document within the 'adminSettings' collection.
             const settingsRef = doc(db, `artifacts/${appId}/public/data/adminSettings`, 'config');
             try {
                 const docSnap = await getDoc(settingsRef);
                 if (docSnap.exists()) {
+                    // If the document exists, load the settings.
                     const settings = docSnap.data();
-                    timerEnabled = settings.timerEnabled ?? false;
-                    timerDuration = settings.timerDuration ?? 30;
+                    timerEnabled = settings.timerEnabled ?? false; // Default to false if not present.
+                    timerDuration = settings.timerDuration ?? 30; // Default to 30 seconds if not present.
                 }
-            } catch (error) { console.error("Error loading admin settings:", error); throw error; }
+            } catch (error) { 
+                console.error("Error loading admin settings:", error); 
+                throw error; // Re-throw to propagate the error.
+            }
         }
 
         /**
          * Saves admin settings (timer configuration) to Firestore.
-         * @param {HTMLButtonElement} button - The button element that triggered the save, used for loading state.
+         * This function is typically called from the admin panel.
+         * @param {HTMLButtonElement} button - The button element that triggered the save, used for showing loading state.
+         * @returns {Promise<void>} A promise that resolves when settings are saved.
          */
         async function saveAdminSettings(button) {
-            setButtonLoading(button, true);
+            setButtonLoading(button, true); // Show loading spinner on the button.
             const newTimerEnabled = document.getElementById('timer-toggle').checked;
             const newTimerDuration = parseInt(document.getElementById('timer-duration').value, 10);
             const feedbackEl = document.getElementById('settings-feedback');
 
-            // Validate timer duration
+            // Validate the input for timer duration.
             if (isNaN(newTimerDuration) || newTimerDuration < 5 || newTimerDuration > 120) {
                 feedbackEl.textContent = "Thời gian phải từ 5 đến 120 giây.";
                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
@@ -559,24 +626,27 @@
 
             const settingsRef = doc(db, `artifacts/${appId}/public/data/adminSettings`, 'config');
             try {
+                // Save the new settings to Firestore. `merge: true` ensures existing fields are not overwritten.
                 await setDoc(settingsRef, { timerEnabled: newTimerEnabled, timerDuration: newTimerDuration }, { merge: true });
-                // Update local state after successful save
+                // Update local state after successful save.
                 timerEnabled = newTimerEnabled;
                 timerDuration = newTimerDuration;
                 feedbackEl.textContent = "Đã lưu cài đặt!";
                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
-                setTimeout(() => feedbackEl.textContent = '', 3000); // Clear message after 3 seconds
+                setTimeout(() => feedbackEl.textContent = '', 3000); // Clear message after 3 seconds.
             } catch (error) {
                 console.error("Error saving settings:", error);
                 feedbackEl.textContent = "Lỗi khi lưu cài đặt.";
                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
             } finally {
-                setButtonLoading(button, false); // Always reset button loading state
+                setButtonLoading(button, false); // Always reset button loading state.
             }
         }
 
         /**
          * Loads the user-defined Gemini API key from Firestore.
+         * This key is used for AI-powered features like question generation and explanation.
+         * @returns {Promise<void>} A promise that resolves when the API key is loaded.
          */
         async function loadApiKey() {
             const keyRef = doc(db, `artifacts/${appId}/public/data/adminSettings`, 'geminiKey');
@@ -589,17 +659,22 @@
                     userDefinedApiKey = null;
                     document.getElementById('gemini-api-key-input').placeholder = "Nhập Gemini API Key của bạn...";
                 }
-            } catch (error) { console.error("Error loading API key:", error); throw error; }
+            } catch (error) { 
+                console.error("Error loading API key:", error); 
+                throw error; // Re-throw to propagate the error.
+            }
         }
 
         /**
          * Saves the user-provided Gemini API key to Firestore.
          * @param {HTMLButtonElement} button - The button element that triggered the save, used for loading state.
+         * @returns {Promise<void>} A promise that resolves when the API key is saved.
          */
         async function saveApiKey(button) {
-            setButtonLoading(button, true);
+            setButtonLoading(button, true); // Show loading spinner.
             const newKey = document.getElementById('gemini-api-key-input').value.trim();
             const feedbackEl = document.getElementById('settings-feedback');
+
             if (!newKey) {
                 feedbackEl.textContent = "API Key không được để trống.";
                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
@@ -608,32 +683,36 @@
             }
             const keyRef = doc(db, `artifacts/${appId}/public/data/adminSettings`, 'geminiKey');
             try {
+                // Save the new API key to Firestore.
                 await setDoc(keyRef, { key: newKey });
-                userDefinedApiKey = newKey;
+                userDefinedApiKey = newKey; // Update local state.
                 feedbackEl.textContent = "Đã lưu API Key thành công!";
                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
-                document.getElementById('gemini-api-key-input').value = ""; // Clear input after saving
+                document.getElementById('gemini-api-key-input').value = ""; // Clear input after saving.
                 document.getElementById('gemini-api-key-input').placeholder = "API Key đã được lưu. Nhập để thay thế.";
             } catch (error) {
                 console.error("Error saving API key:", error);
                 feedbackEl.textContent = "Lỗi khi lưu API Key.";
                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
             } finally {
-                setButtonLoading(button, false);
+                setButtonLoading(button, false); // Reset button loading state.
             }
         }
 
         /**
          * Deletes the stored Gemini API key from Firestore.
+         * This will revert the AI features to use the default (or no) API key.
          * @param {HTMLButtonElement} button - The button element that triggered the delete, used for loading state.
+         * @returns {Promise<void>} A promise that resolves when the API key is deleted.
          */
         async function deleteApiKey(button) {
-            setButtonLoading(button, true);
+            setButtonLoading(button, true); // Show loading spinner.
             const keyRef = doc(db, `artifacts/${appId}/public/data/adminSettings`, 'geminiKey');
             const feedbackEl = document.getElementById('settings-feedback');
             try {
+                // Delete the API key document from Firestore.
                 await deleteDoc(keyRef);
-                userDefinedApiKey = null;
+                userDefinedApiKey = null; // Clear local state.
                 feedbackEl.textContent = "Đã xóa API Key. Hệ thống sẽ dùng key mặc định.";
                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
                 document.getElementById('gemini-api-key-input').value = "";
@@ -643,55 +722,62 @@
                 feedbackEl.textContent = "Lỗi khi xóa API Key.";
                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
             } finally {
-                setButtonLoading(button, false);
+                setButtonLoading(button, false); // Reset button loading state.
             }
         }
         
         // --- AI EXPLANATION & GENERATION ---
         /**
          * Fetches an explanation for a given question and answer from the Gemini AI.
+         * The explanation is tailored for the specified grade level.
          * @param {string} question - The question text.
          * @param {string} answer - The correct answer.
          * @param {string} grade - The grade level (e.g., 'lop1', 'lop2') for context.
+         * @returns {Promise<void>} A promise that resolves when the explanation is displayed.
          */
         async function getExplanationFromAI(question, answer, grade) {
             const explanationContainer = document.getElementById('explanation-container');
             const explanationTextEl = document.getElementById('explanation-text');
-            explanationTextEl.textContent = 'Đang tạo giải thích...'; // Show loading message
-            explanationContainer.classList.remove('hidden'); // Make container visible
+            explanationTextEl.textContent = 'Đang tạo giải thích...'; // Show loading message.
+            explanationContainer.classList.remove('hidden'); // Make container visible.
 
             const gradeMap = { lop1: "lớp 1", lop2: "lớp 2" };
-            const gradeText = gradeMap[grade] || "học sinh tiểu học"; // Default to general primary student
+            const gradeText = gradeMap[grade] || "học sinh tiểu học"; // Default to general primary student if grade is unknown.
             const prompt = `Hãy giải thích đáp án cho câu hỏi sau một cách thật ngắn gọn và dễ hiểu, phù hợp với trình độ của học sinh ${gradeText}. Câu hỏi: "${question}" Đáp án đúng là: "${answer}".`;
 
             try {
-                const generatedText = await callGeminiAPI(prompt);
+                const generatedText = await callGeminiAPI(prompt); // Call Gemini API for explanation.
                 explanationTextEl.textContent = `💡 Giải thích: ${generatedText}`;
+                // Set up text-to-speech for the explanation.
                 document.getElementById('read-explanation-btn').onclick = () => speakText(generatedText);
-                document.getElementById('read-explanation-btn').style.display = 'block'; // Show speaker button
+                document.getElementById('read-explanation-btn').style.display = 'block'; // Show speaker button.
             } catch (error) {
                 console.error("Error in explanation process:", error);
                 explanationTextEl.textContent = 'Không thể tạo giải thích lúc này.';
-                document.getElementById('read-explanation-btn').style.display = 'none'; // Hide speaker button on error
+                document.getElementById('read-explanation-btn').style.display = 'none'; // Hide speaker button on error.
             }
         }
 
         /**
          * Makes a call to the Gemini API with a given prompt and optional JSON schema.
+         * This is the core function for interacting with the Gemini model.
          * @param {string} prompt - The text prompt for the AI.
          * @param {object} [jsonSchema=null] - Optional JSON schema for structured responses.
-         * @returns {Promise<string>} - A promise that resolves with the generated text.
+         * @returns {Promise<string>} A promise that resolves with the generated text.
+         * @throws {Error} If the API call fails or returns an invalid response.
          */
         async function callGeminiAPI(prompt, jsonSchema = null) {
             const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
             if (jsonSchema) {
+                // If a JSON schema is provided, configure the generation for structured output.
                 payload.generationConfig = {
                     responseMimeType: "application/json",
                     responseSchema: jsonSchema
                 };
             }
             
-            // Use user-defined API key if available, otherwise use default (empty string for Canvas runtime)
+            // Use user-defined API key if available, otherwise use default (empty string for Canvas runtime).
+            // The Canvas environment automatically injects the API key if it's an empty string.
             const apiKey = userDefinedApiKey || ""; 
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
@@ -718,48 +804,59 @@
         // --- HISTORY & LEADERBOARD ---
         /**
          * Saves quiz results to Firestore for both history and leaderboard.
+         * Results include player name (if provided), score, and detailed answers.
          * @param {object} resultData - The data object containing quiz results.
          * @param {string|null} playerName - The name of the player, or null if not saved.
+         * @returns {Promise<void>} A promise that resolves when results are saved.
          */
         async function saveResult(resultData, playerName = null) {
+            // Ensure Firebase is initialized and user is authenticated.
             if (!db || !appId || !auth.currentUser) return;
 
+            // Data structure for the quiz history.
             const dataToSaveForHistory = { ...resultData, name: playerName };
+            // Data structure for the leaderboard (a subset of history data).
             const dataToSaveForLeaderboard = {
                 name: playerName,
                 score: resultData.score,
                 totalQuestions: resultData.totalQuestions,
                 subject: resultData.subject,
                 grade: resultData.grade,
-                date: resultData.date // Use serverTimestamp from resultData
+                date: resultData.date // Uses serverTimestamp from resultData, ensuring consistent timestamps.
             };
 
-            // Save to leaderboard if a player name is provided
+            // Save to leaderboard if a player name is provided.
             if (playerName) {
                 try {
                     await addDoc(collection(db, `artifacts/${appId}/public/data/leaderboard`), dataToSaveForLeaderboard);
                     console.log("Score saved to leaderboard!");
-                } catch (e) {
+                }
+                // Log error if writing to leaderboard fails.
+                catch (e) {
                     console.error("Error writing to leaderboard:", e);
                 }
             }
             
-            // Always save full quiz result to history
+            // Always save full quiz result to history.
             try {
                 await addDoc(collection(db, `artifacts/${appId}/public/data/quizResults`), dataToSaveForHistory);
                 console.log("Full quiz result saved to history!");
-            } catch (e) {
+            }
+            // Log error if writing to history fails.
+            catch (e) {
                 console.error("Error writing to history:", e);
             }
         }
 
         /**
-         * Displays the quiz history in a table from Firestore.
+         * Displays the quiz history in a table, fetching data from Firestore.
+         * Results are sorted by date (most recent first).
+         * @returns {Promise<void>} A promise that resolves when history is displayed.
          */
         async function displayHistory() {
-            showScreen('history');
+            showScreen('history'); // Show the history screen.
             const container = document.getElementById('history-table-container');
-            container.innerHTML = '<p class="text-center text-gray-500">Đang tải lịch sử...</p>';
+            container.innerHTML = '<p class="text-center text-gray-500">Đang tải lịch sử...</p>'; // Show loading message.
 
             if (!db || !appId) {
                 container.innerHTML = '<p class="text-center text-red-500">Lỗi CSDL.</p>';
@@ -767,6 +864,7 @@
             }
 
             try {
+                // Fetch all quiz results from Firestore.
                 const q = query(collection(db, `artifacts/${appId}/public/data/quizResults`));
                 const querySnapshot = await getDocs(q);
 
@@ -777,10 +875,11 @@
 
                 const results = [];
                 querySnapshot.forEach(doc => results.push({id: doc.id, ...doc.data()}));
-                // Sort by date in descending order (most recent first)
+                // Sort results by date in descending order (most recent first).
                 results.sort((a, b) => (b.date?.toDate() || 0) - (a.date?.toDate() || 0));
-                quizHistory = results; // Update in-memory cache for detail view
+                quizHistory = results; // Cache results for detailed view.
 
+                // Mapping for display names (e.g., 'toan' to 'Toán').
                 const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
 
                 let tableHTML = `
@@ -815,7 +914,7 @@
                 tableHTML += '</tbody></table>';
                 container.innerHTML = tableHTML;
 
-                // Add event listeners for detail buttons
+                // Add event listeners for detail buttons.
                 document.getElementById('history-table-body').addEventListener('click', (e) => {
                     if (e.target.classList.contains('view-detail-btn')) {
                         const index = e.target.dataset.index;
@@ -838,7 +937,7 @@
             const contentEl = document.getElementById('history-detail-content');
 
             summaryEl.innerHTML = `<strong>Tên:</strong> ${result.name || 'Không lưu'} | <strong>Điểm:</strong> ${result.score}/${result.totalQuestions}`;
-            contentEl.innerHTML = ''; // Clear previous content
+            contentEl.innerHTML = ''; // Clear previous content.
 
             if (result.questions && Array.isArray(result.questions)) {
                 result.questions.forEach((q, index) => {
@@ -855,16 +954,18 @@
             } else {
                 contentEl.innerHTML = '<p>Không có dữ liệu chi tiết cho lần chơi này.</p>';
             }
-            showModal('historyDetail');
+            showModal('historyDetail'); // Show the history detail modal.
         }
 
         /**
-         * Displays the leaderboard based on selected filters from Firestore.
+         * Displays the leaderboard based on selected filters, fetching data from Firestore.
+         * Results are sorted by score (descending) and then by date (descending).
+         * @returns {Promise<void>} A promise that resolves when the leaderboard is displayed.
          */
         async function displayLeaderboard() {
-            showScreen('leaderboard');
+            showScreen('leaderboard'); // Show the leaderboard screen.
             const container = document.getElementById('leaderboard-table-container');
-            container.innerHTML = '<p class="text-center text-gray-500">Đang tải bảng xếp hạng...</p>';
+            container.innerHTML = '<p class="text-center text-gray-500">Đang tải bảng xếp hạng...</p>'; // Show loading message.
 
             if (!db || !appId) {
                 container.innerHTML = '<p class="text-center text-red-500">Lỗi CSDL.</p>';
@@ -872,16 +973,18 @@
             }
 
             const subjectFilter = leaderboardSubjectFilter.value;
-            const gradeFilter = leaderboardGradeFilter.value;
+            const gradeFilter = leaderboardGradeFilter.value; // Corrected to use leaderboardGradeFilter.value
             const nameFilter = leaderboardNameFilter.value.trim().toLowerCase();
 
             try {
                 let queryConstraints = [];
+                // Add filters to the query if 'all' is not selected.
                 if (subjectFilter !== 'all') queryConstraints.push(where("subject", "==", subjectFilter));
                 if (gradeFilter !== 'all') queryConstraints.push(where("grade", "==", gradeFilter));
                 
-                // Firestore does not support orderBy on multiple fields without composite indexes.
-                // We will fetch and sort client-side.
+                // Construct the Firestore query.
+                // Note: Firestore does not support orderBy on multiple fields without composite indexes.
+                // We will fetch and sort client-side for simplicity.
                 const q = query(collection(db, `artifacts/${appId}/public/data/leaderboard`), ...queryConstraints);
                 const querySnapshot = await getDocs(q);
 
@@ -895,22 +998,22 @@
                     results.push(doc.data());
                 });
 
-                // Apply name filter client-side
+                // Apply name filter client-side after fetching all relevant data.
                 if (nameFilter) {
                     results = results.filter(r => r.name && r.name.toLowerCase().includes(nameFilter));
                 }
 
-                // Sort results: primary by score (desc), secondary by date (desc)
+                // Sort results: primary by score (descending), secondary by date (descending).
                 results.sort((a, b) => {
                     if (b.score !== a.score) {
                         return b.score - a.score;
                     }
-                    const dateA = a.date?.toDate() || new Date(0); // Handle missing/invalid dates
+                    const dateA = a.date?.toDate() || new Date(0); // Handle missing/invalid dates by defaulting to epoch.
                     const dateB = b.date?.toDate() || new Date(0);
                     return dateB - dateA;
                 });
 
-                // Display only top 10 results
+                // Display only top 10 results.
                 const topResults = results.slice(0, 10);
 
                 if (topResults.length === 0) {
@@ -951,11 +1054,13 @@
         
         // --- GAME LOGIC ---
         /**
-         * Updates the state of the "Start" button based on whether all selections (subject, grade, semester) are made.
+         * Updates the state (enabled/disabled) of the "Start" button.
+         * The button is enabled only if a subject, grade, and semester are selected,
+         * and there are questions available for the selected criteria.
          */
         function updateStartButtonState() {
             if (selectedSubject && selectedGrade && selectedSemester && questionBank) {
-                // Check if there are actual questions for the selected criteria
+                // Check if there are actual questions for the selected criteria.
                 const questionsExist = questionBank[selectedSubject]?.[selectedGrade]?.[selectedSemester]?.length > 0;
                 if (questionsExist) {
                     document.getElementById('start-btn').disabled = false;
@@ -965,85 +1070,91 @@
                     document.getElementById('start-btn').disabled = true;
                     document.getElementById('start-btn').classList.add('bg-gray-500/50', 'cursor-not-allowed');
                     document.getElementById('start-btn').classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90');
-                }
-            } else {
-                document.getElementById('start-btn').disabled = true;
-                document.getElementById('start-btn').classList.add('bg-gray-500/50', 'cursor-not-allowed');
-                document.getElementById('start-btn').classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90');
             }
+        } else {
+            document.getElementById('start-btn').disabled = true;
+            document.getElementById('start-btn').classList.add('bg-gray-500/50', 'cursor-not-allowed');
+            document.getElementById('start-btn').classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90');
+        }
         }
 
         /**
-         * Initializes and starts the quiz game.
+         * Initializes and starts a new quiz game session.
+         * Selects and shuffles questions based on user selections.
          */
         function startGame() {
-            clearInterval(timerInterval); // Clear any existing timer
-            sessionAnswers = []; // Reset session answers
+            clearInterval(timerInterval); // Clear any existing timer from previous games.
+            sessionAnswers = []; // Reset the list of answers for the current session.
 
             const errorEl = document.getElementById('start-error');
-            errorEl.textContent = ''; // Clear previous errors
+            errorEl.textContent = ''; // Clear any previous error messages.
 
-            // Get questions for the selected criteria
+            // Get questions relevant to the selected subject, grade, and semester.
             const questionsForSelection = questionBank?.[selectedSubject]?.[selectedGrade]?.[selectedSemester];
 
             if (!questionsForSelection || questionsForSelection.length === 0) {
                 errorEl.textContent = "Lỗi: Không tìm thấy bộ câu hỏi cho lựa chọn này. Vui lòng chọn lại.";
-                setTimeout(() => { errorEl.textContent = ''; }, 4000);
+                setTimeout(() => { errorEl.textContent = '', 4000 }); // Clear error after 4 seconds.
                 return;
             }
 
-            // Shuffle and select a subset of questions
-            currentQuestions = questionsForSelection.sort(() => 0.5 - Math.random()).slice(0, NUM_OF_QUESTIONS_PER_GAME);
+            // Shuffle all available questions for the selected criteria.
+            currentQuestions = questionsForSelection.sort(() => 0.5 - Math.random());
+
+            // No longer limiting to NUM_OF_QUESTIONS_PER_GAME here.
+            // All questions for the selected category will be used.
 
             if (currentQuestions.length === 0) {
                 errorEl.textContent = "Lỗi: Không đủ câu hỏi để bắt đầu. Vui lòng chọn lại.";
-                setTimeout(() => { errorEl.textContent = ''; }, 4000);
+                setTimeout(() => { errorEl.textContent = '', 4000 }); // Clear error after 4 seconds.
                 return;
             }
 
-            currentQuestionIndex = 0;
-            score = 0;
-            showScreen('game'); // Show the game screen
-            displayQuestion(); // Display the first question
+            currentQuestionIndex = 0; // Reset question index to the first question.
+            score = 0; // Reset score.
+            showScreen('game'); // Transition to the game screen.
+            displayQuestion(); // Display the first question of the game.
         }
 
         /**
-         * Displays the current question and its options. Manages the timer if enabled.
+         * Displays the current question and its answer options.
+         * Manages the countdown timer if enabled in settings.
          */
         function displayQuestion() {
-            clearInterval(timerInterval); // Clear previous question's timer
-            document.getElementById('feedback-container').innerHTML = ''; // Clear feedback
-            document.getElementById('explanation-container').classList.add('hidden'); // Hide explanation
-            document.getElementById('next-btn').classList.add('hidden'); // Hide next button
+            clearInterval(timerInterval); // Stop any active timer.
+            document.getElementById('feedback-container').innerHTML = ''; // Clear previous feedback.
+            document.getElementById('explanation-container').classList.add('hidden'); // Hide explanation.
+            document.getElementById('next-btn').classList.add('hidden'); // Hide "Next" button.
 
             const questionData = currentQuestions[currentQuestionIndex];
             document.getElementById('question-container').querySelector('p').textContent = questionData.question;
 
             const optionsContainer = document.getElementById('options-container');
-            optionsContainer.innerHTML = ''; // Clear previous options
+            optionsContainer.innerHTML = ''; // Clear previous options.
 
-            // Shuffle options for the current question
+            // Shuffle options for the current question to randomize their order.
             const shuffledOptions = [...questionData.options].sort(() => Math.random() - 0.5);
 
             shuffledOptions.forEach(option => {
                 const button = document.createElement('button');
                 button.textContent = option;
                 button.className = 'answer-option w-full p-4 rounded-2xl font-semibold glass-btn bg-white/20 hover:bg-white/40 text-gray-800';
+                // Attach event listener to check the answer when an option is clicked.
                 button.onclick = (e) => {
-                    playSound('click');
+                    playSound('click'); // Play click sound.
                     checkAnswer(e.target, questionData.answer);
                 };
                 optionsContainer.appendChild(button);
             });
 
-            // Update progress and score display
+            // Update progress and score display in the UI.
             document.getElementById('progress-text').textContent = `Câu ${currentQuestionIndex + 1}/${currentQuestions.length}`;
             document.getElementById('score-text').textContent = `Điểm: ${score}`;
 
-            // Set up text-to-speech for the question
+            // Set up text-to-speech for reading the question aloud.
             document.getElementById('read-question-btn').onclick = () => speakText(questionData.question);
 
-            // Timer logic
+            // Timer logic: display and start countdown if enabled.
             const timerDisplay = document.getElementById('timer-display');
             if (timerEnabled) {
                 timerDisplay.classList.remove('hidden');
@@ -1053,49 +1164,52 @@
                     timeLeft--;
                     timerDisplay.textContent = `⏰ ${timeLeft}`;
                     if (timeLeft <= 0) {
-                        clearInterval(timerInterval);
+                        clearInterval(timerInterval); // Stop timer when time runs out.
                         document.getElementById('feedback-container').textContent = '⌛ Hết giờ!';
-                        checkAnswer({ textContent: null }, questionData.answer); // Pass null for selected answer if time runs out
+                        // Automatically check answer as incorrect if time runs out.
+                        checkAnswer({ textContent: null }, questionData.answer); 
                     }
-                }, 1000);
+                }, 1000); // Update every second.
             } else {
-                timerDisplay.classList.add('hidden'); // Hide timer if not enabled
+                timerDisplay.classList.add('hidden'); // Hide timer if not enabled.
             }
         }
 
         /**
-         * Checks the selected answer against the correct answer, updates score and UI.
+         * Checks the user's selected answer against the correct answer, updates the score,
+         * provides visual feedback, and triggers AI explanation.
          * @param {HTMLButtonElement} selectedButton - The button element selected by the user.
          * @param {string} correctAnswer - The correct answer for the current question.
          */
         function checkAnswer(selectedButton, correctAnswer) {
-            clearInterval(timerInterval); // Stop the timer
+            clearInterval(timerInterval); // Stop the timer immediately after an answer is selected.
 
-            // Disable all option buttons after an answer is selected
+            // Disable all option buttons to prevent further interaction after an answer is chosen.
             document.querySelectorAll('.answer-option').forEach(btn => btn.disabled = true);
 
             const questionData = currentQuestions[currentQuestionIndex];
-            const userAnswer = selectedButton.textContent;
+            const userAnswer = selectedButton ? selectedButton.textContent : null; // Handle case where time runs out.
             const isCorrect = userAnswer == correctAnswer;
 
             if (isCorrect) {
-                score++;
-                if (selectedButton) selectedButton.classList.add('correct'); // Highlight correct answer
+                score++; // Increment score if correct.
+                if (selectedButton) selectedButton.classList.add('correct'); // Highlight correct answer.
                 document.getElementById('feedback-container').textContent = '🎉 Đúng rồi!';
-                playSound('correct');
+                playSound('correct'); // Play correct answer sound.
             } else {
-                if (selectedButton) selectedButton.classList.add('incorrect'); // Highlight incorrect selected answer
+                if (selectedButton) selectedButton.classList.add('incorrect'); // Highlight incorrect selected answer.
+                // Only show "Sai rồi!" if no other feedback is present (e.g., from timer).
                 if (document.getElementById('feedback-container').textContent === '') {
                     document.getElementById('feedback-container').textContent = '😥 Sai rồi!';
                 }
-                playSound('incorrect');
-                // Highlight the correct answer among options
+                playSound('incorrect'); // Play incorrect answer sound.
+                // Highlight the correct answer among all options.
                 document.querySelectorAll('.answer-option').forEach(btn => {
                     if (btn.textContent == correctAnswer) btn.classList.add('correct');
                 });
             }
 
-            // Record the answer for session history
+            // Record the question, user's answer, correct answer, and correctness for session history.
             sessionAnswers.push({
                 questionText: questionData.question,
                 userAnswer: userAnswer,
@@ -1103,33 +1217,34 @@
                 isCorrect: isCorrect
             });
 
-            // Get AI explanation for the answer
+            // Request an AI explanation for the answer.
             getExplanationFromAI(questionData.question, questionData.answer, selectedGrade);
 
-            document.getElementById('score-text').textContent = `Điểm: ${score}`;
-            document.getElementById('next-btn').classList.remove('hidden'); // Show next button
+            document.getElementById('score-text').textContent = `Điểm: ${score}`; // Update score display.
+            document.getElementById('next-btn').classList.remove('hidden'); // Show the "Next" button.
 
-            // Stop any ongoing speech synthesis
+            // Stop any ongoing speech synthesis to prevent overlapping audio.
             if (speechSynthesis.speaking) speechSynthesis.cancel();
         }
 
         /**
-         * Moves to the next question or shows results if all questions are answered.
+         * Advances to the next question in the quiz or shows the final results
+         * if all questions have been answered.
          */
         function nextQuestion() {
-            currentQuestionIndex++;
+            currentQuestionIndex++; // Increment to the next question.
             if (currentQuestionIndex < currentQuestions.length) {
-                displayQuestion();
+                displayQuestion(); // Display the next question.
             } else {
-                showResults(); // End of quiz
+                showResults(); // All questions answered, show results.
             }
         }
 
         /**
-         * Displays the quiz results and prompts the user to save their score.
+         * Displays the final quiz results in a modal and prompts the user to save their score.
          */
         function showResults() {
-            playSound('complete'); // Play completion sound
+            playSound('complete'); // Play completion sound.
             const finalScore = score;
             const totalQuestions = currentQuestions.length;
             document.getElementById('modal-final-score').textContent = `${finalScore}/${totalQuestions}`;
@@ -1137,98 +1252,102 @@
             const percentage = (finalScore / totalQuestions) * 100;
             const finalMessageElement = document.getElementById('modal-final-message');
 
-            // Customize final message based on score
+            // Customize the final message based on the user's performance.
             if (percentage === 100) finalMessageElement.textContent = "Xuất sắc! Bé thật là giỏi! Hãy chọn tên để lưu điểm nhé.";
             else if (percentage >= 70) finalMessageElement.textContent = "Giỏi lắm! Hãy chọn tên để lưu điểm nhé.";
             else if (percentage >= 50) finalMessageElement.textContent = "Làm tốt lắm! Hãy chọn tên để lưu điểm nhé.";
             else finalMessageElement.textContent = "Cố gắng hơn lần sau nhé! Chọn tên để lưu điểm nào.";
 
-            // Prepare result data for saving
+            // Prepare the result data to be saved to Firestore.
             const resultData = {
-                date: serverTimestamp(), // Firestore timestamp
+                date: serverTimestamp(), // Use Firestore's server timestamp for accurate time recording.
                 subject: selectedSubject,
                 grade: selectedGrade,
                 semester: selectedSemester,
                 score: score,
                 totalQuestions: currentQuestions.length,
-                questions: sessionAnswers // Detailed answers for history
+                questions: sessionAnswers // Include detailed answers for history viewing.
             };
 
-            populateNameSelectionModal(); // Populate student names for score saving
+            populateNameSelectionModal(); // Populate the modal with student names for selection.
 
-            // Event listener for name selection buttons
+            // Event listener for selecting a student name to save the score.
             document.getElementById('name-selection-container').onclick = (e) => {
                 if (e.target.classList.contains('name-btn')) {
                     playSound('click');
                     const playerName = e.target.dataset.name;
-                    saveResult(resultData, playerName); // Save with selected name
+                    saveResult(resultData, playerName); // Save result with the selected player name.
                     hideModal('nameSelection');
-                    displayLeaderboard(); // Show leaderboard after saving
+                    displayLeaderboard(); // Show the leaderboard after saving.
                 }
             };
 
-            // Event listener for skipping and playing again
+            // Event listener for skipping score saving and playing again.
             document.getElementById('skip-and-play-again-btn').onclick = () => {
                 playSound('click');
-                saveResult(resultData, null); // Save without a specific name
+                saveResult(resultData, null); // Save result without a specific name.
                 hideModal('nameSelection');
-                resetGame(); // Reset game to selection screen
+                resetGame(); // Reset the game to the selection screen.
             };
 
-            showModal('nameSelection'); // Show the name selection modal
+            showModal('nameSelection'); // Display the name selection modal.
         }
 
         /**
-         * Resets the game state and returns to the selection screen.
+         * Resets the game to its initial state, clearing selections and returning to the selection screen.
          */
         function resetGame() {
-            showScreen('selection');
+            showScreen('selection'); // Go back to the selection screen.
             selectedSubject = null;
             selectedGrade = null;
             selectedSemester = null;
-            // Deselect all choice buttons
+            // Remove 'selected' class from all choice buttons.
             document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('selected'));
-            updateStartButtonState();
+            updateStartButtonState(); // Update the start button's enabled state.
         }
 
         // --- UI & MODAL MANAGEMENT ---
         /**
-         * Hides all main screens and displays the specified one.
-         * @param {string} screenName - The ID of the screen to show (e.g., 'selection', 'game').
+         * Hides all main application screens and displays the specified one.
+         * @param {string} screenName - The ID of the screen to show (e.g., 'selection', 'game', 'admin').
          */
         function showScreen(screenName) {
-            Object.values(screens).forEach(s => s.classList.add('hidden')); // Hide all screens
+            // Add 'hidden' class to all screens to hide them.
+            Object.values(screens).forEach(s => s.classList.add('hidden')); 
+            // Remove 'hidden' class from the target screen to display it.
             if (screens[screenName]) {
-                screens[screenName].classList.remove('hidden'); // Show the target screen
+                screens[screenName].classList.remove('hidden'); 
             }
         }
 
         /**
-         * Displays a modal with a fade-in effect.
-         * @param {string} modalName - The ID of the modal to show.
+         * Displays a modal window with a fade-in effect.
+         * @param {string} modalName - The ID of the modal to show (e.g., 'login', 'nameSelection').
          */
         function showModal(modalName) {
             if (modals[modalName]) {
                 modals[modalName].classList.remove('hidden');
-                // Trigger reflow to ensure transition plays
+                // Trigger reflow to ensure CSS transition plays correctly.
                 void modals[modalName].offsetWidth; 
-                setTimeout(() => modals[modalName].classList.remove('opacity-0'), 10);
+                setTimeout(() => modals[modalName].classList.remove('opacity-0'), 10); // Fade in.
             }
         }
 
         /**
-         * Hides a modal with a fade-out effect.
+         * Hides a modal window with a fade-out effect.
          * @param {string} modalName - The ID of the modal to hide.
          */
         function hideModal(modalName) {
             if (modals[modalName]) {
-                modals[modalName].classList.add('opacity-0');
-                setTimeout(() => modals[modalName].classList.add('hidden'), 300); // Hide completely after transition
+                modals[modalName].classList.add('opacity-0'); // Fade out.
+                // Hide completely after the transition duration.
+                setTimeout(() => modals[modalName].classList.add('hidden'), 300); 
             }
         }
 
         /**
          * Uses the Web Speech API to speak the given text.
+         * Provides a warning if speech synthesis is not supported by the browser.
          * @param {string} text - The text to be spoken.
          */
         function speakText(text) {
@@ -1236,97 +1355,116 @@
                 console.warn("Speech synthesis not supported.");
                 return;
             }
-            if (speechSynthesis.speaking) speechSynthesis.cancel(); // Stop current speech
+            if (speechSynthesis.speaking) speechSynthesis.cancel(); // Stop any ongoing speech.
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'vi-VN'; // Set language to Vietnamese
-            // Try to find a Vietnamese voice
+            utterance.lang = 'vi-VN'; // Set language to Vietnamese.
+            // Try to find a Vietnamese voice for better pronunciation.
             const voice = speechSynthesis.getVoices().find(v => v.lang === 'vi-VN');
             if (voice) utterance.voice = voice;
             speechSynthesis.speak(utterance);
         }
 
-        let confirmCallback = null; // Callback function for confirmation modal
+        let confirmCallback = null; // Stores the callback function for the confirmation modal.
 
         /**
-         * Displays a confirmation modal and sets a callback for the confirm action.
+         * Displays a generic confirmation modal with a custom message and a callback function.
          * @param {string} message - The message to display in the confirmation modal.
-         * @param {function} onConfirm - The function to call if the user confirms.
+         * @param {function} onConfirm - The function to call if the user clicks "Xác nhận".
          */
         function showConfirmationModal(message, onConfirm) {
             document.getElementById('confirmation-message').textContent = message;
-            confirmCallback = onConfirm; // Store the callback
-            showModal('confirmation');
+            confirmCallback = onConfirm; // Store the callback.
+            showModal('confirmation'); // Show the confirmation modal.
         }
 
         /**
          * Clears all documents from a specified Firestore collection.
-         * @param {string} collectionName - The name of the collection to clear (e.g., 'leaderboard', 'quizResults').
-         * @param {HTMLButtonElement} button - The button element that triggered the action, for loading state.
+         * This is a "dangerous action" usually performed by an admin.
+         * @param {string} collectionName - The name of the collection to clear (e.g., 'leaderboard', 'quizResults', 'questions').
+         * @param {HTMLButtonElement} button - The button element that triggered the action, used for showing loading state.
+         * @returns {Promise<void>} A promise that resolves when the collection is cleared.
          */
         async function clearCollection(collectionName, button) {
-            setButtonLoading(button, true);
+            setButtonLoading(button, true); // Show loading spinner on the button.
             const feedbackEl = document.getElementById('settings-feedback');
-            const friendlyName = collectionName === 'leaderboard' ? 'Bảng xếp hạng' : 'Lịch sử thi';
+            let friendlyName = '';
+            if (collectionName === 'leaderboard') friendlyName = 'Bảng xếp hạng';
+            else if (collectionName === 'quizResults') friendlyName = 'Lịch sử thi';
+            else if (collectionName === 'questions') friendlyName = 'TẤT CẢ Câu Hỏi'; // New friendly name for questions
+
             feedbackEl.textContent = `Đang xóa ${friendlyName}...`;
             feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-gray-700';
 
             const collectionRef = collection(db, `artifacts/${appId}/public/data/${collectionName}`);
             try {
-                const querySnapshot = await getDocs(query(collectionRef)); // Use query to get all docs
+                // Fetch all documents in the collection.
+                const querySnapshot = await getDocs(query(collectionRef)); 
                 const deletePromises = [];
+                // Create an array of delete promises for each document.
                 querySnapshot.forEach((doc) => {
                     deletePromises.push(deleteDoc(doc.ref));
                 });
-                await Promise.all(deletePromises); // Execute all delete operations concurrently
+                await Promise.all(deletePromises); // Execute all delete operations concurrently.
                 console.log(`${collectionName} cleared successfully.`);
                 feedbackEl.textContent = `Đã xóa thành công ${friendlyName}!`;
                 feedbackEl.classList.add('text-green-800');
-                setTimeout(() => feedbackEl.textContent = '', 4000); // Clear message after 4 seconds
+                setTimeout(() => feedbackEl.textContent = '', 4000); // Clear message after 4 seconds.
+
+                // If questions were cleared, reload them to reset the app's state
+                if (collectionName === 'questions') {
+                    await loadQuestionsFromFirestore();
+                    populateQuestionList(); // Refresh the display in question manager
+                }
+
             } catch (error) {
                 console.error(`Error clearing ${collectionName}:`, error);
                 feedbackEl.textContent = `Lỗi khi xóa ${friendlyName}.`;
                 feedbackEl.classList.add('text-red-600');
             } finally {
-                setButtonLoading(button, false); // Always reset button loading state
+                setButtonLoading(button, false); // Always reset button loading state.
             }
         }
 
         /**
          * Toggles a loading spinner and disables/enables a button.
+         * This provides visual feedback to the user during asynchronous operations.
          * @param {HTMLButtonElement} button - The button element to modify.
-         * @param {boolean} isLoading - True to show loading state, false to hide.
+         * @param {boolean} isLoading - True to show loading state (spinner and disabled), false to hide.
          */
         function setButtonLoading(button, isLoading) {
             if (isLoading) {
-                button.disabled = true;
-                button.dataset.originalContent = button.innerHTML; // Store original content
-                button.innerHTML = '<div class="spinner mx-auto"></div>'; // Show spinner
+                button.disabled = true; // Disable the button.
+                button.dataset.originalContent = button.innerHTML; // Store original content.
+                button.innerHTML = '<div class="spinner mx-auto"></div>'; // Replace with spinner.
             } else {
-                button.disabled = false;
-                button.innerHTML = button.dataset.originalContent; // Restore original content
+                button.disabled = false; // Enable the button.
+                button.innerHTML = button.dataset.originalContent; // Restore original content.
             }
         }
 
         // --- ADMIN STUDENT MANAGEMENT ---
         /**
          * Loads the list of student names from Firestore.
+         * If no list exists, a default list is created and saved.
+         * @returns {Promise<void>} A promise that resolves when the student list is loaded.
          */
         async function loadStudentList() {
+            // Reference to the 'studentList' document within the 'students' collection.
             const docRef = doc(db, `artifacts/${appId}/public/data/students`, 'studentList');
             try {
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists() && docSnap.data().names) {
-                    studentList = docSnap.data().names;
+                    studentList = docSnap.data().names; // Load existing list.
                 } else {
-                    // If no list exists, create one with default names
+                    // If no list exists, initialize with default names and save to Firestore.
                     studentList = ["Thảo Huyền", "Hằng Nga"]; 
-                    await setDoc(docRef, { names: studentList }); // Save default list
+                    await setDoc(docRef, { names: studentList }); 
                 }
                 console.log("Student list loaded:", studentList);
             } catch (error) {
                 console.error("Error loading student list:", error);
-                studentList = ["Thảo Huyền", "Hằng Nga"]; // Fallback to default names on error
-                throw error; // Re-throw to propagate the error to Promise.all
+                studentList = ["Thảo Huyền", "Hằng Nga"]; // Fallback to default names on error.
+                throw error; // Re-throw to propagate the error.
             }
         }
 
@@ -1334,18 +1472,19 @@
          * Displays the student management panel and populates the student list.
          */
         function displayStudentManager() {
-            showScreen('studentManager');
-            populateStudentList();
+            showScreen('studentManager'); // Show the student manager screen.
+            populateStudentList(); // Populate the list display.
         }
 
         /**
          * Populates the student list display in the admin panel.
+         * Dynamically creates list items for each student.
          */
         function populateStudentList() {
             const container = document.getElementById('student-list-container');
-            container.innerHTML = ''; // Clear existing list
+            container.innerHTML = ''; // Clear existing list.
             const feedbackEl = document.getElementById('student-manager-feedback');
-            feedbackEl.textContent = ''; // Clear previous feedback
+            feedbackEl.textContent = ''; // Clear previous feedback.
 
             if (studentList.length === 0) {
                 container.innerHTML = '<p class="text-center text-gray-600 font-semibold p-4">Chưa có học sinh nào.</p>';
@@ -1364,12 +1503,14 @@
         }
 
         /**
-         * Adds a new student name to the list in Firestore.
+         * Adds a new student name to the list in Firestore and updates the UI.
+         * Includes validation for empty or duplicate names.
          * @param {string} name - The name of the student to add.
+         * @returns {Promise<void>} A promise that resolves when the student is added.
          */
         async function addStudent(name) {
             const feedbackEl = document.getElementById('student-manager-feedback');
-            feedbackEl.textContent = ''; // Clear previous feedback
+            feedbackEl.textContent = ''; // Clear previous feedback.
 
             if (!name || studentList.includes(name)) {
                 feedbackEl.textContent = "Tên không hợp lệ hoặc đã tồn tại.";
@@ -1380,11 +1521,11 @@
 
             const docRef = doc(db, `artifacts/${appId}/public/data/students`, 'studentList');
             try {
-                // Use arrayUnion to add the name to the array without overwriting
+                // Use arrayUnion to atomically add the name to the array without overwriting.
                 await updateDoc(docRef, { names: arrayUnion(name) });
-                // Update local list for immediate UI refresh
+                // Update local list for immediate UI refresh.
                 studentList.push(name);
-                populateStudentList(); // Update UI
+                populateStudentList(); // Refresh the displayed list.
                 feedbackEl.textContent = `Đã thêm học sinh "${name}" thành công!`;
                 feedbackEl.className = 'text-center text-sm font-bold h-4 text-green-800';
                 setTimeout(() => feedbackEl.textContent = '', 3000);
@@ -1397,19 +1538,20 @@
         }
 
         /**
-         * Deletes a student name from the list in Firestore.
+         * Deletes a student name from the list in Firestore and updates the UI.
          * @param {string} name - The name of the student to delete.
+         * @returns {Promise<void>} A promise that resolves when the student is deleted.
          */
         async function deleteStudent(name) {
             const docRef = doc(db, `artifacts/${appId}/public/data/students`, 'studentList');
             const feedbackEl = document.getElementById('student-manager-feedback');
-            feedbackEl.textContent = ''; // Clear previous feedback
+            feedbackEl.textContent = ''; // Clear previous feedback.
             try {
-                // Use arrayRemove to delete the name from the array
+                // Use arrayRemove to atomically delete the name from the array.
                 await updateDoc(docRef, { names: arrayRemove(name) });
-                // Update local list for immediate UI refresh
+                // Update local list for immediate UI refresh.
                 studentList = studentList.filter(s => s !== name);
-                populateStudentList(); // Update UI
+                populateStudentList(); // Refresh the displayed list.
                 feedbackEl.textContent = `Đã xóa học sinh "${name}" thành công!`;
                 feedbackEl.className = 'text-center text-sm font-bold h-4 text-green-800';
                 setTimeout(() => feedbackEl.textContent = '', 3000);
@@ -1423,15 +1565,17 @@
 
         /**
          * Populates the name selection modal with current student names.
+         * These names are presented as buttons for the user to choose from.
          */
         function populateNameSelectionModal() {
             const container = document.getElementById('name-selection-container');
-            container.innerHTML = ''; // Clear existing buttons
+            container.innerHTML = ''; // Clear existing buttons.
+            // Define a set of colors to cycle through for visual variety.
             const colors = ["bg-pink-500/60", "bg-indigo-500/60", "bg-teal-500/60", "bg-amber-500/60"];
             studentList.forEach((name, index) => {
-                const color = colors[index % colors.length]; // Cycle through colors
+                const color = colors[index % colors.length]; // Cycle through colors.
                 const button = document.createElement('button');
-                button.dataset.name = name; // Store name in dataset for retrieval
+                button.dataset.name = name; // Store the student's name in a data attribute.
                 button.className = `name-btn w-full glass-btn ${color} text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:opacity-80`;
                 button.textContent = name;
                 container.appendChild(button);
@@ -1440,30 +1584,75 @@
 
         // --- ADMIN QUESTION MANAGEMENT ---
         /**
-         * Displays the question management panel and populates the question list based on filters.
+         * Displays the question management panel and populates the question list based on current filters.
          */
         function displayQuestionManager() {
-            showScreen('questionManager');
-            populateQuestionList();
+            showScreen('questionManager'); // Show the question manager screen.
+            populateQuestionList(); // Populate the list display.
         }
 
         /**
-         * Populates the question list display in the admin panel, applying filters.
+         * Populates the question list display in the admin panel, applying filters
+         * for subject, grade, and semester, and also displays question counts.
          */
         function populateQuestionList() {
             const container = document.getElementById('question-list-container');
-            container.innerHTML = ''; // Clear existing list
+            container.innerHTML = ''; // Clear existing list.
 
-            const subject = document.getElementById('q-manager-subject-filter').value;
-            const grade = document.getElementById('q-manager-grade-filter').value;
-            const semester = document.getElementById('q-manager-semester-filter').value;
+            // Get current filter values.
+            const subjectFilter = document.getElementById('q-manager-subject-filter').value;
+            const gradeFilter = document.getElementById('q-manager-grade-filter').value;
+            const semesterFilter = document.getElementById('q-manager-semester-filter').value;
 
-            // Filter questions based on selected criteria
+            // Filter questions from the full collection based on selected criteria.
             const filteredQuestions = fullQuestionCollection.filter(q =>
-                (subject === 'all' || q.subject === subject) &&
-                (grade === 'all' || q.grade === grade) &&
-                (semester === 'all' || q.semester === semester)
+                (subjectFilter === 'all' || q.subject === subjectFilter) &&
+                (gradeFilter === 'all' || q.grade === gradeFilter) &&
+                (semesterFilter === 'all' || q.semester === semesterFilter)
             );
+
+            // --- Update Question Counts Summary ---
+            const totalQuestionsCountEl = document.getElementById('total-questions-count');
+            const filteredQuestionsCountEl = document.getElementById('filtered-questions-count');
+            const subjectGradeSemesterCountsEl = document.getElementById('subject-grade-semester-counts');
+
+            totalQuestionsCountEl.textContent = fullQuestionCollection.length;
+            filteredQuestionsCountEl.textContent = filteredQuestions.length;
+            subjectGradeSemesterCountsEl.innerHTML = ''; // Clear previous counts.
+
+            // Calculate and display counts for each subject, grade, and semester combination.
+            const counts = {};
+            fullQuestionCollection.forEach(q => {
+                const key = `${q.subject}-${q.grade}-${q.semester}`;
+                if (!counts[key]) {
+                    counts[key] = 0;
+                }
+                counts[key]++;
+            });
+
+            const nameMap = {
+                toan: 'Toán Học', tiengviet: 'Tiếng Việt',
+                lop1: 'Lớp 1', lop2: 'Lớp 2',
+                hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2'
+            };
+
+            // Sort keys to display counts in a consistent order (optional, but good for readability)
+            const sortedKeys = Object.keys(counts).sort();
+
+            sortedKeys.forEach(key => {
+                const [subject, grade, semester] = key.split('-');
+                const count = counts[key];
+                const displaySubject = nameMap[subject] || subject;
+                const displayGrade = nameMap[grade] || grade;
+                const displaySemester = nameMap[semester] || semester;
+
+                const countItem = document.createElement('div');
+                countItem.className = 'p-1 bg-black/5 rounded-lg';
+                countItem.textContent = `${displaySubject} - ${displayGrade} - ${displaySemester}: ${count} câu`;
+                subjectGradeSemesterCountsEl.appendChild(countItem);
+            });
+            // --- End Update Question Counts Summary ---
+
 
             if (filteredQuestions.length === 0) {
                 container.innerHTML = '<p class="text-center text-gray-600 font-semibold p-4">Không có câu hỏi nào phù hợp với bộ lọc.</p>';
@@ -1486,53 +1675,56 @@
         }
 
         /**
-         * Opens the question edit/add modal, populating it with existing data if editing.
+         * Opens the question edit/add modal, populating it with existing data if editing
+         * an existing question, or clearing it for a new question.
          * @param {string|null} questionId - The ID of the question to edit, or null for a new question.
          */
         function openQuestionModal(questionId = null) {
             const form = document.getElementById('question-form');
-            form.reset(); // Clear form fields
-            document.getElementById('question-id-input').value = questionId || ''; // Store question ID
+            form.reset(); // Clear all form fields.
+            document.getElementById('question-id-input').value = questionId || ''; // Store the question ID (empty for new).
 
             const title = document.getElementById('question-modal-title');
             if (questionId) {
                 title.textContent = 'Chỉnh sửa câu hỏi';
                 const questionData = fullQuestionCollection.find(q => q.id === questionId);
                 if (questionData) {
-                    document.getElementById('question-text-input').value = questionData.question;
+                    document.getElementById(`question-text-input`).value = questionData.question;
+                    // Populate option input fields.
                     questionData.options.forEach((opt, i) => {
                         document.getElementById(`option-${i+1}-input`).value = opt;
                     });
+                    // Populate the correct answer select dropdown.
                     populateAnswerSelect(questionData.options, questionData.answer);
                 }
             } else {
                 title.textContent = 'Thêm câu hỏi mới';
-                // Clear options and then populate the select with empty options
-                document.getElementById('option-1-input').value = '';
-                document.getElementById('option-2-input').value = '';
-                document.getElementById('option-3-input').value = '';
-                document.getElementById('option-4-input').value = '';
-                populateAnswerSelect(['', '', '', '']);
+                // Clear option inputs for a new question.
+                document.getElementById(`option-1-input`).value = '';
+                document.getElementById(`option-2-input`).value = '';
+                document.getElementById(`option-3-input`).value = '';
+                document.getElementById(`option-4-input`).value = '';
+                populateAnswerSelect(['', '', '', '']); // Populate select with empty options.
             }
-            showModal('questionEdit');
+            showModal('questionEdit'); // Show the question edit modal.
         }
 
         /**
-         * Populates the correct answer select dropdown with the current options.
+         * Populates the correct answer select dropdown with the current options from the input fields.
          * @param {string[]} options - An array of answer options.
-         * @param {string|null} selectedAnswer - The currently selected correct answer.
+         * @param {string|null} selectedAnswer - The currently selected correct answer (for editing).
          */
         function populateAnswerSelect(options, selectedAnswer = null) {
             const select = document.getElementById('correct-answer-select');
-            select.innerHTML = ''; // Clear existing options
+            select.innerHTML = ''; // Clear existing options in the select.
 
             options.forEach((opt, i) => {
-                if(opt) { // Only add non-empty options
+                if(opt) { // Only add non-empty options to the dropdown.
                     const optionEl = document.createElement('option');
                     optionEl.value = opt;
                     optionEl.textContent = `Lựa chọn ${i + 1}: ${opt}`;
                     if (opt === selectedAnswer) {
-                        optionEl.selected = true;
+                        optionEl.selected = true; // Pre-select the correct answer if provided.
                     }
                     select.appendChild(optionEl);
                 }
@@ -1541,22 +1733,24 @@
 
         /**
          * Handles the submission of the question add/edit form.
+         * Validates inputs and either updates an existing question or adds a new one to Firestore.
          * @param {Event} e - The form submission event.
+         * @returns {Promise<void>} A promise that resolves when the question is saved.
          */
         async function handleQuestionFormSubmit(e) {
-            e.preventDefault();
+            e.preventDefault(); // Prevent default form submission.
             const button = e.target.querySelector('button[type="submit"]');
-            setButtonLoading(button, true);
+            setButtonLoading(button, true); // Show loading spinner.
 
             const errorEl = document.getElementById('question-form-error');
-            errorEl.textContent = ''; // Clear previous errors
+            errorEl.textContent = ''; // Clear previous errors.
 
             const questionId = document.getElementById('question-id-input').value;
             const questionText = document.getElementById('question-text-input').value.trim();
             const options = Array.from(document.querySelectorAll('.option-input')).map(input => input.value.trim());
             const answer = document.getElementById('correct-answer-select').value;
 
-            // Basic validation
+            // Basic input validation.
             if (!questionText || options.some(opt => !opt) || !answer) {
                 errorEl.textContent = 'Vui lòng điền đầy đủ tất cả các trường.';
                 setButtonLoading(button, false);
@@ -1568,7 +1762,7 @@
                 return;
             }
 
-            // Ensure subject, grade, semester are selected for new questions
+            // Ensure subject, grade, and semester are selected for new questions.
             const subject = document.getElementById('q-manager-subject-filter').value;
             const grade = document.getElementById('q-manager-grade-filter').value;
             const semester = document.getElementById('q-manager-semester-filter').value;
@@ -1584,41 +1778,44 @@
 
             try {
                 if (questionId) {
-                    // Update existing question
+                    // If questionId exists, update the existing document in Firestore.
                     await updateDoc(doc(qCollection, questionId), questionData);
                 } else {
-                    // Add new question
+                    // Otherwise, add a new document to Firestore.
                     await addDoc(qCollection, questionData);
                 }
-                hideModal('questionEdit');
-                await loadQuestionsFromFirestore(); // Reload all questions
-                populateQuestionList(); // Refresh the displayed list
+                hideModal('questionEdit'); // Hide the modal.
+                await loadQuestionsFromFirestore(); // Reload all questions to update local cache.
+                populateQuestionList(); // Refresh the displayed question list in the admin panel.
             }
+            // Catch and log any errors during the save operation.
             catch (error) {
                 console.error("Error saving question:", error);
                 errorEl.textContent = 'Lỗi khi lưu câu hỏi vào CSDL.';
             } finally {
-                setButtonLoading(button, false);
+                setButtonLoading(button, false); // Reset button loading state.
             }
         }
 
         /**
-         * Deletes a question from Firestore.
+         * Deletes a question from Firestore and updates the UI.
          * @param {string} questionId - The ID of the question to delete.
+         * @returns {Promise<void>} A promise that resolves when the question is deleted.
          */
         async function deleteQuestion(questionId) {
             const qDoc = doc(db, `artifacts/${appId}/public/data/questions`, questionId);
             try { 
-                await deleteDoc(qDoc); 
-                await loadQuestionsFromFirestore(); 
-                populateQuestionList(); 
-                // Display temporary feedback
+                await deleteDoc(qDoc); // Delete the document from Firestore.
+                await loadQuestionsFromFirestore(); // Reload questions to update local cache.
+                populateQuestionList(); // Refresh the displayed list.
+                // Display temporary success feedback.
                 const feedbackEl = document.getElementById('question-form-error'); 
                 feedbackEl.textContent = "Đã xóa câu hỏi.";
                 feedbackEl.className = 'text-center text-sm font-bold h-4 text-green-800';
                 setTimeout(() => feedbackEl.textContent = '', 3000);
             } catch (error) { 
                 console.error("Error deleting question:", error); 
+                // Display temporary error feedback.
                 const feedbackEl = document.getElementById('question-form-error'); 
                 feedbackEl.textContent = "Lỗi khi xóa câu hỏi.";
                 feedbackEl.className = 'text-center text-sm font-bold h-4 text-red-600';
@@ -1628,28 +1825,42 @@
 
         /**
          * Handles the AI question generation process.
+         * Sends a prompt to the Gemini API and displays the generated questions for review.
          * @param {HTMLButtonElement} button - The button element that triggered the action.
+         * @returns {Promise<void>} A promise that resolves when questions are generated and displayed.
          */
         async function handleAIGenerate(button) {
-            setButtonLoading(button, true);
+            setButtonLoading(button, true); // Show loading spinner.
             const feedbackEl = document.getElementById('ai-generation-feedback');
             const resultsContainer = document.getElementById('ai-results-container');
             const resultsList = document.getElementById('ai-generated-questions-list');
             const saveBtn = document.getElementById('ai-save-all-btn');
             const discardBtn = document.getElementById('ai-discard-all-btn');
 
-            // Reset UI elements
+            // Reset UI elements for a new generation process.
             feedbackEl.textContent = '🤖 AI đang suy nghĩ, vui lòng chờ trong giây lát...';
             resultsContainer.classList.remove('hidden');
             resultsList.innerHTML = '';
             saveBtn.classList.add('hidden');
             discardBtn.classList.add('hidden');
 
-            // Get selected criteria and topic
-            const subject = document.getElementById('ai-gen-subject').options[document.getElementById('ai-gen-subject').selectedIndex].text;
-            const grade = document.getElementById('ai-gen-grade').options[document.getElementById('ai-gen-grade').selectedIndex].text;
-            const semester = document.getElementById('ai-gen-semester').value; // Keep value for saving
+            // Get selected criteria and topic for the AI prompt.
+            const subjectValue = document.getElementById('ai-gen-subject').value; // Get value (e.g., 'toan')
+            const subjectText = document.getElementById('ai-gen-subject').options[document.getElementById('ai-gen-subject').selectedIndex].text; // Get text (e.g., 'Toán Học')
+            const gradeValue = document.getElementById('ai-gen-grade').value;     // Get value (e.g., 'lop1')
+            const gradeText = document.getElementById('ai-gen-grade').options[document.getElementById('ai-gen-grade').selectedIndex].text; // Get text (e.g., 'Lớp 1')
+            const semesterValue = document.getElementById('ai-gen-semester').value; // Get value (e.g., 'hocky1')
+            const semesterText = document.getElementById('ai-gen-semester').options[document.getElementById('ai-gen-semester').selectedIndex].text; // Get text (e.g., 'Học Kỳ 1')
+
             const topic = document.getElementById('ai-gen-topic').value.trim();
+            const numQuestions = parseInt(document.getElementById('ai-gen-num-questions').value, 10); // Get number of questions.
+
+            // Validate number of questions input.
+            if (isNaN(numQuestions) || numQuestions < 1 || numQuestions > 50) {
+                feedbackEl.textContent = 'Số lượng câu hỏi phải là một số từ 1 đến 50.';
+                setButtonLoading(button, false);
+                return;
+            }
 
             if (!topic) {
                 feedbackEl.textContent = 'Vui lòng nhập một chủ đề cụ thể.';
@@ -1657,10 +1868,10 @@
                 return;
             }
 
-            // Construct the prompt for AI
-            const prompt = `Tạo 5 câu hỏi trắc nghiệm cho môn ${subject} ${grade} về chủ đề "${topic}". Mỗi câu hỏi phải có 4 lựa chọn và 1 đáp án đúng. Trả về dưới dạng JSON.`;
+            // Construct the prompt for the AI, including the requested number of questions.
+            const prompt = `Tạo ${numQuestions} câu hỏi trắc nghiệm cho môn ${subjectText} ${gradeText} về chủ đề "${topic}". Mỗi câu hỏi phải có 4 lựa chọn và 1 đáp án đúng. Trả về dưới dạng JSON.`;
             
-            // Define the JSON schema for the expected AI response
+            // Define the JSON schema for the expected AI response, ensuring structured output.
             const schema = {
                 type: "ARRAY",
                 items: {
@@ -1675,8 +1886,8 @@
             };
 
             try {
-                const jsonString = await callGeminiAPI(prompt, schema);
-                const generatedQuestions = JSON.parse(jsonString);
+                const jsonString = await callGeminiAPI(prompt, schema); // Call Gemini API.
+                const generatedQuestions = JSON.parse(jsonString); // Parse the JSON response.
 
                 if (!Array.isArray(generatedQuestions) || generatedQuestions.length === 0) {
                     throw new Error("AI did not return a valid list of questions.");
@@ -1684,11 +1895,11 @@
 
                 feedbackEl.textContent = `Đã tạo ${generatedQuestions.length} câu hỏi! Vui lòng xem lại và lưu.`;
                 
-                // Display generated questions for review
+                // Display generated questions for user review.
                 generatedQuestions.forEach(q => {
                     const itemEl = document.createElement('div');
                     itemEl.className = 'p-3 bg-black/10 rounded-lg text-sm';
-                    item.innerHTML = `
+                    itemEl.innerHTML = `
                         <p class="font-bold">${q.question}</p>
                         <p>Đáp án: ${q.answer}</p>
                         <p>Lựa chọn: ${q.options.join(', ')}</p>
@@ -1696,46 +1907,51 @@
                     resultsList.appendChild(itemEl);
                 });
 
-                saveBtn.classList.remove('hidden');
-                discardBtn.classList.remove('hidden');
+                saveBtn.classList.remove('hidden'); // Show save button.
+                discardBtn.classList.remove('hidden'); // Show discard button.
 
-                // Set up event listeners for saving or discarding generated questions
-                saveBtn.onclick = () => saveGeneratedQuestions(generatedQuestions, subject, grade, semester);
+                // Set up event listeners for saving or discarding generated questions.
+                // Pass the correct 'value' attributes for subject, grade, and semester.
+                saveBtn.onclick = () => saveGeneratedQuestions(generatedQuestions, subjectValue, gradeValue, semesterValue);
                 discardBtn.onclick = () => { resultsContainer.classList.add('hidden'); };
 
             } catch (error) {
                 console.error("Error generating questions with AI:", error);
                 feedbackEl.textContent = 'Đã có lỗi xảy ra. Vui lòng thử lại hoặc kiểm tra API Key.';
             } finally {
-                setButtonLoading(button, false);
+                setButtonLoading(button, false); // Reset button loading state.
             }
         }
 
         /**
          * Saves the AI-generated questions to Firestore.
+         * Filters out any invalid questions (e.g., where the answer is not among the options).
          * @param {Array<object>} questions - An array of question objects generated by AI.
-         * @param {string} subject - The subject for these questions.
-         * @param {string} grade - The grade for these questions.
-         * @param {string} semester - The semester for these questions.
+         * @param {string} subject - The subject for these questions (using internal value like 'toan').
+         * @param {string} grade - The grade for these questions (using internal value like 'lop1').
+         * @param {string} semester - The semester for these questions (using internal value like 'hocky1').
+         * @returns {Promise<void>} A promise that resolves when questions are saved.
          */
         async function saveGeneratedQuestions(questions, subject, grade, semester) {
             const feedbackEl = document.getElementById('ai-generation-feedback');
             feedbackEl.textContent = 'Đang lưu câu hỏi...';
 
             const qCollection = collection(db, `artifacts/${appId}/public/data/questions`);
+            // Filter questions to ensure validity before saving (answer must be one of the options).
             const promises = questions.map(q => { 
                 if (q.options.includes(q.answer)) { 
+                    // Ensure subject, grade, semester are passed correctly from the AI generation context.
                     return addDoc(qCollection, { ...q, subject, grade, semester }); 
                 } 
                 console.warn("Skipping question due to invalid answer/options:", q);
                 return null; 
-            }).filter(p => p !== null); 
+            }).filter(p => p !== null); // Filter out null promises (invalid questions).
 
             try { 
-                await Promise.all(promises); 
+                await Promise.all(promises); // Wait for all valid questions to be added.
                 feedbackEl.textContent = `Đã lưu thành công ${promises.length} câu hỏi!`; 
-                document.getElementById('ai-results-container').classList.add('hidden'); 
-                await loadQuestionsFromFirestore(); 
+                document.getElementById('ai-results-container').classList.add('hidden'); // Hide results container.
+                await loadQuestionsFromFirestore(); // Reload all questions to update the local cache.
             } catch (error) { 
                 console.error("Error saving AI questions:", error); 
                 feedbackEl.textContent = 'Lỗi khi lưu câu hỏi.'; 
@@ -1743,162 +1959,163 @@
         }
 
         // --- EVENT LISTENERS ---
-        // Initialize Firebase and start audio context on DOMContentLoaded
+        // Initialize Firebase and start audio context when the DOM is fully loaded.
         document.addEventListener('DOMContentLoaded', async () => {
             await initializeFirebase();
-            // Start Tone.js audio context on first user interaction
+            // Start Tone.js audio context on the first user interaction (click anywhere on the body).
             document.body.addEventListener('click', async () => {
                 if (Tone.context.state !== 'running') {
                     await Tone.start();
                     console.log('Audio context started');
                 }
-            }, { once: true }); // Only run this listener once
+            }, { once: true }); // This listener will only fire once.
         });
 
-        // Sound toggle button
+        // Sound toggle button: Mute/unmute all sound effects.
         document.getElementById('sound-toggle-btn').addEventListener('click', () => {
             soundsEnabled = !soundsEnabled;
+            // Toggle speaker icons based on sound state.
             document.getElementById('speaker-on-icon').classList.toggle('hidden', !soundsEnabled);
             document.getElementById('speaker-off-icon').classList.toggle('hidden', soundsEnabled);
         });
 
-        // Selection buttons (Subject, Grade, Semester)
+        // Event listeners for subject, grade, and semester selection buttons.
         document.querySelectorAll('.choice-btn').forEach(btn => btn.addEventListener('click', (e) => {
-            playSound('click');
-            const type = Object.keys(e.target.dataset)[0]; // 'subject', 'grade', or 'semester'
-            const value = e.target.dataset[type];
+            playSound('click'); // Play click sound.
+            const type = Object.keys(e.target.dataset)[0]; // Get the data attribute type (e.g., 'subject').
+            const value = e.target.dataset[type]; // Get the value of the data attribute.
 
-            // Update selected state variables
+            // Update selected state variables.
             if (type === 'subject') selectedSubject = value;
             if (type === 'grade') selectedGrade = value;
             if (type === 'semester') selectedSemester = value;
 
-            // Remove 'selected' class from all buttons of the same type
+            // Remove 'selected' class from all buttons of the same type.
             document.querySelectorAll(`[data-${type}]`).forEach(b => b.classList.remove('selected'));
-            // Add 'selected' class to the clicked button
+            // Add 'selected' class to the clicked button.
             e.target.classList.add('selected');
-            updateStartButtonState(); // Update start button enablement
+            updateStartButtonState(); // Update the start button's enabled state.
         }));
 
-        // Start game button
+        // Start game button click listener.
         document.getElementById('start-btn').addEventListener('click', () => {
             if (!document.getElementById('start-btn').disabled) {
                 playSound('click');
-                startGame();
+                startGame(); // Start the game.
             }
         });
 
-        // Next question button
+        // Next question button click listener.
         document.getElementById('next-btn').addEventListener('click', () => {
             playSound('click');
-            nextQuestion();
+            nextQuestion(); // Move to the next question.
         });
 
-        // Leaderboard button
+        // Leaderboard button click listener.
         leaderboardBtn.addEventListener('click', () => {
             playSound('click');
-            displayLeaderboard();
+            displayLeaderboard(); // Display the leaderboard.
         });
 
-        // Back to menu button (from leaderboard)
+        // Back to menu button click listener (from leaderboard).
         backToMenuBtn.addEventListener('click', () => {
             playSound('click');
-            resetGame();
+            resetGame(); // Reset game state and return to selection.
         });
 
-        // Leaderboard filter changes
+        // Event listeners for leaderboard filter changes.
         leaderboardSubjectFilter.addEventListener('change', displayLeaderboard);
         leaderboardGradeFilter.addEventListener('change', displayLeaderboard);
-        leaderboardNameFilter.addEventListener('input', displayLeaderboard); // Filter on input change
+        leaderboardNameFilter.addEventListener('input', displayLeaderboard); // Filter as user types.
 
-        // Admin login button
+        // Admin login button click listener.
         document.getElementById('admin-login-btn').addEventListener('click',_=> {
             playSound('click');
-            showModal('login');
+            showModal('login'); // Show the login modal.
         });
 
-        // Close modal buttons
+        // Close modal buttons.
         document.getElementById('close-modal-btn').addEventListener('click', () => hideModal('login'));
         document.getElementById('close-history-detail-btn').addEventListener('click', () => hideModal('historyDetail'));
 
-        // Confirmation modal buttons
+        // Confirmation modal buttons.
         document.getElementById('confirm-delete-btn').addEventListener('click', () => {
             if (typeof confirmCallback === 'function') {
                 playSound('click');
-                confirmCallback(); // Execute the stored callback
+                confirmCallback(); // Execute the stored callback function.
             }
             hideModal('confirmation');
-            confirmCallback = null; // Clear callback
+            confirmCallback = null; // Clear the callback.
         });
         document.getElementById('cancel-delete-btn').addEventListener('click', () => {
             playSound('click');
             hideModal('confirmation');
-            confirmCallback = null; // Clear callback
+            confirmCallback = null; // Clear the callback.
         });
 
-        // Admin login form submission
+        // Admin login form submission.
         document.getElementById('login-form').addEventListener('submit', (e) => {
-            e.preventDefault(); // Prevent default form submission
+            e.preventDefault(); // Prevent default form submission.
             playSound('click');
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
-            // Simple hardcoded admin credentials for demonstration
+            // Simple hardcoded admin credentials for demonstration purposes.
             if (u === 'admin' && p === 'admin') {
                 hideModal('login');
-                showScreen('admin'); // Show admin panel
+                showScreen('admin'); // Show the admin panel.
             } else {
                 document.getElementById('login-error').textContent = 'Tên đăng nhập hoặc mật khẩu không đúng.';
             }
         });
 
-        // Admin logout button
+        // Admin logout button.
         document.getElementById('logout-btn').addEventListener('click', () => {
             playSound('click');
-            showScreen('selection'); // Go back to selection screen
+            showScreen('selection'); // Return to the main selection screen.
         });
         
-        // Admin Panel Navigation
+        // Admin Panel Navigation buttons.
         document.getElementById('view-history-btn').addEventListener('click', () => {
             playSound('click');
-            displayHistory();
+            displayHistory(); // Display quiz history.
         });
-        document.getElementById('manage-settings-btn').addEventListener('click', () => {
+        document.getElementById('manage-settings-btn').addEventListener('click', () => { // Corrected from addEventListener(() => {
             playSound('click');
-            showScreen('settings');
-            // Populate settings inputs with current values
+            showScreen('settings'); // Show settings panel.
+            // Populate settings inputs with current values.
             document.getElementById('timer-toggle').checked = timerEnabled;
             document.getElementById('timer-duration').value = timerDuration;
         });
         document.getElementById('manage-students-btn').addEventListener('click', () => {
             playSound('click');
-            displayStudentManager();
+            displayStudentManager(); // Display student manager.
         });
         document.getElementById('manage-questions-btn').addEventListener('click', () => {
             playSound('click');
-            displayQuestionManager();
+            displayQuestionManager(); // Display question manager.
         });
         document.getElementById('ai-generate-btn').addEventListener('click', () => {
             playSound('click');
-            showScreen('aiGenerator');
+            showScreen('aiGenerator'); // Display AI generator.
         });
-        // Back to admin panel buttons
+        // Back to admin panel buttons from sub-panels.
         document.querySelectorAll('.back-to-admin-btn').forEach(btn => btn.addEventListener('click', () => {
             playSound('click');
-            showScreen('admin');
+            showScreen('admin'); // Return to admin panel.
         }));
 
-        // Settings Panel actions
+        // Settings Panel actions.
         document.getElementById('save-settings-btn').addEventListener('click', (e) => {
             playSound('click');
-            saveAdminSettings(e.currentTarget);
+            saveAdminSettings(e.currentTarget); // Save general settings.
         });
         document.getElementById('save-api-key-btn').addEventListener('click', (e) => {
             playSound('click');
-            saveApiKey(e.currentTarget);
+            saveApiKey(e.currentTarget); // Save Gemini API key.
         });
         document.getElementById('delete-api-key-btn').addEventListener('click', (e) => {
             playSound('click');
-            deleteApiKey(e.currentTarget);
+            deleteApiKey(e.currentTarget); // Delete Gemini API key.
         });
         document.getElementById('clear-leaderboard-btn').addEventListener('click', (e) => {
             showConfirmationModal('Bạn có chắc chắn muốn xóa TOÀN BỘ bảng xếp hạng không?', () => clearCollection('leaderboard', e.currentTarget));
@@ -1906,14 +2123,18 @@
         document.getElementById('clear-history-btn').addEventListener('click', (e) => {
             showConfirmationModal('Bạn có chắc chắn muốn xóa TOÀN BỘ lịch sử thi không?', () => clearCollection('quizResults', e.currentTarget));
         });
+        // New "Clear All Questions" button listener
+        document.getElementById('clear-all-questions-btn').addEventListener('click', (e) => {
+            showConfirmationModal('Bạn có chắc chắn muốn xóa TẤT CẢ câu hỏi không? Hành động này không thể hoàn tác và sẽ xóa toàn bộ ngân hàng câu hỏi!', () => clearCollection('questions', e.currentTarget));
+        });
 
-        // Student Manager actions
+        // Student Manager actions.
         document.getElementById('add-student-form').addEventListener('submit', (e) => {
-            e.preventDefault();
+            e.preventDefault(); // Prevent default form submission.
             const input = document.getElementById('new-student-name');
             const name = input.value.trim();
-            addStudent(name);
-            input.value = ''; // Clear input field
+            addStudent(name); // Add new student.
+            input.value = ''; // Clear input field.
         });
         document.getElementById('student-list-container').addEventListener('click', (e) => {
             if (e.target.classList.contains('delete-student-btn')) {
@@ -1922,31 +2143,31 @@
             }
         });
 
-        // Question Manager actions
+        // Question Manager actions.
         document.getElementById('q-manager-subject-filter').addEventListener('change', populateQuestionList);
         document.getElementById('q-manager-grade-filter').addEventListener('change', populateQuestionList);
         document.getElementById('q-manager-semester-filter').addEventListener('change', populateQuestionList);
-        document.getElementById('add-new-question-btn').addEventListener('click', () => openQuestionModal());
+        document.getElementById('add-new-question-btn').addEventListener('click', () => openQuestionModal()); // Open modal for new question.
         document.getElementById('question-list-container').addEventListener('click', (e) => {
             if (e.target.classList.contains('edit-question-btn')) {
-                openQuestionModal(e.target.dataset.id);
+                openQuestionModal(e.target.dataset.id); // Open modal to edit existing question.
             }
             if (e.target.classList.contains('delete-question-btn')) {
                 showConfirmationModal('Bạn có chắc chắn muốn xóa câu hỏi này không?', () => deleteQuestion(e.target.dataset.id));
             }
         });
-        document.getElementById('question-form').addEventListener('submit', handleQuestionFormSubmit);
-        document.getElementById('close-question-modal-btn').addEventListener('click', () => hideModal('questionEdit'));
-        // Update correct answer select options when option inputs change
+        document.getElementById('question-form').addEventListener('submit', handleQuestionFormSubmit); // Handle question form submission.
+        document.getElementById('close-question-modal-btn').addEventListener('click', () => hideModal('questionEdit')); // Close question modal.
+        // Update correct answer select options dynamically when option inputs change.
         document.querySelectorAll('.option-input').forEach(input => {
             input.addEventListener('input', () => {
                 const options = Array.from(document.querySelectorAll('.option-input')).map(i => i.value.trim());
-                const selected = document.getElementById('correct-answer-select').value; // Keep current selection
+                const selected = document.getElementById('correct-answer-select').value; // Keep current selection.
                 populateAnswerSelect(options, selected);
             });
         });
 
-        // AI Generator actions
+        // AI Generator actions.
         document.getElementById('ai-execute-generation-btn').addEventListener('click', (e) => handleAIGenerate(e.currentTarget));
 
     </script>
