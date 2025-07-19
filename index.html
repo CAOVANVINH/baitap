@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trò Chơi Học Tập Vui</title>
+    <title>Trò Chơi Học Tập Vui (Admin Pro)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts - Quicksand -->
@@ -30,7 +30,7 @@
             transition: all 0.2s ease-in-out;
             color: #2d3748;
         }
-        #start-btn, #next-btn, #admin-login-btn, #logout-btn, #view-history-btn, #back-to-admin-btn, #leaderboard-btn, #back-to-menu-btn, .name-btn, #save-settings-btn {
+        #start-btn, #next-btn, #admin-login-btn, #logout-btn, .admin-action-btn, #back-to-admin-btn, #leaderboard-btn, #back-to-menu-btn, .name-btn, #save-settings-btn {
             color: white;
         }
         #admin-login-btn, #leaderboard-btn {
@@ -55,8 +55,8 @@
         .modal-overlay {
             transition: opacity 0.3s ease;
         }
-        #history-table-container, #leaderboard-table-container, #history-detail-content {
-            max-height: 400px;
+        #history-table-container, #leaderboard-table-container, #history-detail-content, #question-list-container {
+            max-height: 400px; /* Or adjust as needed */
             overflow-y: auto;
         }
         .speaker-btn, #sound-toggle-btn {
@@ -66,6 +66,21 @@
         .speaker-btn:hover, #sound-toggle-btn:hover {
             transform: scale(1.1);
             color: #6366f1;
+        }
+        /* Custom scrollbar for webkit browsers */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.4);
         }
     </style>
 </head>
@@ -107,7 +122,6 @@
                 </div>
             </div>
             <button id="start-btn" class="w-full glass-btn bg-gray-500/50 text-white font-bold py-4 rounded-2xl text-xl shadow-lg cursor-not-allowed" disabled>Bắt đầu!</button>
-            <!-- Error message container -->
             <p id="start-error" class="text-red-600 font-bold text-center text-sm h-5 mt-2"></p>
             <div class="flex justify-between items-center mt-4">
                 <button id="leaderboard-btn" class="text-sm font-semibold hover:text-white">🏆 Bảng Xếp Hạng</button>
@@ -133,103 +147,164 @@
              <div id="explanation-container" class="hidden relative mt-2 bg-black/10 p-4 rounded-2xl text-white text-center font-medium">
                   <p id="explanation-text" class="pr-10"></p>
                   <button id="read-explanation-btn" class="speaker-btn absolute top-1/2 -translate-y-1/2 right-3 text-white focus:outline-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06ZM5.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
+                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06ZM5.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
                   </button>
              </div>
              <button id="next-btn" class="hidden w-full mt-4 glass-btn bg-blue-500/60 text-white font-bold py-3 rounded-2xl shadow-lg hover:bg-blue-500/80">Câu tiếp theo</button>
         </div>
         
-        <!-- Admin & History Panels -->
+        <!-- Admin Panels -->
         <div id="admin-panel" class="hidden">
             <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Bảng điều khiển Admin</h2>
-            <div class="space-y-4">
-                <button id="view-history-btn" class="w-full glass-btn bg-indigo-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-indigo-500/80">Xem Lịch Sử Thi</button>
-                <div class="mt-6 border-t pt-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button id="manage-questions-btn" class="admin-action-btn w-full glass-btn bg-blue-500/60 py-4 rounded-2xl text-lg shadow-lg hover:bg-blue-500/80">📝 Quản lý câu hỏi</button>
+                <button id="ai-generate-btn" class="admin-action-btn w-full glass-btn bg-teal-500/60 py-4 rounded-2xl text-lg shadow-lg hover:bg-teal-500/80">🤖 Tạo câu hỏi bằng AI</button>
+                <button id="view-history-btn" class="admin-action-btn w-full glass-btn bg-indigo-500/60 py-4 rounded-2xl text-lg shadow-lg hover:bg-indigo-500/80">📊 Xem Lịch Sử Thi</button>
+                <button id="manage-settings-btn" class="admin-action-btn w-full glass-btn bg-purple-500/60 py-4 rounded-2xl text-lg shadow-lg hover:bg-purple-500/80">⚙️ Cài đặt chung</button>
+            </div>
+            <button id="logout-btn" class="w-full glass-btn bg-red-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-500/80 mt-8">Đăng xuất</button>
+        </div>
+
+        <div id="settings-panel" class="hidden">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Cài đặt chung</h2>
+            <div class="space-y-6">
+                <!-- Timer Settings -->
+                <div>
                     <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">Cài đặt Đồng hồ</h3>
-                    <div class="space-y-4 max-w-sm mx-auto">
-                        <div class="flex items-center justify-between p-3 bg-white/20 rounded-xl">
+                    <div class="space-y-4 max-w-sm mx-auto p-4 bg-white/20 rounded-xl">
+                        <div class="flex items-center justify-between">
                             <label for="timer-toggle" class="font-medium text-gray-800">Bật Đồng hồ đếm ngược</label>
                             <input type="checkbox" id="timer-toggle" class="h-6 w-6 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
                         </div>
-                        <div class="flex items-center justify-between p-3 bg-white/20 rounded-xl">
+                        <div class="flex items-center justify-between">
                             <label for="timer-duration" class="font-medium text-gray-800">Thời gian (giây)</label>
                             <input type="number" id="timer-duration" min="5" max="120" class="w-24 px-3 py-1 border border-gray-300/50 rounded-lg bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
                         </div>
-                        <button id="save-settings-btn" class="w-full glass-btn bg-green-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-green-500/80">Lưu Cài Đặt</button>
                     </div>
                 </div>
-                
-                <div class="mt-6 border-t pt-6 border-red-400/50">
+                <!-- API Key Settings -->
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">Cài đặt Gemini API Key</h3>
+                     <div class="space-y-4 max-w-sm mx-auto p-4 bg-white/20 rounded-xl">
+                        <p class="text-xs text-center text-gray-600">Thêm API Key của bạn để sử dụng tính năng tạo câu hỏi bằng AI. Để trống để dùng key mặc định của hệ thống.</p>
+                        <input type="password" id="gemini-api-key-input" placeholder="Nhập Gemini API Key của bạn..." class="w-full px-3 py-2 border border-gray-300/50 rounded-lg bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
+                        <div class="flex gap-2">
+                            <button id="save-api-key-btn" class="w-full glass-btn bg-green-500/60 text-white font-bold py-2 rounded-xl shadow-lg hover:bg-green-500/80">Lưu Key</button>
+                            <button id="delete-api-key-btn" class="w-full glass-btn bg-gray-500/60 text-white font-bold py-2 rounded-xl shadow-lg hover:bg-gray-500/80">Xóa Key</button>
+                        </div>
+                     </div>
+                </div>
+                <!-- Dangerous Actions -->
+                <div>
                     <h3 class="text-xl font-semibold text-red-700 mb-4 text-center">Tác Vụ Nguy Hiểm</h3>
-                    <div class="space-y-4 max-w-sm mx-auto">
+                    <div class="space-y-4 max-w-sm mx-auto p-4 bg-red-500/10 rounded-xl">
                         <button id="clear-leaderboard-btn" class="w-full glass-btn bg-amber-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-amber-500/80">Xóa Bảng Xếp Hạng</button>
                         <button id="clear-history-btn" class="w-full glass-btn bg-amber-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-amber-500/80">Xóa Lịch Sử Thi</button>
                     </div>
                 </div>
+            </div>
+            <p id="settings-feedback" class="text-center text-sm font-bold h-4 mt-4"></p>
+            <button id="save-settings-btn" class="w-full glass-btn bg-blue-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-blue-500/80 mt-6">Lưu tất cả cài đặt</button>
+            <button class="back-to-admin-btn w-full mt-4 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
+        </div>
 
-                <p id="settings-feedback" class="text-center text-sm font-bold h-4 mt-4"></p>
-                
-                <button id="logout-btn" class="w-full glass-btn bg-red-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-500/80 mt-6">Đăng xuất</button>
+        <div id="question-manager-panel" class="hidden">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Quản lý câu hỏi</h2>
+            <div class="flex flex-wrap justify-center items-center gap-2 md:gap-4 mb-4 p-2 bg-black/10 rounded-xl">
+                <select id="q-manager-subject-filter" class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả môn</option><option value="toan">Toán Học</option><option value="tiengviet">Tiếng Việt</option></select>
+                <select id="q-manager-grade-filter" class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả lớp</option><option value="lop1">Lớp 1</option><option value="lop2">Lớp 2</option></select>
+                <select id="q-manager-semester-filter" class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả kỳ</option><option value="hocky1">Học Kỳ 1</option><option value="hocky2">Học Kỳ 2</option></select>
+            </div>
+            <div id="question-list-container" class="space-y-3 p-3 bg-white/20 rounded-2xl custom-scrollbar">
+                <!-- Question list will be loaded here -->
+            </div>
+            <div class="flex gap-4 mt-6">
+                 <button id="add-new-question-btn" class="w-full glass-btn bg-green-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-green-500/80">Thêm câu hỏi mới</button>
+                 <button class="back-to-admin-btn w-full glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
             </div>
         </div>
-        <div id="history-panel" class="hidden"><h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Lịch Sử Làm Bài</h2><div id="history-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4"></div><button id="back-to-admin-btn" class="w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button></div>
+
+        <div id="ai-generator-panel" class="hidden">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Tạo câu hỏi bằng AI</h2>
+            <div class="p-4 bg-white/20 rounded-2xl space-y-4">
+                <p class="text-center text-gray-700 font-medium">Chọn chủ đề và để AI tự động tạo ra các câu hỏi trắc nghiệm mới!</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <select id="ai-gen-subject" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="toan">Toán Học</option><option value="tiengviet">Tiếng Việt</option></select>
+                    <select id="ai-gen-grade" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="lop1">Lớp 1</option><option value="lop2">Lớp 2</option></select>
+                    <select id="ai-gen-semester" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="hocky1">Học Kỳ 1</option><option value="hocky2">Học Kỳ 2</option></select>
+                </div>
+                <input type="text" id="ai-gen-topic" placeholder="Nhập chủ đề cụ thể (ví dụ: phép cộng phạm vi 20)" class="w-full glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800 placeholder-gray-600">
+                <button id="ai-execute-generation-btn" class="w-full glass-btn bg-blue-500/70 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-blue-500/90">🚀 Bắt đầu tạo!</button>
+            </div>
+            <div id="ai-results-container" class="mt-4 p-4 bg-white/20 rounded-2xl hidden">
+                <h3 class="text-xl font-bold text-gray-800 mb-2 text-center">Xem lại câu hỏi do AI tạo</h3>
+                <div id="ai-generated-questions-list" class="space-y-3 max-h-64 overflow-y-auto custom-scrollbar"></div>
+                <div id="ai-generation-feedback" class="text-center font-semibold my-2"></div>
+                <div class="flex gap-4 mt-4">
+                    <button id="ai-save-all-btn" class="w-full glass-btn bg-green-500/70 text-white font-bold py-2 rounded-xl shadow-lg hover:bg-green-500/90 hidden">Lưu tất cả câu hỏi</button>
+                    <button id="ai-discard-all-btn" class="w-full glass-btn bg-red-500/70 text-white font-bold py-2 rounded-xl shadow-lg hover:bg-red-500/90 hidden">Hủy bỏ</button>
+                </div>
+            </div>
+             <button class="back-to-admin-btn w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
+        </div>
+
+        <div id="history-panel" class="hidden"><h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Lịch Sử Làm Bài</h2><div id="history-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4 custom-scrollbar"></div><button class="back-to-admin-btn w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button></div>
         
-        <!-- Leaderboard Panel -->
         <div id="leaderboard-panel" class="hidden">
             <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">🏆 Bảng Xếp Hạng 🏆</h2>
             <div class="flex flex-wrap justify-center items-center gap-4 mb-4">
-                <select id="leaderboard-subject-filter" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800">
-                    <option value="all">Tất cả môn</option>
-                    <option value="toan">Toán Học</option>
-                    <option value="tiengviet">Tiếng Việt</option>
-                </select>
-                <select id="leaderboard-grade-filter" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800">
-                    <option value="all">Tất cả lớp</option>
-                    <option value="lop1">Lớp 1</option>
-                    <option value="lop2">Lớp 2</option>
-                </select>
+                <select id="leaderboard-subject-filter" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả môn</option><option value="toan">Toán Học</option><option value="tiengviet">Tiếng Việt</option></select>
+                <select id="leaderboard-grade-filter" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả lớp</option><option value="lop1">Lớp 1</option><option value="lop2">Lớp 2</option></select>
                 <input type="text" id="leaderboard-name-filter" placeholder="Lọc theo tên..." class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800 placeholder-gray-600">
             </div>
-            <div id="leaderboard-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4"></div>
+            <div id="leaderboard-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4 custom-scrollbar"></div>
             <button id="back-to-menu-btn" class="w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Chơi Lại</button>
         </div>
     </div>
 
     <!-- Modals -->
     <div id="login-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0"><div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative"><h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Đăng Nhập Admin</h2><form id="login-form"><div class="mb-4"><label for="username" class="block text-gray-700 font-semibold mb-2">Tên đăng nhập</label><input type="text" id="username" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"></div><div class="mb-6"><label for="password" class="block text-gray-700 font-semibold mb-2">Mật khẩu</label><input type="password" id="password" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"></div><p id="login-error" class="text-red-500 text-center text-sm h-4 mb-4"></p><button type="submit" class="w-full glass-btn bg-blue-600/70 text-white font-bold py-3 rounded-2xl hover:bg-blue-600/90">Đăng nhập</button></form><button id="close-modal-btn" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl">&times;</button></div></div>
+    <div id="name-selection-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0"><div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative text-center"><h2 class="text-3xl font-bold text-gray-800 mb-2">Hoàn thành!</h2><p id="modal-final-score" class="text-6xl font-bold text-blue-600 my-4">0/10</p><p id="modal-final-message" class="text-lg text-gray-600 mb-6">Bé đã làm rất tốt! Hãy chọn tên của mình để lưu điểm nhé.</p><div id="name-selection-container" class="space-y-3"><button data-name="Thảo Huyền" class="name-btn w-full glass-btn bg-pink-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-pink-500/80">Thảo Huyền</button><button data-name="Hằng Nga" class="name-btn w-full glass-btn bg-indigo-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-indigo-500/80">Hằng Nga</button></div><button id="skip-and-play-again-btn" class="w-full mt-6 text-gray-600 font-semibold hover:text-gray-800 text-sm">Chơi Lại (Không lưu)</button></div></div>
+    <div id="history-detail-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0"><div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-2xl relative"><h2 class="text-2xl font-bold text-center text-gray-800 mb-4">Chi Tiết Lần Chơi</h2><div id="history-detail-summary" class="text-center text-gray-700 mb-4"></div><div id="history-detail-content" class="space-y-3 bg-white/30 p-4 rounded-2xl custom-scrollbar"></div><button id="close-history-detail-btn" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-3xl">&times;</button></div></div>
+    <div id="confirmation-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0"><div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative text-center"><h2 class="text-2xl font-bold text-gray-800 mb-4">Xác nhận hành động</h2><p id="confirmation-message" class="text-gray-700 mb-6"></p><div class="flex justify-center gap-4"><button id="confirm-delete-btn" class="w-full glass-btn bg-red-600/70 text-white font-bold py-3 rounded-2xl hover:bg-red-600/90">Xác nhận</button><button id="cancel-delete-btn" class="w-full glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl hover:bg-gray-500/80">Hủy</button></div></div></div>
     
-    <div id="name-selection-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0">
-        <div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative text-center">
-            <h2 class="text-3xl font-bold text-gray-800 mb-2">Hoàn thành!</h2>
-            <p id="modal-final-score" class="text-6xl font-bold text-blue-600 my-4">0/10</p>
-            <p id="modal-final-message" class="text-lg text-gray-600 mb-6">Bé đã làm rất tốt! Hãy chọn tên của mình để lưu điểm nhé.</p>
-            <div id="name-selection-container" class="space-y-3">
-                <button data-name="Thảo Huyền" class="name-btn w-full glass-btn bg-pink-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-pink-500/80">Thảo Huyền</button>
-                <button data-name="Hằng Nga" class="name-btn w-full glass-btn bg-indigo-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-indigo-500/80">Hằng Nga</button>
-            </div>
-            <button id="skip-and-play-again-btn" class="w-full mt-6 text-gray-600 font-semibold hover:text-gray-800 text-sm">Chơi Lại (Không lưu)</button>
-        </div>
-    </div>
-
-    <div id="history-detail-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0">
+    <div id="question-edit-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0">
         <div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-2xl relative">
-            <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">Chi Tiết Lần Chơi</h2>
-            <div id="history-detail-summary" class="text-center text-gray-700 mb-4"></div>
-            <div id="history-detail-content" class="space-y-3 bg-white/30 p-4 rounded-2xl">
-                <!-- Detailed results will be injected here -->
-            </div>
-            <button id="close-history-detail-btn" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-3xl">&times;</button>
-        </div>
-    </div>
-
-    <div id="confirmation-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0">
-        <div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative text-center">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Xác nhận hành động</h2>
-            <p id="confirmation-message" class="text-gray-700 mb-6"></p>
-            <div class="flex justify-center gap-4">
-                <button id="confirm-delete-btn" class="w-full glass-btn bg-red-600/70 text-white font-bold py-3 rounded-2xl hover:bg-red-600/90">Xác nhận</button>
-                <button id="cancel-delete-btn" class="w-full glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl hover:bg-gray-500/80">Hủy</button>
-            </div>
+            <h2 id="question-modal-title" class="text-2xl font-bold text-center text-gray-800 mb-6">Chỉnh sửa câu hỏi</h2>
+            <form id="question-form" class="space-y-4">
+                <input type="hidden" id="question-id-input">
+                <div>
+                    <label for="question-text-input" class="block text-gray-700 font-semibold mb-1">Nội dung câu hỏi</label>
+                    <textarea id="question-text-input" rows="2" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800" required></textarea>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="option-1-input" class="block text-gray-700 font-semibold mb-1">Lựa chọn 1</label>
+                        <input type="text" id="option-1-input" class="option-input w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50" required>
+                    </div>
+                     <div>
+                        <label for="option-2-input" class="block text-gray-700 font-semibold mb-1">Lựa chọn 2</label>
+                        <input type="text" id="option-2-input" class="option-input w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50" required>
+                    </div>
+                     <div>
+                        <label for="option-3-input" class="block text-gray-700 font-semibold mb-1">Lựa chọn 3</label>
+                        <input type="text" id="option-3-input" class="option-input w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50" required>
+                    </div>
+                     <div>
+                        <label for="option-4-input" class="block text-gray-700 font-semibold mb-1">Lựa chọn 4</label>
+                        <input type="text" id="option-4-input" class="option-input w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50" required>
+                    </div>
+                </div>
+                <div>
+                    <label for="correct-answer-select" class="block text-gray-700 font-semibold mb-1">Đáp án đúng</label>
+                    <select id="correct-answer-select" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50" required></select>
+                </div>
+                <p id="question-form-error" class="text-red-500 text-center text-sm h-4"></p>
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" class="w-full glass-btn bg-green-600/70 text-white font-bold py-3 rounded-2xl hover:bg-green-600/90">Lưu thay đổi</button>
+                    <button type="button" id="close-question-modal-btn" class="w-full glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl hover:bg-gray-500/80">Hủy</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -237,7 +312,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp, doc, getDoc, setDoc, where, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp, doc, getDoc, setDoc, where, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- SOUND EFFECTS SETUP ---
         let soundsEnabled = true;
@@ -259,523 +334,286 @@
             } catch (error) { console.error("Sound play error:", error); }
         }
 
-        // --- EXPANDED LOCAL QUESTION SEED DATA ---
-        const localQuestionSeedData = {
-            version: 2.0, // Used to force update the question bank in Firestore
-            toan: {
-                lop1: {
-                    hocky1: [
-                        { question: "5 + 4 = ?", options: [8, 9, 10, 7], answer: 9 },
-                        { question: "8 - 3 = ?", options: [4, 5, 6, 7], answer: 5 },
-                        { question: "Số liền sau của 9 là?", options: [8, 10, 11, 7], answer: 10 },
-                        { question: "Có mấy hình tròn: 🔵 🔺 🔵 ⬜", options: [1, 2, 3, 4], answer: 2 },
-                        { question: "2 + 6 = ?", options: [7, 8, 9, 10], answer: 8 },
-                        { question: "Số liền trước của 7 là?", options: [5, 6, 8, 9], answer: 6 },
-                        { question: "Hình vuông có mấy cạnh?", options: [2, 3, 4, 5], answer: 4 },
-                        { question: "Điền dấu thích hợp: 5 + 3 ... 8", options: ["<", ">", "="], answer: "=" },
-                        { question: "7 + ... = 10", options: [1, 2, 3, 4], answer: 3 },
-                        { question: "Số bé nhất trong các số: 9, 3, 7, 5 là?", options: [9, 3, 7, 5], answer: 3 },
-                        { question: "Số lớn nhất trong các số: 2, 8, 4, 10 là?", options: [2, 8, 4, 10], answer: 10 },
-                        { question: "Phép tính nào có kết quả bằng 6?", options: ["3 + 2", "9 - 3", "4 + 3"], answer: "9 - 3" },
-                        { question: "Sắp xếp các số sau theo thứ tự từ bé đến lớn: 5, 2, 9, 1", options: ["1, 2, 5, 9", "9, 5, 2, 1", "1, 5, 2, 9"], answer: "1, 2, 5, 9" },
-                        { question: "Có 4 quả táo, thêm 3 quả táo nữa. Có tất cả mấy quả táo?", options: [6, 7, 8, 1], answer: 7 },
-                        { question: "Hình nào khác với các hình còn lại: 🔴 🔴 🔷 🔴", options: ["Hình tròn", "Hình vuông", "Tất cả đều giống nhau"], answer: "Hình vuông" },
-                        { question: "10 - ... = 4", options: [5, 6, 7, 8], answer: 6 },
-                        { question: "Trong các số 1, 5, 0, 8, số nào là số 0?", options: [1, 5, 0, 8], answer: 0 },
-                        { question: "Có bao nhiêu ô vuông trong hình này: ⬜️⬜️⬜️", options: [2, 3, 4, 1], answer: 3 },
-                    ],
-                    hocky2: [
-                        { question: "10 + 6 = ?", options: [15, 16, 17, 18], answer: 16 },
-                        { question: "18 - 5 = ?", options: [12, 13, 14, 15], answer: 13 },
-                        { question: "Số gồm 1 chục và 7 đơn vị là?", options: [10, 7, 17, 71], answer: 17 },
-                        { question: "Hôm nay là thứ Hai, ngày mai là thứ mấy?", options: ["Chủ Nhật", "Thứ Ba", "Thứ Tư"], answer: "Thứ Ba" },
-                        { question: "Lan có 8 kẹo, mẹ cho thêm 5. Lan có tất cả...cái kẹo?", options: [12, 13, 14, 3], answer: 13 },
-                        { question: "15 - 7 = ?", options: [6, 7, 8, 9], answer: 8 },
-                        { question: "Kim ngắn chỉ số 3, kim dài chỉ số 12. Là mấy giờ?", options: ["12 giờ 3 phút", "3 giờ 12 phút", "3 giờ đúng", "12 giờ 15 phút"], answer: "3 giờ đúng" },
-                        { question: "An có 12 viên bi, An cho Bình 5 viên. Hỏi An còn lại mấy viên bi?", options: [17, 7, 8, 6], answer: 7 },
-                        { question: "Điền dấu thích hợp vào chỗ chấm: 19 ... 16", options: ["<", ">", "="], answer: ">" },
-                        { question: "Số 14 gồm mấy chục và mấy đơn vị?", options: ["4 chục 1 đơn vị", "1 chục 4 đơn vị", "10 chục 4 đơn vị"], answer: "1 chục 4 đơn vị" },
-                        { question: "Số liền sau của 29 là?", options: [28, 30, 31, 20], answer: 30 },
-                        { question: "Số 50 đọc là gì?", options: ["Năm mươi", "Mười lăm", "Năm không"], answer: "Năm mươi" },
-                        { question: "40 + 30 = ?", options: [60, 70, 80, 50], answer: 70 },
-                        { question: "90 - 20 = ?", options: [60, 70, 80, 50], answer: 70 },
-                        { question: "Đoạn thẳng AB dài 10cm, đoạn thẳng CD dài 8cm. Đoạn thẳng nào dài hơn?", options: ["AB", "CD", "Bằng nhau"], answer: "AB" },
-                        { question: "Một tuần lễ có mấy ngày?", options: [5, 6, 7, 8], answer: 7 },
-                        { question: "Số tròn chục lớn nhất có 2 chữ số là?", options: [90, 99, 100, 80], answer: 90 },
-                        { question: "Lớp 1A có 20 bạn nam và 15 bạn nữ. Lớp 1A có tất cả bao nhiêu bạn?", options: [30, 35, 40, 25], answer: 35 },
-                    ]
-                },
-                lop2: {
-                    hocky1: [
-                        { question: "35 + 24 = ?", options: [58, 59, 69, 60], answer: 59 },
-                        { question: "78 - 45 = ?", options: [33, 32, 43, 23], answer: 33 },
-                        { question: "Số 56 đọc là gì?", options: ["Năm sáu", "Năm mươi sáu", "Sáu mươi năm", "Năm mươi sáu lăm"], answer: "Năm mươi sáu" },
-                        { question: "1 mét bằng bao nhiêu xăng-ti-mét?", options: ["10 cm", "100 cm", "1000 cm", "1 cm"], answer: "100 cm" },
-                        { question: "Tìm x, biết x + 15 = 40", options: [25, 35, 55, 15], answer: 25 },
-                        { question: "Trong phép tính 4 x 5 = 20, số 4 được gọi là gì?", options: ["Tích", "Thừa số", "Tổng", "Hiệu"], answer: "Thừa số" },
-                        { question: "Thứ tư tuần này là ngày 10, vậy thứ tư tuần sau là ngày mấy?", options: [16, 17, 18, 11], answer: 17 },
-                        { question: "2 x 8 = ?", options: [10, 14, 16, 18], answer: 16 },
-                        { question: "Có 15 quả cam chia đều vào 3 đĩa. Mỗi đĩa có mấy quả cam?", options: [3, 4, 5, 6], answer: 5 },
-                        { question: "Số lớn nhất có hai chữ số là số nào?", options: [90, 98, 99, 100], answer: 99 },
-                        { question: "Kết quả của phép tính 27 + 35 là?", options: [52, 62, 51, 61], answer: 62 },
-                        { question: "Hiệu của 64 và 28 là?", options: [36, 46, 34, 44], answer: 36 },
-                        { question: "Tìm x, biết 50 - x = 25", options: [25, 35, 75], answer: 25 },
-                        { question: "Trong phép chia 18 : 2 = 9, số 18 được gọi là gì?", options: ["Số chia", "Thương", "Số bị chia"], answer: "Số bị chia" },
-                        { question: "1 dm = ... cm?", options: [1, 10, 100], answer: 10 },
-                        { question: "Tổng của số lớn nhất có một chữ số và số bé nhất có hai chữ số là?", options: [18, 19, 20, 91], answer: 19 },
-                        { question: "Mẹ mua 2 chục quả trứng, mẹ đã dùng hết 5 quả. Mẹ còn lại bao nhiêu quả trứng?", options: [15, 25, 10], answer: 15 },
-                    ],
-                    hocky2: [
-                        { question: "5 x 9 = ?", options: [40, 45, 50, 54], answer: 45 },
-                        { question: "36 : 4 = ?", options: [7, 8, 9, 10], answer: 9 },
-                        { question: "Một phần ba của 27 là bao nhiêu?", options: [7, 8, 9, 3], answer: 9 },
-                        { question: "Đồng hồ chỉ 8 giờ 30 phút. Kim phút chỉ vào số mấy?", options: [3, 6, 8, 12], answer: 6 },
-                        { question: "Một cửa hàng buổi sáng bán được 150kg gạo, buổi chiều bán được nhiều hơn buổi sáng 50kg. Cả hai buổi bán được bao nhiêu kg gạo?", options: [200, 250, 350, 300], answer: 350 },
-                        { question: "Hình chữ nhật có mấy góc vuông?", options: [1, 2, 3, 4], answer: 4 },
-                        { question: "Điền số thích hợp: 8, 12, 16, ..., 24", options: [18, 20, 22, 19], answer: 20 },
-                        { question: "1000 - 300 = ?", options: [600, 700, 800, 500], answer: 700 },
-                        { question: "Chu vi hình tam giác có ba cạnh bằng nhau, mỗi cạnh dài 8cm là:", options: ["16cm", "24cm", "32cm", "11cm"], answer: "24cm" },
-                        { question: "Số bé nhất có ba chữ số khác nhau là số nào?", options: [100, 111, 102, 123], answer: 102 },
-                        { question: "Tìm y, biết y x 5 = 40", options: [6, 7, 8, 9], answer: 8 },
-                        { question: "1/4 của 20 là?", options: [4, 5, 6, 16], answer: 5 },
-                        { question: "Bố 36 tuổi, con 9 tuổi. Tuổi bố gấp mấy lần tuổi con?", options: [3, 4, 5, 27], answer: 4 },
-                        { question: "Số 758 gồm mấy trăm, mấy chục, mấy đơn vị?", options: ["7 trăm, 5 chục, 8 đơn vị", "8 trăm, 5 chục, 7 đơn vị", "7 trăm, 8 chục, 5 đơn vị"], answer: "7 trăm, 5 chục, 8 đơn vị" },
-                        { question: "Chu vi hình vuông có cạnh 6m là?", options: ["12m", "24m", "36m"], answer: "24m" },
-                        { question: "Có 45 học sinh xếp thành 5 hàng đều nhau. Hỏi mỗi hàng có bao nhiêu học sinh?", options: [8, 9, 10, 7], answer: 9 },
-                        { question: "Ngày 25 tháng 4 là thứ ba, vậy ngày 1 tháng 5 cùng năm đó là thứ mấy?", options: ["Thứ hai", "Thứ ba", "Thứ tư"], answer: "Thứ hai" },
-                    ]
-                }
-            },
-            tiengviet: {
-                lop1: {
-                    hocky1: [
-                        { question: "Chữ cái nào đứng sau 'a' trong bảng chữ cái?", options: ["c", "b", "d", "e"], answer: "b" },
-                        { question: "Từ nào chỉ hoạt động 'ăn'?", options: ["Ngủ", "Chơi", "Ăn", "Học"], answer: "Ăn" },
-                        { question: "Điền từ còn thiếu: 'Con ... đang bơi.'", options: ["chim", "cá", "mèo", "chó"], answer: "cá" },
-                        { question: "Từ nào có vần 'ai'?", options: ["Cái", "Con", "Sách", "Bút"], answer: "Cái" },
-                        { question: "Chữ cái nào đứng trước 'd' trong bảng chữ cái?", options: ["c", "e", "f", "b"], answer: "c" },
-                        { question: "Ghép âm 'nh' và vần 'a' ta được tiếng gì?", options: ["na", "anh", "nha", "han"], answer: "nha" },
-                        { question: "Tìm từ có vần 'ươn'.", options: ["Vườn", "Cơm", "Cam", "Bánh"], answer: "Vườn" },
-                        { question: "Điền vào chỗ trống: '...à nội em hiền.'", options: ["Bà", "Bò", "Ba"], answer: "Bà" },
-                        { question: "Sắp xếp các từ 'sàn', 'nhà', 'em', 'ở' thành câu có nghĩa.", options: ["Em ở nhà sàn.", "Nhà em ở sàn.", "Sàn nhà em ở."], answer: "Em ở nhà sàn." },
-                        { question: "Trong câu 'Nhà bà có gà. Gà có lông vàng.', gà có lông màu gì?", options: ["Vàng", "Nâu", "Đen"], answer: "Vàng" },
-                        { question: "Tiếng 'sách' có âm đầu là gì?", options: ["s", "a", "ch"], answer: "s" },
-                        { question: "Vần 'eo' có trong từ nào?", options: ["Cái kéo", "Cái ca", "Con bò"], answer: "Cái kéo" },
-                        { question: "Điền 'g' hay 'gh' vào chỗ trống: 'Cái ...ế'", options: ["g", "gh"], answer: "gh" },
-                        { question: "Câu 'Bé vẽ' có mấy tiếng?", options: [1, 2, 3], answer: 2 },
-                        { question: "Tìm từ chỉ đồ vật trong nhà.", options: ["Cây bàng", "Cái bàn", "Con đường"], answer: "Cái bàn" },
-                        { question: "Điền vần 'ay' hoặc 'ây' vào chỗ trống: 'Máy c...'", options: ["ay", "ây"], answer: "ây" },
-                    ],
-                    hocky2: [
-                        { question: "Từ nào có tiếng 'sách'?", options: ["Quyển vở", "Bút chì", "Sách giáo khoa", "Cái bàn"], answer: "Sách giáo khoa" },
-                        { question: "Từ nào đồng nghĩa với 'vui vẻ'?", options: ["Buồn bã", "Hân hoan", "Tức giận", "Sợ hãi"], answer: "Hân hoan" },
-                        { question: "Điền từ còn thiếu: 'Bầu trời cao và ...'", options: ["xanh", "đỏ", "vàng", "đen"], answer: "xanh" },
-                        { question: "Đặt câu với từ 'trường học'.", options: ["Em đi học.", "Trường học của em rất đẹp.", "Cây phượng nở hoa."], answer: "Trường học của em rất đẹp." },
-                        { question: "Từ nào trái nghĩa với 'sạch sẽ'?", options: ["Ngăn nắp", "Gọn gàng", "Bẩn thỉu"], answer: "Bẩn thỉu" },
-                        { question: "Điền dấu câu thích hợp: 'Mẹ em là cô giáo_'", options: [".", "?", "!"], answer: "." },
-                        { question: "Trong câu 'Bông hoa hồng rất đẹp', từ nào chỉ đặc điểm?", options: ["Bông hoa", "hồng", "đẹp"], answer: "đẹp" },
-                        { question: "Đồ vật nào sau đây có trong lớp học?", options: ["Cái giường", "Cái bàn", "Cái tủ lạnh"], answer: "Cái bàn" },
-                        { question: "Điền 'ch' hay 'tr' vào chỗ trống: '...ăm học'", options: ["ch", "tr"], answer: "ch" },
-                        { question: "Từ nào chỉ một loài cây?", options: ["Con chó", "Cây bàng", "Cái nhà"], answer: "Cây bàng" },
-                        { question: "Câu 'Ai trồng cây?' là loại câu gì?", options: ["Câu kể", "Câu hỏi", "Câu cảm"], answer: "Câu hỏi" },
-                        { question: "Từ nào chỉ hoạt động của học sinh?", options: ["Buôn bán", "Dạy học", "Học bài"], answer: "Học bài" },
-                        { question: "Sắp xếp lại câu: 'em, rất, yêu, trường, của, em'", options: ["Em yêu rất trường của em.", "Em rất yêu trường của em."], answer: "Em rất yêu trường của em." },
-                        { question: "Từ 'chăm chỉ' là từ chỉ gì?", options: ["Chỉ người", "Chỉ hoạt động", "Chỉ tính nết"], answer: "Chỉ tính nết" },
-                        { question: "Điền dấu chấm than (!) vào cuối câu nào?", options: ["Bạn tên là gì", "Ôi, bông hoa đẹp quá", "Em đang học bài"], answer: "Ôi, bông hoa đẹp quá" },
-                    ]
-                },
-                lop2: {
-                    hocky1: [
-                        { question: "Từ nào là từ chỉ sự vật?", options: ["Chạy", "Đẹp", "Cái bàn", "Vui"], answer: "Cái bàn" },
-                        { question: "Từ nào là từ chỉ hoạt động?", options: ["Con mèo", "Đọc sách", "Màu xanh", "Cao lớn"], answer: "Đọc sách" },
-                        { question: "Từ nào không cùng nhóm với các từ còn lại: 'bút, thước, sách, đi'?", options: ["bút", "thước", "sách", "đi"], answer: "đi" },
-                        { question: "Tìm 2 từ chỉ người trong gia đình.", options: ["Thầy cô, bạn bè", "Ông bà, bố mẹ", "Bác sĩ, y tá"], answer: "Ông bà, bố mẹ" },
-                        { question: "Câu 'Mẹ em là giáo viên.' thuộc mẫu câu nào?", options: ["Ai là gì?", "Ai làm gì?", "Ai thế nào?"], answer: "Ai là gì?" },
-                        { question: "Tìm từ đồng nghĩa với 'siêng năng'.", options: ["Lười biếng", "Chăm chỉ", "Thông minh"], answer: "Chăm chỉ" },
-                        { question: "Điền 'l' hay 'n' vào chỗ trống: '...o lắng'", options: ["l", "n"], answer: "l" },
-                        { question: "Điền 's' hay 'x' vào chỗ trống: '...inh đẹp'", options: ["s", "x"], answer: "x" },
-                        { question: "Đặt câu hỏi cho bộ phận được gạch chân: '<u>Bạn Lan</u> là một học sinh giỏi.'", options: ["Ai là một học sinh giỏi?", "Bạn Lan là gì?", "Bạn Lan thế nào?"], answer: "Ai là một học sinh giỏi?" },
-                        { question: "Trong câu 'Trên cành cây, chim hót líu lo.', dấu phẩy dùng để làm gì?", options: ["Kết thúc câu", "Ngăn cách trạng ngữ với nòng cốt câu", "Liệt kê"], answer: "Ngăn cách trạng ngữ với nòng cốt câu" },
-                        { question: "Từ nào là từ chỉ đặc điểm?", options: ["Cái cây", "Cao", "Đi bộ"], answer: "Cao" },
-                        { question: "Câu 'Đàn cá tung tăng bơi lội.' thuộc mẫu câu nào?", options: ["Ai là gì?", "Con gì làm gì?", "Ai thế nào?"], answer: "Con gì làm gì?" },
-                        { question: "Tìm từ trái nghĩa với 'cao'.", options: ["To", "Thấp", "Dài"], answer: "Thấp" },
-                        { question: "Bộ phận trả lời câu hỏi 'Ở đâu?' trong câu 'Em học bài ở trong phòng.' là gì?", options: ["Em", "học bài", "ở trong phòng"], answer: "ở trong phòng" },
-                        { question: "Điền 'r', 'd' hay 'gi' vào chỗ trống: '...ữ gìn'", options: ["r", "d", "gi"], answer: "gi" },
-                    ],
-                    hocky2: [
-                        { question: "Câu 'Ông mặt trời thức dậy' sử dụng biện pháp nghệ thuật gì?", options: ["So sánh", "Nhân hóa", "Ẩn dụ"], answer: "Nhân hóa" },
-                        { question: "Tìm từ trái nghĩa với 'dũng cảm'.", options: ["Gan dạ", "Anh hùng", "Nhút nhát"], answer: "Nhút nhát" },
-                        { question: "Câu 'Đàn bò đang gặm cỏ.' thuộc mẫu câu nào?", options: ["Ai là gì?", "Ai làm gì?", "Ai thế nào?"], answer: "Ai làm gì?" },
-                        { question: "Dấu hai chấm trong câu 'Bà kể: Ngày xưa có một nàng công chúa.' dùng để làm gì?", options: ["Kết thúc câu", "Báo hiệu lời nói trực tiếp của nhân vật", "Ngắt nghỉ"], answer: "Báo hiệu lời nói trực tiếp của nhân vật" },
-                        { question: "Tìm từ chỉ đặc điểm trong câu: 'Mặt biển xanh biếc.'", options: ["Mặt biển", "xanh biếc", "biển"], answer: "xanh biếc" },
-                        { question: "Câu 'Trường em xanh, sạch, đẹp.' sử dụng dấu phẩy để làm gì?", options: ["Ngăn cách các bộ phận cùng chức vụ", "Ngăn cách trạng ngữ", "Báo hiệu lời nói"], answer: "Ngăn cách các bộ phận cùng chức vụ" },
-                        { question: "Trong câu 'Những chú gà con lon ton chạy theo mẹ.', từ nào là từ láy?", options: ["Gà con", "Chạy theo", "Lon ton"], answer: "Lon ton" },
-                        { question: "Đặt câu hỏi cho bộ phận gạch chân: 'Em tặng mẹ một bông hoa <u>vì hôm nay là sinh nhật mẹ</u>.'", options: ["Em tặng mẹ một bông hoa khi nào?", "Vì sao em tặng mẹ một bông hoa?", "Em tặng mẹ cái gì?"], answer: "Vì sao em tặng mẹ một bông hoa?" },
-                        { question: "Câu 'Bạn có thích đọc truyện không?' là loại câu gì?", options: ["Câu kể", "Câu hỏi", "Câu khiến"], answer: "Câu hỏi" },
-                        { question: "Từ 'Tổ quốc' viết hoa vì lý do gì?", options: ["Đứng đầu câu", "Là danh từ riêng", "Là từ khó"], answer: "Là danh từ riêng" },
-                        { question: "Biện pháp so sánh được sử dụng trong câu nào sau đây?", options: ["Mặt trời đỏ như quả cầu lửa.", "Gió thổi ào ào.", "Chị tre chải tóc bên ao."], answer: "Mặt trời đỏ như quả cầu lửa." },
-                        { question: "Chủ ngữ trong câu 'Những bông hoa trong vườn đang khoe sắc.' là gì?", options: ["Những bông hoa", "Những bông hoa trong vườn", "đang khoe sắc"], answer: "Những bông hoa trong vườn" },
-                        { question: "Hãy lao động thật tốt! - là câu gì?", options: ["Câu kể", "Câu cảm", "Câu khiến"], answer: "Câu khiến" },
-                        { question: "Từ nào viết sai chính tả?", options: ["Nghỉ ngơi", "Ngoằn ngoèo", "Nghoẹo cổ"], answer: "Nghoẹo cổ" },
-                    ]
-                }
-            }
-        };
-
         // --- STATE & DOM VARIABLES ---
-        let db, auth, appId, questionBank, selectedSubject, selectedGrade, selectedSemester;
+        let db, auth, appId, questionBank = {}, userDefinedApiKey = null;
+        let selectedSubject, selectedGrade, selectedSemester;
         let currentQuestions = [], currentQuestionIndex = 0, score = 0, sessionAnswers = [];
         const NUM_OF_QUESTIONS_PER_GAME = 10;
         let timerEnabled = false, timerDuration = 30, timerInterval;
+        let fullQuestionCollection = []; // To hold all questions for the admin manager
 
         const screens = {
             selection: document.getElementById('selection-screen'),
             game: document.getElementById('game-screen'),
             admin: document.getElementById('admin-panel'),
+            settings: document.getElementById('settings-panel'),
             history: document.getElementById('history-panel'),
-            leaderboard: document.getElementById('leaderboard-panel')
+            leaderboard: document.getElementById('leaderboard-panel'),
+            questionManager: document.getElementById('question-manager-panel'),
+            aiGenerator: document.getElementById('ai-generator-panel'),
         };
         const modals = {
             login: document.getElementById('login-modal'),
             nameSelection: document.getElementById('name-selection-modal'),
             historyDetail: document.getElementById('history-detail-modal'),
-            confirmation: document.getElementById('confirmation-modal')
+            confirmation: document.getElementById('confirmation-modal'),
+            questionEdit: document.getElementById('question-edit-modal'),
         };
+        
+        // FIX: Re-declaring DOM element variables that were missing
         const leaderboardBtn = document.getElementById('leaderboard-btn');
         const backToMenuBtn = document.getElementById('back-to-menu-btn');
         const leaderboardSubjectFilter = document.getElementById('leaderboard-subject-filter');
         const leaderboardGradeFilter = document.getElementById('leaderboard-grade-filter');
         const leaderboardNameFilter = document.getElementById('leaderboard-name-filter');
 
+
         // --- FIREBASE & DATA LOADING ---
-        async function initializeFirebase() { try { let firebaseConfig; if (typeof __firebase_config !== 'undefined' && __firebase_config) { firebaseConfig = JSON.parse(__firebase_config); appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.appId; } else { console.warn("Using hardcoded fallback Firebase config."); firebaseConfig = { apiKey: "AIzaSyDJBY6U0LUtmnk4PrfNeA7UE7qq1FZ84X8", authDomain: "data-chung-a62ee.firebaseapp.com", projectId: "data-chung-a62ee", storageBucket: "data-chung-a62ee.appspot.com", messagingSenderId: "453115303161", appId: "1:453115303161:web:c885f876f4914829863e28" }; appId = firebaseConfig.appId; } if (!firebaseConfig.projectId) throw new Error("Firebase config is missing projectId."); const app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app); if (typeof __initial_auth_token !== 'undefined') { await signInWithCustomToken(auth, __initial_auth_token); } else { await signInAnonymously(auth); } onAuthStateChanged(auth, (user) => { if (user) { console.log("User authenticated, loading data..."); Promise.all([loadAndSeedQuestions(), loadAdminSettings()]); } }); } catch (error) { console.error("Firebase initialization error:", error); document.getElementById('loading-questions').textContent = "Lỗi kết nối đến cơ sở dữ liệu."; } }
-        async function loadAndSeedQuestions() { if (!db || !appId) { console.error("Firestore DB or App ID not initialized."); return; } const questionBankRef = doc(db, `artifacts/${appId}/public/data/questions`, 'mainBank'); try { const docSnap = await getDoc(questionBankRef); if (docSnap.exists() && docSnap.data().version === 2.0) { questionBank = docSnap.data(); console.log("Loaded question bank version 2.0 from Firestore."); } else { console.log("Old question bank version or no data found. Seeding with new version 2.0."); await setDoc(questionBankRef, localQuestionSeedData); questionBank = localQuestionSeedData; } document.getElementById('loading-questions').classList.add('hidden'); document.getElementById('selections-container').classList.remove('hidden'); updateStartButtonState(); } catch (error) { console.error("Error loading or seeding questions:", error); document.getElementById('loading-questions').textContent = "Lỗi khi tải câu hỏi."; } }
-        async function loadAdminSettings() { if (!db || !appId) { return; } const settingsRef = doc(db, `artifacts/${appId}/public/data/adminSettings`, 'config'); try { const docSnap = await getDoc(settingsRef); if (docSnap.exists()) { const settings = docSnap.data(); timerEnabled = settings.timerEnabled ?? false; timerDuration = settings.timerDuration ?? 30; console.log("Admin settings loaded:", {timerEnabled, timerDuration}); } else { console.log("No admin settings found, using defaults."); } } catch (error) { console.error("Error loading admin settings:", error); } }
+        async function initializeFirebase() {
+            try {
+                if (typeof __firebase_config === 'undefined' || !__firebase_config) {
+                    console.error("Firebase configuration is not available.");
+                    document.getElementById('loading-questions').textContent = "Lỗi cấu hình. Không thể kết nối đến cơ sở dữ liệu.";
+                    return;
+                }
+                const firebaseConfig = JSON.parse(__firebase_config);
+                appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        console.log("User authenticated, loading data...");
+                        Promise.all([loadQuestionsFromFirestore(), loadAdminSettings(), loadApiKey()]);
+                    }
+                });
+            } catch (error) {
+                console.error("Firebase initialization error:", error);
+                document.getElementById('loading-questions').textContent = "Lỗi kết nối đến cơ sở dữ liệu.";
+            }
+        }
+
+        async function loadQuestionsFromFirestore() {
+            if (!db || !appId) return;
+            const qCollection = collection(db, `artifacts/${appId}/public/data/questions`);
+            try {
+                const querySnapshot = await getDocs(qCollection);
+                if (querySnapshot.empty) {
+                    console.log("No questions found in Firestore. Seeding initial data...");
+                    await seedInitialQuestions();
+                } else {
+                    fullQuestionCollection = [];
+                    querySnapshot.forEach(doc => {
+                        fullQuestionCollection.push({ id: doc.id, ...doc.data() });
+                    });
+                    restructureQuestionBank();
+                    console.log("Successfully loaded questions from Firestore.");
+                }
+                document.getElementById('loading-questions').classList.add('hidden');
+                document.getElementById('selections-container').classList.remove('hidden');
+                updateStartButtonState();
+            } catch (error) {
+                console.error("Error loading questions from Firestore:", error);
+                document.getElementById('loading-questions').textContent = "Lỗi khi tải câu hỏi.";
+            }
+        }
+
+        async function seedInitialQuestions() {
+            const seedData = [
+                // Add a few initial questions here to avoid starting with a blank slate
+                { subject: 'toan', grade: 'lop1', semester: 'hocky1', question: "1 + 1 = ?", options: ["1", "2", "3", "4"], answer: "2" },
+                { subject: 'tiengviet', grade: 'lop1', semester: 'hocky1', question: "Chữ cái đầu tiên trong bảng chữ cái là?", options: ["b", "c", "a", "d"], answer: "a" },
+            ];
+            const qCollection = collection(db, `artifacts/${appId}/public/data/questions`);
+            const promises = seedData.map(q => addDoc(qCollection, q));
+            await Promise.all(promises);
+            await loadQuestionsFromFirestore(); // Reload after seeding
+        }
+
+        function restructureQuestionBank() {
+            questionBank = {}; // Reset the bank
+            fullQuestionCollection.forEach(q => {
+                const { subject, grade, semester } = q;
+                if (!subject || !grade || !semester) return;
+
+                if (!questionBank[subject]) questionBank[subject] = {};
+                if (!questionBank[subject][grade]) questionBank[subject][grade] = {};
+                if (!questionBank[subject][grade][semester]) questionBank[subject][grade][semester] = [];
+
+                questionBank[subject][grade][semester].push(q);
+            });
+        }
+
+        async function loadAdminSettings() {
+            if (!db || !appId) return;
+            const settingsRef = doc(db, `artifacts/${appId}/public/data/adminSettings`, 'config');
+            try {
+                const docSnap = await getDoc(settingsRef);
+                if (docSnap.exists()) {
+                    const settings = docSnap.data();
+                    timerEnabled = settings.timerEnabled ?? false;
+                    timerDuration = settings.timerDuration ?? 30;
+                }
+            } catch (error) { console.error("Error loading admin settings:", error); }
+        }
+
+        async function saveAdminSettings() {
+            const newTimerEnabled = document.getElementById('timer-toggle').checked;
+            const newTimerDuration = parseInt(document.getElementById('timer-duration').value, 10);
+            const feedbackEl = document.getElementById('settings-feedback');
+
+            if (isNaN(newTimerDuration) || newTimerDuration < 5 || newTimerDuration > 120) {
+                feedbackEl.textContent = "Thời gian phải từ 5 đến 120 giây.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+                return;
+            }
+
+            const settingsRef = doc(db, `artifacts/${appId}/public/data/adminSettings`, 'config');
+            try {
+                await setDoc(settingsRef, { timerEnabled: newTimerEnabled, timerDuration: newTimerDuration }, { merge: true });
+                timerEnabled = newTimerEnabled;
+                timerDuration = newTimerDuration;
+                feedbackEl.textContent = "Đã lưu cài đặt!";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                setTimeout(() => feedbackEl.textContent = '', 3000);
+            } catch (error) {
+                console.error("Error saving settings:", error);
+                feedbackEl.textContent = "Lỗi khi lưu cài đặt.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+            }
+        }
+
+        async function loadApiKey() {
+            const keyRef = doc(db, `artifacts/${appId}/public/data/adminSettings`, 'geminiKey');
+            try {
+                const docSnap = await getDoc(keyRef);
+                if (docSnap.exists() && docSnap.data().key) {
+                    userDefinedApiKey = docSnap.data().key;
+                    document.getElementById('gemini-api-key-input').placeholder = "API Key đã được lưu. Nhập để thay thế.";
+                    console.log("User-defined API key loaded.");
+                } else {
+                    userDefinedApiKey = null;
+                    document.getElementById('gemini-api-key-input').placeholder = "Nhập Gemini API Key của bạn...";
+                    console.log("No user-defined API key found. Using system default.");
+                }
+            } catch (error) { console.error("Error loading API key:", error); }
+        }
+
+        async function saveApiKey() {
+            const newKey = document.getElementById('gemini-api-key-input').value.trim();
+            const feedbackEl = document.getElementById('settings-feedback');
+            if (!newKey) {
+                feedbackEl.textContent = "API Key không được để trống.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+                return;
+            }
+            const keyRef = doc(db, `artifacts/${appId}/public/data/adminSettings`, 'geminiKey');
+            try {
+                await setDoc(keyRef, { key: newKey });
+                userDefinedApiKey = newKey;
+                feedbackEl.textContent = "Đã lưu API Key thành công!";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                document.getElementById('gemini-api-key-input').value = "";
+                document.getElementById('gemini-api-key-input').placeholder = "API Key đã được lưu. Nhập để thay thế.";
+            } catch (error) {
+                console.error("Error saving API key:", error);
+                feedbackEl.textContent = "Lỗi khi lưu API Key.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+            }
+        }
+
+        async function deleteApiKey() {
+            const keyRef = doc(db, `artifacts/${appId}/public/data/adminSettings`, 'geminiKey');
+            const feedbackEl = document.getElementById('settings-feedback');
+            try {
+                await deleteDoc(keyRef);
+                userDefinedApiKey = null;
+                feedbackEl.textContent = "Đã xóa API Key. Hệ thống sẽ dùng key mặc định.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                 document.getElementById('gemini-api-key-input').value = "";
+                document.getElementById('gemini-api-key-input').placeholder = "Nhập Gemini API Key của bạn...";
+            } catch (error) {
+                console.error("Error deleting API key:", error);
+                feedbackEl.textContent = "Lỗi khi xóa API Key.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+            }
+        }
         
-        // --- AI EXPLANATION WITH CACHING ---
+        // --- AI EXPLANATION & GENERATION ---
         async function getExplanationFromAI(question, answer, grade) {
             const explanationContainer = document.getElementById('explanation-container');
             const explanationTextEl = document.getElementById('explanation-text');
-            const readExplanationBtn = document.getElementById('read-explanation-btn');
-
-            explanationTextEl.textContent = 'Đang tìm giải thích...';
-            readExplanationBtn.style.display = 'none';
+            explanationTextEl.textContent = 'Đang tạo giải thích...';
             explanationContainer.classList.remove('hidden');
 
-            const explanationId = btoa(encodeURIComponent(`${grade}-${question}`)).replace(/[^a-zA-Z0-9]/g, '');
-            const explanationRef = doc(db, `artifacts/${appId}/public/data/explanations`, explanationId);
+            const gradeMap = { lop1: "lớp 1", lop2: "lớp 2" };
+            const gradeText = gradeMap[grade] || "học sinh tiểu học";
+            const prompt = `Hãy giải thích đáp án cho câu hỏi sau một cách thật ngắn gọn và dễ hiểu, phù hợp với trình độ của học sinh ${gradeText}. Câu hỏi: "${question}" Đáp án đúng là: "${answer}".`;
 
             try {
-                const docSnap = await getDoc(explanationRef);
-
-                if (docSnap.exists()) {
-                    const cachedExplanation = docSnap.data().text;
-                    explanationTextEl.textContent = `💡 Giải thích: ${cachedExplanation}`;
-                    readExplanationBtn.onclick = () => speakText(cachedExplanation);
-                    readExplanationBtn.style.display = 'block';
-                    console.log("Loaded explanation from cache.");
-                    return;
-                }
-
-                console.log("Cache miss. Generating new explanation from AI.");
-                explanationTextEl.textContent = 'Đang tạo giải thích mới...';
-
-                const gradeMap = { lop1: "lớp 1", lop2: "lớp 2" };
-                const gradeText = gradeMap[grade] || "học sinh tiểu học";
-
-                const prompt = `Hãy giải thích đáp án cho câu hỏi sau một cách thật ngắn gọn và dễ hiểu, phù hợp với trình độ của học sinh ${gradeText}. Câu hỏi: "${question}" Đáp án đúng là: "${answer}".`;
-
-                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-                const apiKey = "AIzaSyDOfRZnSkMqUAddDF1jZqqzCDZzn68hUyE"; 
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) throw new Error(`API call failed with status: ${response.status}`);
-                
-                const result = await response.json();
-                const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-
-                if (generatedText) {
-                    explanationTextEl.textContent = `💡 Giải thích: ${generatedText}`;
-                    readExplanationBtn.onclick = () => speakText(generatedText);
-                    readExplanationBtn.style.display = 'block';
-
-                    await setDoc(explanationRef, {
-                        text: generatedText,
-                        question: question,
-                        grade: grade,
-                        createdAt: serverTimestamp()
-                    });
-                    console.log("Saved new explanation to cache.");
-                } else {
-                    throw new Error("Invalid response structure from API.");
-                }
+                const generatedText = await callGeminiAPI(prompt);
+                explanationTextEl.textContent = `💡 Giải thích: ${generatedText}`;
+                document.getElementById('read-explanation-btn').onclick = () => speakText(generatedText);
+                document.getElementById('read-explanation-btn').style.display = 'block';
             } catch (error) {
                 console.error("Error in explanation process:", error);
                 explanationTextEl.textContent = 'Không thể tạo giải thích lúc này.';
-                readExplanationBtn.style.display = 'none';
+                document.getElementById('read-explanation-btn').style.display = 'none';
             }
         }
 
-
-        // --- HISTORY & LEADERBOARD FUNCTIONS ---
-        async function saveResult(resultData, playerName = null) {
-            if (!db || !appId || !auth.currentUser) return;
-            const dataToSaveForHistory = { ...resultData, name: playerName };
-            const dataToSaveForLeaderboard = {
-                name: playerName,
-                score: resultData.score,
-                totalQuestions: resultData.totalQuestions,
-                subject: resultData.subject,
-                grade: resultData.grade,
-                date: resultData.date
-            };
-
-            if (playerName) {
-                try {
-                    const leaderboardCollectionRef = collection(db, `artifacts/${appId}/public/data/leaderboard`);
-                    await addDoc(leaderboardCollectionRef, dataToSaveForLeaderboard);
-                    console.log("Score saved to leaderboard!");
-                } catch (e) {
-                    console.error("Error writing to leaderboard:", e);
-                }
+        async function callGeminiAPI(prompt, jsonSchema = null) {
+            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+            if (jsonSchema) {
+                payload.generationConfig = {
+                    responseMimeType: "application/json",
+                    responseSchema: jsonSchema
+                };
             }
-            try {
-                const historyCollectionRef = collection(db, `artifacts/${appId}/public/data/quizResults`);
-                await addDoc(historyCollectionRef, dataToSaveForHistory);
-                console.log("Full quiz result saved to history!");
-            } catch (e) {
-                console.error("Error writing to history:", e);
-            }
-        }
-
-        async function displayHistory() {
-            showScreen('history');
-            const container = document.getElementById('history-table-container');
-            container.innerHTML = '<p class="text-center text-gray-500">Đang tải lịch sử...</p>';
-            if (!db || !appId) {
-                container.innerHTML = '<p class="text-center text-red-500">Lỗi CSDL.</p>';
-                return;
-            }
-            try {
-                const q = query(collection(db, `artifacts/${appId}/public/data/quizResults`));
-                const querySnapshot = await getDocs(q);
-                if (querySnapshot.empty) {
-                    container.innerHTML = '<p class="text-center text-gray-500">Chưa có lịch sử làm bài.</p>';
-                    return;
-                }
-                const results = [];
-                querySnapshot.forEach(doc => results.push(doc.data()));
-                results.sort((a, b) => (b.date?.toDate() || 0) - (a.date?.toDate() || 0));
-
-                const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
-                let tableHTML = '<table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden"><thead class="bg-gray-100/50"><tr><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Ngày Giờ</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Môn</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Chi tiết</th></tr></thead><tbody id="history-table-body" class="bg-white/30 divide-y divide-gray-200 text-gray-800">';
-                results.forEach((r, index) => {
-                    const date = r.date?.toDate() ? r.date.toDate().toLocaleString('vi-VN') : 'N/A';
-                    const scoreDisplay = `${r.score}/${r.totalQuestions || 10}`;
-                    tableHTML += `<tr>
-                        <td class="px-3 py-2 text-sm">${date}</td>
-                        <td class="px-3 py-2 text-sm font-semibold">${r.name || 'Không lưu'}</td>
-                        <td class="px-3 py-2 text-sm">${nameMap[r.subject] || r.subject}</td>
-                        <td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td>
-                        <td class="px-3 py-2 text-sm"><button data-index="${index}" class="view-detail-btn bg-blue-500 text-white px-2 py-1 rounded-md text-xs hover:bg-blue-600">Xem</button></td>
-                    </tr>`;
-                });
-                tableHTML += '</tbody></table>';
-                container.innerHTML = tableHTML;
-                
-                document.getElementById('history-table-body').addEventListener('click', (e) => {
-                    if (e.target.classList.contains('view-detail-btn')) {
-                        const index = e.target.dataset.index;
-                        showHistoryDetail(results[index]);
-                    }
-                });
-
-            } catch (error) {
-                console.error("Error fetching history:", error);
-                container.innerHTML = '<p class="text-center text-red-500">Không thể tải lịch sử.</p>';
-            }
-        }
-
-        function showHistoryDetail(result) {
-            const summaryEl = document.getElementById('history-detail-summary');
-            const contentEl = document.getElementById('history-detail-content');
             
-            summaryEl.innerHTML = `<strong>Tên:</strong> ${result.name || 'Không lưu'} | <strong>Điểm:</strong> ${result.score}/${result.totalQuestions}`;
-            
-            contentEl.innerHTML = '';
-            if (result.questions && Array.isArray(result.questions)) {
-                result.questions.forEach((q, index) => {
-                    const isCorrect = q.isCorrect;
-                    const itemEl = document.createElement('div');
-                    itemEl.className = `p-3 rounded-lg border ${isCorrect ? 'border-green-500 bg-green-100/50' : 'border-red-500 bg-red-100/50'}`;
-                    itemEl.innerHTML = `
-                        <p class="font-bold text-gray-800">${index + 1}. ${q.questionText}</p>
-                        <p class="text-sm ${isCorrect ? 'text-green-700' : 'text-red-700'}"><strong>Bé chọn:</strong> ${q.userAnswer || 'Không trả lời'}</p>
-                        ${!isCorrect ? `<p class="text-sm text-blue-700"><strong>Đáp án đúng:</strong> ${q.correctAnswer}</p>` : ''}
-                    `;
-                    contentEl.appendChild(itemEl);
-                });
-            } else {
-                contentEl.innerHTML = '<p>Không có dữ liệu chi tiết cho lần chơi này.</p>';
-            }
+            const apiKey = userDefinedApiKey || ""; // Use user key if available, otherwise platform handles it
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
-            showModal('historyDetail');
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorBody = await response.text();
+                throw new Error(`API call failed with status: ${response.status}. Body: ${errorBody}`);
+            }
+            
+            const result = await response.json();
+            const generatedContent = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (!generatedContent) {
+                throw new Error("Invalid response structure from API.");
+            }
+            return generatedContent;
         }
 
+        // --- HISTORY & LEADERBOARD ---
+        async function saveResult(resultData, playerName = null) { if (!db || !appId || !auth.currentUser) return; const dataToSaveForHistory = { ...resultData, name: playerName }; const dataToSaveForLeaderboard = { name: playerName, score: resultData.score, totalQuestions: resultData.totalQuestions, subject: resultData.subject, grade: resultData.grade, date: resultData.date }; if (playerName) { try { await addDoc(collection(db, `artifacts/${appId}/public/data/leaderboard`), dataToSaveForLeaderboard); console.log("Score saved to leaderboard!"); } catch (e) { console.error("Error writing to leaderboard:", e); } } try { await addDoc(collection(db, `artifacts/${appId}/public/data/quizResults`), dataToSaveForHistory); console.log("Full quiz result saved to history!"); } catch (e) { console.error("Error writing to history:", e); } }
+        async function displayHistory() { showScreen('history'); const container = document.getElementById('history-table-container'); container.innerHTML = '<p class="text-center text-gray-500">Đang tải lịch sử...</p>'; if (!db || !appId) { container.innerHTML = '<p class="text-center text-red-500">Lỗi CSDL.</p>'; return; } try { const q = query(collection(db, `artifacts/${appId}/public/data/quizResults`)); const querySnapshot = await getDocs(q); if (querySnapshot.empty) { container.innerHTML = '<p class="text-center text-gray-500">Chưa có lịch sử làm bài.</p>'; return; } const results = []; querySnapshot.forEach(doc => results.push({id: doc.id, ...doc.data()})); results.sort((a, b) => (b.date?.toDate() || 0) - (a.date?.toDate() || 0)); const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' }; let tableHTML = '<table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden"><thead class="bg-gray-100/50"><tr><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Ngày Giờ</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Môn</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Chi tiết</th></tr></thead><tbody id="history-table-body" class="bg-white/30 divide-y divide-gray-200 text-gray-800">'; results.forEach((r, index) => { const date = r.date?.toDate() ? r.date.toDate().toLocaleString('vi-VN') : 'N/A'; const scoreDisplay = `${r.score}/${r.totalQuestions || 10}`; tableHTML += `<tr><td class="px-3 py-2 text-sm">${date}</td><td class="px-3 py-2 text-sm font-semibold">${r.name || 'Không lưu'}</td><td class="px-3 py-2 text-sm">${nameMap[r.subject] || r.subject}</td><td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td><td class="px-3 py-2 text-sm"><button data-index="${index}" class="view-detail-btn bg-blue-500 text-white px-2 py-1 rounded-md text-xs hover:bg-blue-600">Xem</button></td></tr>`; }); tableHTML += '</tbody></table>'; container.innerHTML = tableHTML; document.getElementById('history-table-body').addEventListener('click', (e) => { if (e.target.classList.contains('view-detail-btn')) { const index = e.target.dataset.index; showHistoryDetail(results[index]); } }); } catch (error) { console.error("Error fetching history:", error); container.innerHTML = '<p class="text-center text-red-500">Không thể tải lịch sử.</p>'; } }
+        function showHistoryDetail(result) { const summaryEl = document.getElementById('history-detail-summary'); const contentEl = document.getElementById('history-detail-content'); summaryEl.innerHTML = `<strong>Tên:</strong> ${result.name || 'Không lưu'} | <strong>Điểm:</strong> ${result.score}/${result.totalQuestions}`; contentEl.innerHTML = ''; if (result.questions && Array.isArray(result.questions)) { result.questions.forEach((q, index) => { const isCorrect = q.isCorrect; const itemEl = document.createElement('div'); itemEl.className = `p-3 rounded-lg border ${isCorrect ? 'border-green-500 bg-green-100/50' : 'border-red-500 bg-red-100/50'}`; itemEl.innerHTML = `<p class="font-bold text-gray-800">${index + 1}. ${q.questionText}</p><p class="text-sm ${isCorrect ? 'text-green-700' : 'text-red-700'}"><strong>Bé chọn:</strong> ${q.userAnswer || 'Không trả lời'}</p>${!isCorrect ? `<p class="text-sm text-blue-700"><strong>Đáp án đúng:</strong> ${q.correctAnswer}</p>` : ''}`; contentEl.appendChild(itemEl); }); } else { contentEl.innerHTML = '<p>Không có dữ liệu chi tiết cho lần chơi này.</p>'; } showModal('historyDetail'); }
         async function displayLeaderboard() { showScreen('leaderboard'); const container = document.getElementById('leaderboard-table-container'); container.innerHTML = '<p class="text-center text-gray-500">Đang tải bảng xếp hạng...</p>'; if (!db || !appId) { container.innerHTML = '<p class="text-center text-red-500">Lỗi CSDL.</p>'; return; } const subjectFilter = leaderboardSubjectFilter.value; const gradeFilter = leaderboardGradeFilter.value; const nameFilter = leaderboardNameFilter.value.trim().toLowerCase(); try { let queryConstraints = []; if (subjectFilter !== 'all') queryConstraints.push(where("subject", "==", subjectFilter)); if (gradeFilter !== 'all') queryConstraints.push(where("grade", "==", gradeFilter)); const q = query(collection(db, `artifacts/${appId}/public/data/leaderboard`), ...queryConstraints); const querySnapshot = await getDocs(q); if (querySnapshot.empty) { container.innerHTML = '<p class="text-center text-gray-500">Chưa có ai trên bảng xếp hạng cho mục này.</p>'; return; } let results = []; querySnapshot.forEach(doc => { results.push(doc.data()); }); if (nameFilter) { results = results.filter(r => r.name && r.name.toLowerCase().includes(nameFilter)); } results.sort((a, b) => { if (b.score !== a.score) { return b.score - a.score; } const dateA = a.date?.toDate() || new Date(0); const dateB = b.date?.toDate() || new Date(0); return dateB - dateA; }); const topResults = results.slice(0, 10); if (topResults.length === 0) { container.innerHTML = '<p class="text-center text-gray-500">Không tìm thấy kết quả phù hợp.</p>'; return; } let tableHTML = '<table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden"><thead class="bg-gray-100/50"><tr><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Hạng</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên Bé</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th></tr></thead><tbody class="bg-white/30 divide-y divide-gray-200 text-gray-800">'; topResults.forEach((data, index) => { const scoreDisplay = `${data.score}/${data.totalQuestions || 10}`; tableHTML += `<tr><td class="px-3 py-2 text-center text-sm font-bold">${index + 1}</td><td class="px-3 py-2 text-sm font-semibold">${data.name}</td><td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td></tr>`; }); tableHTML += '</tbody></table>'; container.innerHTML = tableHTML; } catch (error) { console.error("Error fetching leaderboard:", error); container.innerHTML = '<p class="text-center text-red-500">Không thể tải bảng xếp hạng.</p>'; } }
         
         // --- GAME LOGIC ---
         function updateStartButtonState() { if (selectedSubject && selectedGrade && selectedSemester && questionBank) { document.getElementById('start-btn').disabled = false; document.getElementById('start-btn').classList.remove('bg-gray-500/50', 'cursor-not-allowed'); document.getElementById('start-btn').classList.add('bg-blue-600/70', 'hover:bg-blue-600/90'); } else { document.getElementById('start-btn').disabled = true; document.getElementById('start-btn').classList.add('bg-gray-500/50', 'cursor-not-allowed'); document.getElementById('start-btn').classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90'); } }
-        
-        function startGame() {
-            clearInterval(timerInterval);
-            sessionAnswers = []; // Reset session answers
-            const errorEl = document.getElementById('start-error');
-            errorEl.textContent = ''; 
-            const questionsExist = questionBank?.[selectedSubject]?.[selectedGrade]?.[selectedSemester]?.length > 0;
-            if (!questionsExist) {
-                console.error("Could not find question set for:", selectedSubject, selectedGrade, selectedSemester);
-                errorEl.textContent = "Lỗi: Không tìm thấy bộ câu hỏi. Vui lòng chọn lại.";
-                setTimeout(() => { errorEl.textContent = ''; }, 4000);
-                return;
-            }
-            let allQuestions = questionBank[selectedSubject][selectedGrade][selectedSemester];
-            currentQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, NUM_OF_QUESTIONS_PER_GAME);
-            if (currentQuestions.length === 0) {
-                 console.error("Not enough questions to start the game:", selectedSubject, selectedGrade, selectedSemester);
-                 errorEl.textContent = "Lỗi: Không đủ câu hỏi để bắt đầu. Vui lòng chọn lại.";
-                 setTimeout(() => { errorEl.textContent = ''; }, 4000);
-                 return;
-            }
-            currentQuestionIndex = 0;
-            score = 0;
-            showScreen('game');
-            displayQuestion();
-        }
-
-        function displayQuestion() { 
-            clearInterval(timerInterval);
-            document.getElementById('feedback-container').innerHTML = ''; 
-            document.getElementById('explanation-container').classList.add('hidden'); 
-            document.getElementById('next-btn').classList.add('hidden'); 
-            const questionData = currentQuestions[currentQuestionIndex]; 
-            document.getElementById('question-container').querySelector('p').textContent = questionData.question; 
-            const optionsContainer = document.getElementById('options-container'); 
-            optionsContainer.innerHTML = ''; 
-            const shuffledOptions = [...questionData.options].sort(() => Math.random() - 0.5); 
-            shuffledOptions.forEach(option => { 
-                const button = document.createElement('button'); 
-                button.textContent = option; 
-                button.className = 'answer-option w-full p-4 rounded-2xl font-semibold glass-btn bg-white/20 hover:bg-white/40 text-gray-800'; 
-                button.onclick = (e) => { playSound('click'); checkAnswer(e.target, questionData.answer); }; 
-                optionsContainer.appendChild(button); 
-            }); 
-            document.getElementById('progress-text').textContent = `Câu ${currentQuestionIndex + 1}/${currentQuestions.length}`; 
-            document.getElementById('score-text').textContent = `Điểm: ${score}`; 
-            document.getElementById('read-question-btn').onclick = () => speakText(questionData.question); 
-            
-            const timerDisplay = document.getElementById('timer-display');
-            if (timerEnabled) {
-                timerDisplay.classList.remove('hidden');
-                let timeLeft = timerDuration;
-                timerDisplay.textContent = `⏰ ${timeLeft}`;
-                timerInterval = setInterval(() => {
-                    timeLeft--;
-                    timerDisplay.textContent = `⏰ ${timeLeft}`;
-                    if (timeLeft <= 0) {
-                        clearInterval(timerInterval);
-                        document.getElementById('feedback-container').textContent = '⌛ Hết giờ!';
-                        checkAnswer({ textContent: null }, questionData.answer);
-                    }
-                }, 1000);
-            } else {
-                timerDisplay.classList.add('hidden');
-            }
-        }
-        
-        function checkAnswer(selectedButton, correctAnswer) {
-            clearInterval(timerInterval);
-            document.querySelectorAll('.answer-option').forEach(btn => btn.disabled = true);
-            const questionData = currentQuestions[currentQuestionIndex];
-            const userAnswer = selectedButton.textContent;
-            const isCorrect = userAnswer == correctAnswer;
-
-            if (isCorrect) {
-                score++;
-                selectedButton.classList.add('correct');
-                document.getElementById('feedback-container').textContent = '🎉 Đúng rồi!';
-                playSound('correct');
-            } else {
-                if (userAnswer) {
-                    selectedButton.classList.add('incorrect');
-                }
-                if (document.getElementById('feedback-container').textContent === '') {
-                    document.getElementById('feedback-container').textContent = '😥 Sai rồi!';
-                }
-                playSound('incorrect');
-                document.querySelectorAll('.answer-option').forEach(btn => { if (btn.textContent == correctAnswer) btn.classList.add('correct'); });
-            }
-
-            sessionAnswers.push({
-                questionText: questionData.question,
-                userAnswer: userAnswer,
-                correctAnswer: correctAnswer,
-                isCorrect: isCorrect
-            });
-            
-            getExplanationFromAI(questionData.question, questionData.answer, selectedGrade);
-            document.getElementById('score-text').textContent = `Điểm: ${score}`;
-            document.getElementById('next-btn').classList.remove('hidden');
-            if (speechSynthesis.speaking) speechSynthesis.cancel();
-        }
-
+        function startGame() { clearInterval(timerInterval); sessionAnswers = []; const errorEl = document.getElementById('start-error'); errorEl.textContent = ''; const questionsExist = questionBank?.[selectedSubject]?.[selectedGrade]?.[selectedSemester]?.length > 0; if (!questionsExist) { errorEl.textContent = "Lỗi: Không tìm thấy bộ câu hỏi. Vui lòng chọn lại."; setTimeout(() => { errorEl.textContent = ''; }, 4000); return; } let allQuestions = questionBank[selectedSubject][selectedGrade][selectedSemester]; currentQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, NUM_OF_QUESTIONS_PER_GAME); if (currentQuestions.length === 0) { errorEl.textContent = "Lỗi: Không đủ câu hỏi để bắt đầu. Vui lòng chọn lại."; setTimeout(() => { errorEl.textContent = ''; }, 4000); return; } currentQuestionIndex = 0; score = 0; showScreen('game'); displayQuestion(); }
+        function displayQuestion() { clearInterval(timerInterval); document.getElementById('feedback-container').innerHTML = ''; document.getElementById('explanation-container').classList.add('hidden'); document.getElementById('next-btn').classList.add('hidden'); const questionData = currentQuestions[currentQuestionIndex]; document.getElementById('question-container').querySelector('p').textContent = questionData.question; const optionsContainer = document.getElementById('options-container'); optionsContainer.innerHTML = ''; const shuffledOptions = [...questionData.options].sort(() => Math.random() - 0.5); shuffledOptions.forEach(option => { const button = document.createElement('button'); button.textContent = option; button.className = 'answer-option w-full p-4 rounded-2xl font-semibold glass-btn bg-white/20 hover:bg-white/40 text-gray-800'; button.onclick = (e) => { playSound('click'); checkAnswer(e.target, questionData.answer); }; optionsContainer.appendChild(button); }); document.getElementById('progress-text').textContent = `Câu ${currentQuestionIndex + 1}/${currentQuestions.length}`; document.getElementById('score-text').textContent = `Điểm: ${score}`; document.getElementById('read-question-btn').onclick = () => speakText(questionData.question); const timerDisplay = document.getElementById('timer-display'); if (timerEnabled) { timerDisplay.classList.remove('hidden'); let timeLeft = timerDuration; timerDisplay.textContent = `⏰ ${timeLeft}`; timerInterval = setInterval(() => { timeLeft--; timerDisplay.textContent = `⏰ ${timeLeft}`; if (timeLeft <= 0) { clearInterval(timerInterval); document.getElementById('feedback-container').textContent = '⌛ Hết giờ!'; checkAnswer({ textContent: null }, questionData.answer); } }, 1000); } else { timerDisplay.classList.add('hidden'); } }
+        function checkAnswer(selectedButton, correctAnswer) { clearInterval(timerInterval); document.querySelectorAll('.answer-option').forEach(btn => btn.disabled = true); const questionData = currentQuestions[currentQuestionIndex]; const userAnswer = selectedButton.textContent; const isCorrect = userAnswer == correctAnswer; if (isCorrect) { score++; selectedButton.classList.add('correct'); document.getElementById('feedback-container').textContent = '🎉 Đúng rồi!'; playSound('correct'); } else { if (userAnswer) { selectedButton.classList.add('incorrect'); } if (document.getElementById('feedback-container').textContent === '') { document.getElementById('feedback-container').textContent = '😥 Sai rồi!'; } playSound('incorrect'); document.querySelectorAll('.answer-option').forEach(btn => { if (btn.textContent == correctAnswer) btn.classList.add('correct'); }); } sessionAnswers.push({ questionText: questionData.question, userAnswer: userAnswer, correctAnswer: correctAnswer, isCorrect: isCorrect }); getExplanationFromAI(questionData.question, questionData.answer, selectedGrade); document.getElementById('score-text').textContent = `Điểm: ${score}`; document.getElementById('next-btn').classList.remove('hidden'); if (speechSynthesis.speaking) speechSynthesis.cancel(); }
         function nextQuestion() { currentQuestionIndex++; if (currentQuestionIndex < currentQuestions.length) { displayQuestion(); } else { showResults(); } }
-        function showResults() { 
-            playSound('complete'); 
-            const finalScore = score; 
-            const totalQuestions = currentQuestions.length; 
-            document.getElementById('modal-final-score').textContent = `${finalScore}/${totalQuestions}`; 
-            const percentage = (finalScore / totalQuestions) * 100; 
-            const finalMessageElement = document.getElementById('modal-final-message'); 
-            if (percentage === 100) finalMessageElement.textContent = "Xuất sắc! Bé thật là giỏi! Hãy chọn tên để lưu điểm nhé."; 
-            else if (percentage >= 70) finalMessageElement.textContent = "Giỏi lắm! Hãy chọn tên để lưu điểm nhé."; 
-            else if (percentage >= 50) finalMessageElement.textContent = "Làm tốt lắm! Hãy chọn tên để lưu điểm nhé."; 
-            else finalMessageElement.textContent = "Cố gắng hơn lần sau nhé! Chọn tên để lưu điểm nào."; 
-            
-            const resultData = { 
-                date: serverTimestamp(), 
-                subject: selectedSubject, 
-                grade: selectedGrade, 
-                semester: selectedSemester, 
-                score: score, 
-                totalQuestions: currentQuestions.length,
-                questions: sessionAnswers
-            };
-            
-            document.getElementById('name-selection-container').onclick = (e) => {
-                if (e.target.classList.contains('name-btn')) {
-                    playSound('click');
-                    const playerName = e.target.dataset.name;
-                    saveResult(resultData, playerName);
-                    hideModal('nameSelection');
-                    displayLeaderboard();
-                }
-            };
-            document.getElementById('skip-and-play-again-btn').onclick = () => {
-                playSound('click');
-                saveResult(resultData, null); 
-                hideModal('nameSelection');
-                resetGame();
-            };
-
-            showModal('nameSelection'); 
-        }
+        function showResults() { playSound('complete'); const finalScore = score; const totalQuestions = currentQuestions.length; document.getElementById('modal-final-score').textContent = `${finalScore}/${totalQuestions}`; const percentage = (finalScore / totalQuestions) * 100; const finalMessageElement = document.getElementById('modal-final-message'); if (percentage === 100) finalMessageElement.textContent = "Xuất sắc! Bé thật là giỏi! Hãy chọn tên để lưu điểm nhé."; else if (percentage >= 70) finalMessageElement.textContent = "Giỏi lắm! Hãy chọn tên để lưu điểm nhé."; else if (percentage >= 50) finalMessageElement.textContent = "Làm tốt lắm! Hãy chọn tên để lưu điểm nhé."; else finalMessageElement.textContent = "Cố gắng hơn lần sau nhé! Chọn tên để lưu điểm nào."; const resultData = { date: serverTimestamp(), subject: selectedSubject, grade: selectedGrade, semester: selectedSemester, score: score, totalQuestions: currentQuestions.length, questions: sessionAnswers }; document.getElementById('name-selection-container').onclick = (e) => { if (e.target.classList.contains('name-btn')) { playSound('click'); const playerName = e.target.dataset.name; saveResult(resultData, playerName); hideModal('nameSelection'); displayLeaderboard(); } }; document.getElementById('skip-and-play-again-btn').onclick = () => { playSound('click'); saveResult(resultData, null); hideModal('nameSelection'); resetGame(); }; showModal('nameSelection'); }
         function resetGame() { showScreen('selection'); selectedSubject = null; selectedGrade = null; selectedSemester = null; document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('selected')); updateStartButtonState(); }
 
         // --- UI & MODAL MANAGEMENT ---
@@ -783,37 +621,241 @@
         function showModal(modalName) { if (modals[modalName]) { modals[modalName].classList.remove('hidden'); setTimeout(() => modals[modalName].classList.remove('opacity-0'), 10); } }
         function hideModal(modalName) { if (modals[modalName]) { modals[modalName].classList.add('opacity-0'); setTimeout(() => modals[modalName].classList.add('hidden'), 300); } }
         function speakText(text) { if (!'speechSynthesis' in window) { console.warn("Speech synthesis not supported."); return; } if (speechSynthesis.speaking) speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'vi-VN'; const voice = speechSynthesis.getVoices().find(v => v.lang === 'vi-VN'); if (voice) utterance.voice = voice; speechSynthesis.speak(utterance); }
-        
         let confirmCallback = null;
-        function showConfirmationModal(message, onConfirm) {
-            document.getElementById('confirmation-message').textContent = message;
-            confirmCallback = onConfirm;
-            showModal('confirmation');
+        function showConfirmationModal(message, onConfirm) { document.getElementById('confirmation-message').textContent = message; confirmCallback = onConfirm; showModal('confirmation'); }
+        async function clearCollection(collectionName) { const feedbackEl = document.getElementById('settings-feedback'); const friendlyName = collectionName === 'leaderboard' ? 'Bảng xếp hạng' : 'Lịch sử thi'; feedbackEl.textContent = `Đang xóa ${friendlyName}...`; feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-gray-700'; const collectionRef = collection(db, `artifacts/${appId}/public/data/${collectionName}`); try { const querySnapshot = await getDocs(collectionRef); const deletePromises = []; querySnapshot.forEach((doc) => { deletePromises.push(deleteDoc(doc.ref)); }); await Promise.all(deletePromises); console.log(`${collectionName} cleared successfully.`); feedbackEl.textContent = `Đã xóa thành công ${friendlyName}!`; feedbackEl.classList.add('text-green-800'); setTimeout(() => feedbackEl.textContent = '', 4000); } catch (error) { console.error(`Error clearing ${collectionName}:`, error); feedbackEl.textContent = `Lỗi khi xóa ${friendlyName}.`; feedbackEl.classList.add('text-red-600'); } }
+
+        // --- NEW ADMIN QUESTION MANAGEMENT ---
+        function displayQuestionManager() {
+            showScreen('questionManager');
+            populateQuestionList();
         }
 
-        async function clearCollection(collectionName) {
-            const feedbackEl = document.getElementById('settings-feedback');
-            const friendlyName = collectionName === 'leaderboard' ? 'Bảng xếp hạng' : 'Lịch sử thi';
-            feedbackEl.textContent = `Đang xóa ${friendlyName}...`;
-            feedbackEl.classList.remove('text-green-800', 'text-red-600');
+        function populateQuestionList() {
+            const container = document.getElementById('question-list-container');
+            container.innerHTML = '';
+            const subject = document.getElementById('q-manager-subject-filter').value;
+            const grade = document.getElementById('q-manager-grade-filter').value;
+            const semester = document.getElementById('q-manager-semester-filter').value;
 
-            const collectionRef = collection(db, `artifacts/${appId}/public/data/${collectionName}`);
+            const filteredQuestions = fullQuestionCollection.filter(q => 
+                (subject === 'all' || q.subject === subject) &&
+                (grade === 'all' || q.grade === grade) &&
+                (semester === 'all' || q.semester === semester)
+            );
+
+            if (filteredQuestions.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-600 font-semibold p-4">Không có câu hỏi nào phù hợp với bộ lọc.</p>';
+                return;
+            }
+
+            filteredQuestions.forEach(q => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'p-3 bg-black/10 rounded-lg';
+                itemEl.innerHTML = `
+                    <p class="font-bold text-gray-800">${q.question}</p>
+                    <p class="text-sm text-gray-600">Đáp án: <span class="font-semibold">${q.answer}</span></p>
+                    <div class="flex gap-2 mt-2">
+                        <button data-id="${q.id}" class="edit-question-btn text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">Sửa</button>
+                        <button data-id="${q.id}" class="delete-question-btn text-xs bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Xóa</button>
+                    </div>
+                `;
+                container.appendChild(itemEl);
+            });
+        }
+
+        function openQuestionModal(questionId = null) {
+            const form = document.getElementById('question-form');
+            form.reset();
+            document.getElementById('question-id-input').value = questionId || '';
+            const title = document.getElementById('question-modal-title');
+            const answerSelect = document.getElementById('correct-answer-select');
+            
+            if (questionId) {
+                title.textContent = 'Chỉnh sửa câu hỏi';
+                const questionData = fullQuestionCollection.find(q => q.id === questionId);
+                if (questionData) {
+                    document.getElementById('question-text-input').value = questionData.question;
+                    questionData.options.forEach((opt, i) => {
+                        document.getElementById(`option-${i+1}-input`).value = opt;
+                    });
+                    populateAnswerSelect(questionData.options, questionData.answer);
+                }
+            } else {
+                title.textContent = 'Thêm câu hỏi mới';
+                populateAnswerSelect(['', '', '', '']);
+            }
+            showModal('questionEdit');
+        }
+
+        function populateAnswerSelect(options, selectedAnswer = null) {
+            const select = document.getElementById('correct-answer-select');
+            select.innerHTML = '';
+            options.forEach((opt, i) => {
+                if(opt) { // Only add option if the text is not empty
+                    const optionEl = document.createElement('option');
+                    optionEl.value = opt;
+                    optionEl.textContent = `Lựa chọn ${i + 1}: ${opt}`;
+                    if (opt === selectedAnswer) {
+                        optionEl.selected = true;
+                    }
+                    select.appendChild(optionEl);
+                }
+            });
+        }
+
+        async function handleQuestionFormSubmit(e) {
+            e.preventDefault();
+            const errorEl = document.getElementById('question-form-error');
+            errorEl.textContent = '';
+
+            const questionId = document.getElementById('question-id-input').value;
+            const questionText = document.getElementById('question-text-input').value.trim();
+            const options = Array.from(document.querySelectorAll('.option-input')).map(input => input.value.trim());
+            const answer = document.getElementById('correct-answer-select').value;
+
+            if (!questionText || options.some(opt => !opt) || !answer) {
+                errorEl.textContent = 'Vui lòng điền đầy đủ tất cả các trường.';
+                return;
+            }
+            if (!options.includes(answer)) {
+                errorEl.textContent = 'Đáp án đúng phải là một trong các lựa chọn.';
+                return;
+            }
+
+            // Get category from the filter dropdowns in the manager view
+            const subject = document.getElementById('q-manager-subject-filter').value;
+            const grade = document.getElementById('q-manager-grade-filter').value;
+            const semester = document.getElementById('q-manager-semester-filter').value;
+
+            if (subject === 'all' || grade === 'all' || semester === 'all') {
+                errorEl.textContent = 'Vui lòng chọn Môn, Lớp và Học kỳ cụ thể trước khi lưu.';
+                return;
+            }
+
+            const questionData = { subject, grade, semester, question: questionText, options, answer };
+
             try {
-                const querySnapshot = await getDocs(collectionRef);
-                const deletePromises = [];
-                querySnapshot.forEach((doc) => {
-                    deletePromises.push(deleteDoc(doc.ref));
-                });
-                await Promise.all(deletePromises);
-                
-                console.log(`${collectionName} cleared successfully.`);
-                feedbackEl.textContent = `Đã xóa thành công ${friendlyName}!`;
-                feedbackEl.classList.add('text-green-800');
-                setTimeout(() => feedbackEl.textContent = '', 4000);
+                const qCollection = collection(db, `artifacts/${appId}/public/data/questions`);
+                if (questionId) {
+                    // Update existing question
+                    const qDoc = doc(qCollection, questionId);
+                    await updateDoc(qDoc, questionData);
+                } else {
+                    // Add new question
+                    await addDoc(qCollection, questionData);
+                }
+                hideModal('questionEdit');
+                await loadQuestionsFromFirestore(); // Refresh local data
+                populateQuestionList(); // Refresh view
             } catch (error) {
-                console.error(`Error clearing ${collectionName}:`, error);
-                feedbackEl.textContent = `Lỗi khi xóa ${friendlyName}.`;
-                feedbackEl.classList.add('text-red-600');
+                console.error("Error saving question:", error);
+                errorEl.textContent = 'Lỗi khi lưu câu hỏi vào CSDL.';
+            }
+        }
+
+        async function deleteQuestion(questionId) {
+            const qDoc = doc(db, `artifacts/${appId}/public/data/questions`, questionId);
+            try {
+                await deleteDoc(qDoc);
+                await loadQuestionsFromFirestore();
+                populateQuestionList();
+            } catch (error) {
+                console.error("Error deleting question:", error);
+                alert("Lỗi khi xóa câu hỏi.");
+            }
+        }
+
+        async function handleAIGenerate() {
+            const feedbackEl = document.getElementById('ai-generation-feedback');
+            const resultsContainer = document.getElementById('ai-results-container');
+            const resultsList = document.getElementById('ai-generated-questions-list');
+            const saveBtn = document.getElementById('ai-save-all-btn');
+            const discardBtn = document.getElementById('ai-discard-all-btn');
+            
+            feedbackEl.textContent = '🤖 AI đang suy nghĩ, vui lòng chờ trong giây lát...';
+            resultsContainer.classList.remove('hidden');
+            resultsList.innerHTML = '';
+            saveBtn.classList.add('hidden');
+            discardBtn.classList.add('hidden');
+
+            const subject = document.getElementById('ai-gen-subject').options[document.getElementById('ai-gen-subject').selectedIndex].text;
+            const grade = document.getElementById('ai-gen-grade').options[document.getElementById('ai-gen-grade').selectedIndex].text;
+            const topic = document.getElementById('ai-gen-topic').value.trim();
+
+            if (!topic) {
+                feedbackEl.textContent = 'Vui lòng nhập một chủ đề cụ thể.';
+                return;
+            }
+            
+            const prompt = `Tạo 5 câu hỏi trắc nghiệm cho môn ${subject} ${grade} về chủ đề "${topic}". Mỗi câu hỏi phải có 4 lựa chọn và 1 đáp án đúng. Trả về dưới dạng JSON.`;
+            const schema = {
+                type: "ARRAY",
+                items: {
+                    type: "OBJECT",
+                    properties: {
+                        "question": { "type": "STRING" },
+                        "options": { "type": "ARRAY", "items": { "type": "STRING" } },
+                        "answer": { "type": "STRING" }
+                    },
+                    required: ["question", "options", "answer"]
+                }
+            };
+
+            try {
+                const jsonString = await callGeminiAPI(prompt, schema);
+                const generatedQuestions = JSON.parse(jsonString);
+
+                if (!Array.isArray(generatedQuestions) || generatedQuestions.length === 0) {
+                    throw new Error("AI did not return a valid list of questions.");
+                }
+
+                feedbackEl.textContent = `Đã tạo ${generatedQuestions.length} câu hỏi! Vui lòng xem lại và lưu.`;
+                generatedQuestions.forEach(q => {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'p-3 bg-black/10 rounded-lg text-sm';
+                    itemEl.innerHTML = `<p class="font-bold">${q.question}</p><p>Đáp án: ${q.answer}</p>`;
+                    resultsList.appendChild(itemEl);
+                });
+
+                saveBtn.classList.remove('hidden');
+                discardBtn.classList.remove('hidden');
+
+                saveBtn.onclick = () => saveGeneratedQuestions(generatedQuestions);
+                discardBtn.onclick = () => {
+                    resultsContainer.classList.add('hidden');
+                };
+
+            } catch (error) {
+                console.error("Error generating questions with AI:", error);
+                feedbackEl.textContent = 'Đã có lỗi xảy ra. Vui lòng thử lại hoặc kiểm tra API Key.';
+            }
+        }
+
+        async function saveGeneratedQuestions(questions) {
+            const subject = document.getElementById('ai-gen-subject').value;
+            const grade = document.getElementById('ai-gen-grade').value;
+            const semester = document.getElementById('ai-gen-semester').value;
+            const feedbackEl = document.getElementById('ai-generation-feedback');
+
+            feedbackEl.textContent = 'Đang lưu câu hỏi...';
+            const qCollection = collection(db, `artifacts/${appId}/public/data/questions`);
+            const promises = questions.map(q => {
+                // Validate that the answer is one of the options
+                if (q.options.includes(q.answer)) {
+                    return addDoc(qCollection, { ...q, subject, grade, semester });
+                }
+                return null;
+            }).filter(p => p !== null);
+
+            try {
+                await Promise.all(promises);
+                feedbackEl.textContent = `Đã lưu thành công ${promises.length} câu hỏi!`;
+                document.getElementById('ai-results-container').classList.add('hidden');
+                await loadQuestionsFromFirestore(); // Refresh data
+            } catch (error) {
+                console.error("Error saving AI questions:", error);
+                feedbackEl.textContent = 'Lỗi khi lưu câu hỏi.';
             }
         }
 
@@ -823,76 +865,61 @@
         document.querySelectorAll('.choice-btn').forEach(btn => btn.addEventListener('click', (e) => { playSound('click'); const type = Object.keys(e.target.dataset)[0]; const value = e.target.dataset[type]; if (type === 'subject') selectedSubject = value; if (type === 'grade') selectedGrade = value; if (type === 'semester') selectedSemester = value; document.querySelectorAll(`[data-${type}]`).forEach(b => b.classList.remove('selected')); e.target.classList.add('selected'); updateStartButtonState(); }));
         document.getElementById('start-btn').addEventListener('click', () => { if (!document.getElementById('start-btn').disabled) { playSound('click'); startGame(); } });
         document.getElementById('next-btn').addEventListener('click', () => { playSound('click'); nextQuestion(); });
-
+        
+        // FIX: Re-attaching event listeners using the now-defined variables
         leaderboardBtn.addEventListener('click', () => { playSound('click'); displayLeaderboard(); });
         backToMenuBtn.addEventListener('click', () => { playSound('click'); resetGame(); });
         leaderboardSubjectFilter.addEventListener('change', displayLeaderboard);
         leaderboardGradeFilter.addEventListener('change', displayLeaderboard);
         leaderboardNameFilter.addEventListener('input', displayLeaderboard);
+        
         document.getElementById('admin-login-btn').addEventListener('click',_=> { playSound('click'); showModal('login'); });
         document.getElementById('close-modal-btn').addEventListener('click', () => hideModal('login'));
         document.getElementById('close-history-detail-btn').addEventListener('click', () => hideModal('historyDetail'));
-        
-        document.getElementById('clear-leaderboard-btn').addEventListener('click', () => {
-            showConfirmationModal('Bạn có chắc chắn muốn xóa TOÀN BỘ bảng xếp hạng không? Hành động này không thể hoàn tác.', () => {
-                clearCollection('leaderboard');
-            });
-        });
-
-        document.getElementById('clear-history-btn').addEventListener('click', () => {
-            showConfirmationModal('Bạn có chắc chắn muốn xóa TOÀN BỘ lịch sử thi không? Hành động này không thể hoàn tác.', () => {
-                clearCollection('quizResults');
-            });
-        });
-
-        document.getElementById('confirm-delete-btn').addEventListener('click', () => {
-            if (typeof confirmCallback === 'function') {
-                playSound('click');
-                confirmCallback();
-            }
-            hideModal('confirmation');
-            confirmCallback = null;
-        });
-
-        document.getElementById('cancel-delete-btn').addEventListener('click', () => {
-            playSound('click');
-            hideModal('confirmation');
-            confirmCallback = null;
-        });
-        
-        document.getElementById('login-form').addEventListener('submit', (e) => { e.preventDefault(); playSound('click'); const u = document.getElementById('username').value; const p = document.getElementById('password').value; if (u === 'admin' && p === 'admin') { document.getElementById('timer-toggle').checked = timerEnabled; document.getElementById('timer-duration').value = timerDuration; hideModal('login'); showScreen('admin'); } else { document.getElementById('login-error').textContent = 'Tên đăng nhập hoặc mật khẩu không đúng.'; } });
+        document.getElementById('confirm-delete-btn').addEventListener('click', () => { if (typeof confirmCallback === 'function') { playSound('click'); confirmCallback(); } hideModal('confirmation'); confirmCallback = null; });
+        document.getElementById('cancel-delete-btn').addEventListener('click', () => { playSound('click'); hideModal('confirmation'); confirmCallback = null; });
+        document.getElementById('login-form').addEventListener('submit', (e) => { e.preventDefault(); playSound('click'); const u = document.getElementById('username').value; const p = document.getElementById('password').value; if (u === 'admin' && p === 'admin') { hideModal('login'); showScreen('admin'); } else { document.getElementById('login-error').textContent = 'Tên đăng nhập hoặc mật khẩu không đúng.'; } });
         document.getElementById('logout-btn').addEventListener('click', () => { playSound('click'); showScreen('selection'); });
+        
+        // Admin Panel Navigation
         document.getElementById('view-history-btn').addEventListener('click', () => { playSound('click'); displayHistory(); });
-        document.getElementById('back-to-admin-btn').addEventListener('click', () => { playSound('click'); showScreen('admin'); });
-        document.getElementById('save-settings-btn').addEventListener('click', async () => {
-            playSound('click');
-            const newTimerEnabled = document.getElementById('timer-toggle').checked;
-            const newTimerDuration = parseInt(document.getElementById('timer-duration').value, 10);
-            const feedbackEl = document.getElementById('settings-feedback');
+        document.getElementById('manage-settings-btn').addEventListener('click', () => { playSound('click'); showScreen('settings'); document.getElementById('timer-toggle').checked = timerEnabled; document.getElementById('timer-duration').value = timerDuration; });
+        document.getElementById('manage-questions-btn').addEventListener('click', () => { playSound('click'); displayQuestionManager(); });
+        document.getElementById('ai-generate-btn').addEventListener('click', () => { playSound('click'); showScreen('aiGenerator'); });
+        document.querySelectorAll('.back-to-admin-btn').forEach(btn => btn.addEventListener('click', () => { playSound('click'); showScreen('admin'); }));
 
-            if (isNaN(newTimerDuration) || newTimerDuration < 5 || newTimerDuration > 120) {
-                feedbackEl.textContent = "Thời gian phải từ 5 đến 120 giây.";
-                feedbackEl.classList.remove('text-green-800');
-                feedbackEl.classList.add('text-red-600');
-                return;
+        // Settings Panel
+        document.getElementById('save-settings-btn').addEventListener('click', () => { playSound('click'); saveAdminSettings(); });
+        document.getElementById('save-api-key-btn').addEventListener('click', () => { playSound('click'); saveApiKey(); });
+        document.getElementById('delete-api-key-btn').addEventListener('click', () => { playSound('click'); deleteApiKey(); });
+        document.getElementById('clear-leaderboard-btn').addEventListener('click', () => { showConfirmationModal('Bạn có chắc chắn muốn xóa TOÀN BỘ bảng xếp hạng không?', () => clearCollection('leaderboard')); });
+        document.getElementById('clear-history-btn').addEventListener('click', () => { showConfirmationModal('Bạn có chắc chắn muốn xóa TOÀN BỘ lịch sử thi không?', () => clearCollection('quizResults')); });
+
+        // Question Manager
+        document.getElementById('q-manager-subject-filter').addEventListener('change', populateQuestionList);
+        document.getElementById('q-manager-grade-filter').addEventListener('change', populateQuestionList);
+        document.getElementById('q-manager-semester-filter').addEventListener('change', populateQuestionList);
+        document.getElementById('add-new-question-btn').addEventListener('click', () => openQuestionModal());
+        document.getElementById('question-list-container').addEventListener('click', (e) => {
+            if (e.target.classList.contains('edit-question-btn')) {
+                openQuestionModal(e.target.dataset.id);
             }
-
-            const settingsRef = doc(db, `artifacts/${appId}/public/data/adminSettings`, 'config');
-            try {
-                await setDoc(settingsRef, { timerEnabled: newTimerEnabled, timerDuration: newTimerDuration });
-                timerEnabled = newTimerEnabled;
-                timerDuration = newTimerDuration;
-                feedbackEl.textContent = "Đã lưu cài đặt!";
-                feedbackEl.classList.add('text-green-800');
-                feedbackEl.classList.remove('text-red-600');
-                setTimeout(() => feedbackEl.textContent = '', 3000);
-            } catch (error) {
-                console.error("Error saving settings:", error);
-                feedbackEl.textContent = "Lỗi khi lưu.";
-                feedbackEl.classList.remove('text-green-800');
-                feedbackEl.classList.add('text-red-600');
+            if (e.target.classList.contains('delete-question-btn')) {
+                showConfirmationModal('Bạn có chắc chắn muốn xóa câu hỏi này không?', () => deleteQuestion(e.target.dataset.id));
             }
         });
+        document.getElementById('question-form').addEventListener('submit', handleQuestionFormSubmit);
+        document.getElementById('close-question-modal-btn').addEventListener('click', () => hideModal('questionEdit'));
+        document.querySelectorAll('.option-input').forEach(input => {
+            input.addEventListener('input', () => {
+                const options = Array.from(document.querySelectorAll('.option-input')).map(i => i.value.trim());
+                const selected = document.getElementById('correct-answer-select').value;
+                populateAnswerSelect(options, selected);
+            });
+        });
+
+        // AI Generator
+        document.getElementById('ai-execute-generation-btn').addEventListener('click', handleAIGenerate);
 
     </script>
 </body>
