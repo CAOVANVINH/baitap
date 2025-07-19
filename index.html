@@ -269,13 +269,18 @@
                 <select id="q-manager-subject-filter" class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả môn</option><option value="toan">Toán Học</option><option value="tiengviet">Tiếng Việt</option></select>
                 <select id="q-manager-grade-filter" class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả lớp</option><option value="lop1">Lớp 1</option><option value="lop2">Lớp 2</option></select>
                 <select id="q-manager-semester-filter" class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả kỳ</option><option value="hocky1">Học Kỳ 1</option><option value="hocky2">Học Kỳ 2</option></select>
+                <select id="q-manager-english-filter" class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800">
+                    <option value="all">Tất cả Tiếng Anh</option>
+                    <option value="english-only">Chỉ Tiếng Anh</option>
+                    <option value="no-english">Không Tiếng Anh</option>
+                </select>
             </div>
             <div id="question-list-container" class="space-y-3 p-3 bg-white/20 rounded-2xl custom-scrollbar">
                 <!-- Question list will be loaded here -->
             </div>
             <div class="flex gap-4 mt-6">
                     <button id="add-new-question-btn" class="w-full glass-btn bg-green-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-green-500/80">Thêm câu hỏi mới</button>
-                    <!-- Removed delete-filtered-questions-btn as per user request -->
+                    <button id="delete-english-questions-btn" class="w-full glass-btn bg-red-600/70 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-600/90">Xóa Câu hỏi có Tiếng Anh</button>
                     <button class="back-to-admin-btn w-full glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
             </div>
         </div>
@@ -393,9 +398,9 @@
             if (!soundsEnabled) return;
             // Ensure Tone.js context is running before playing sounds
             if (Tone.context.state !== 'running') {
-                Tone.start().then(() => {
-                    _triggerSound(soundType);
-                }).catch(e => console.error("Failed to start audio context:", e));
+                Tone.context.resume().then(() => { // Ensure context is resumed
+                    console.log('Audio context resumed');
+                }).catch(e => console.error("Failed to resume audio context:", e));
             } else {
                 _triggerSound(soundType);
             }
@@ -1274,11 +1279,7 @@
                 isCorrect: isCorrect
             });
 
-            // Removed AI explanation call as per user request
             getExplanationFromAI(questionData.question, questionData.answer, selectedGrade); // Re-added AI explanation call
-
-            document.getElementById('score-text').textContent = `Điểm: ${score}`; // Update score display.
-            document.getElementById('next-btn').classList.remove('hidden'); // Show the "Next" button.
 
             if (speechSynthesis.speaking) {
                 speechSynthesis.cancel(); // Stop any ongoing speech.
@@ -1687,13 +1688,23 @@
             const subjectFilter = document.getElementById('q-manager-subject-filter').value;
             const gradeFilter = document.getElementById('q-manager-grade-filter').value;
             const semesterFilter = document.getElementById('q-manager-semester-filter').value;
+            const englishFilter = document.getElementById('q-manager-english-filter').value; // Get English filter value
 
             // Filter questions from the full collection based on selected criteria.
-            const filteredQuestions = fullQuestionCollection.filter(q =>
-                (subjectFilter === 'all' || q.subject === subjectFilter) &&
-                (gradeFilter === 'all' || q.grade === gradeFilter) &&
-                (semesterFilter === 'all' || q.semester === semesterFilter)
-            );
+            const filteredQuestions = fullQuestionCollection.filter(q => {
+                const matchesSubject = (subjectFilter === 'all' || q.subject === subjectFilter);
+                const matchesGrade = (gradeFilter === 'all' || q.grade === gradeFilter);
+                const matchesSemester = (semesterFilter === 'all' || q.semester === semesterFilter);
+                
+                let matchesEnglish = true;
+                if (englishFilter === 'english-only') {
+                    matchesEnglish = containsEnglishCharacters(q.question) || q.options.some(opt => containsEnglishCharacters(opt));
+                } else if (englishFilter === 'no-english') {
+                    matchesEnglish = !(containsEnglishCharacters(q.question) || q.options.some(opt => containsEnglishCharacters(opt)));
+                }
+
+                return matchesSubject && matchesGrade && matchesSemester && matchesEnglish;
+            });
 
             // --- Update Question Counts Summary ---
             const totalQuestionsCountEl = document.getElementById('total-questions-count');
@@ -1940,6 +1951,94 @@
                 feedbackEl.className = 'text-center text-sm font-bold h-4 text-red-600';
                 setTimeout(() => feedbackEl.textContent = '', 3000);
             } 
+        }
+
+        /**
+         * Checks if a string contains any English alphabet characters (a-z, A-Z).
+         * @param {string} text - The string to check.
+         * @returns {boolean} True if English characters are found, false otherwise.
+         */
+        function containsEnglishCharacters(text) {
+            return /[a-zA-Z]/.test(text);
+        }
+
+        /**
+         * Deletes all questions that contain English characters in their question text or options.
+         * @param {HTMLButtonElement} button - The button element that triggered the action.
+         * @returns {Promise<void>} A promise that resolves when deletion is complete.
+         */
+        async function deleteEnglishQuestions(button) {
+            setButtonLoading(button, true);
+            const feedbackEl = document.getElementById('settings-feedback'); // Use a central feedback element
+
+            feedbackEl.textContent = 'Đang tìm và xóa câu hỏi có tiếng Anh...';
+            feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-gray-700';
+
+            const qCollectionRef = collection(db, `artifacts/${appId}/public/data/questions`);
+            
+            try {
+                const querySnapshot = await getDocs(query(qCollectionRef));
+                const questionsToDelete = [];
+
+                querySnapshot.forEach(doc => {
+                    const qData = doc.data();
+                    let hasEnglish = false;
+                    // Check question text
+                    if (qData.question && containsEnglishCharacters(qData.question)) {
+                        hasEnglish = true;
+                    }
+                    // Check options
+                    if (!hasEnglish && qData.options && Array.isArray(qData.options)) {
+                        for (const option of qData.options) {
+                            if (containsEnglishCharacters(option)) {
+                                hasEnglish = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (hasEnglish) {
+                        questionsToDelete.push(doc.ref);
+                    }
+                });
+
+                if (questionsToDelete.length === 0) {
+                    feedbackEl.textContent = 'Không tìm thấy câu hỏi nào có tiếng Anh để xóa.';
+                    feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                    setTimeout(() => feedbackEl.textContent = '', 3000);
+                    return;
+                }
+
+                showConfirmationModal(`Bạn có chắc chắn muốn xóa ${questionsToDelete.length} câu hỏi có tiếng Anh không? Hành động này không thể hoàn tác.`, async () => {
+                    try {
+                        setButtonLoading(button, true); // Re-apply loading state after modal
+                        feedbackEl.textContent = `Đang xóa ${questionsToDelete.length} câu hỏi có tiếng Anh...`;
+                        feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-gray-700';
+
+                        const deletePromises = questionsToDelete.map(docRef => deleteDoc(docRef));
+                        await Promise.all(deletePromises);
+
+                        feedbackEl.textContent = `Đã xóa thành công ${questionsToDelete.length} câu hỏi có tiếng Anh.`;
+                        feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                        setTimeout(() => feedbackEl.textContent = '', 3000);
+
+                        await loadQuestionsFromFirestore(); // Reload all questions
+                        populateQuestionList(); // Refresh the displayed list
+                    } catch (error) {
+                        console.error("Error deleting English questions:", error);
+                        feedbackEl.textContent = "Lỗi khi xóa câu hỏi có tiếng Anh.";
+                        feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+                    } finally {
+                        setButtonLoading(button, false);
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error fetching questions for English check:", error);
+                feedbackEl.textContent = "Lỗi khi quét câu hỏi để xóa.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+            } finally {
+                setButtonLoading(button, false);
+            }
         }
 
         /**
@@ -2269,6 +2368,7 @@
         document.getElementById('q-manager-subject-filter').addEventListener('change', populateQuestionList);
         document.getElementById('q-manager-grade-filter').addEventListener('change', populateQuestionList);
         document.getElementById('q-manager-semester-filter').addEventListener('change', populateQuestionList);
+        document.getElementById('q-manager-english-filter').addEventListener('change', populateQuestionList); // New filter event listener
         document.getElementById('add-new-question-btn').addEventListener('click', () => openQuestionModal()); // Open modal for new question.
         document.getElementById('question-list-container').addEventListener('click', (e) => {
             if (e.target.classList.contains('edit-question-btn')) {
@@ -2278,80 +2378,65 @@
                 showConfirmationModal('Bạn có chắc chắn muốn xóa câu hỏi này không?', () => deleteQuestion(e.target.dataset.id));
             }
         });
-        // Removed "Delete Filtered Questions" button listener as requested.
-        // document.getElementById('delete-filtered-questions-btn').addEventListener('click', async (e) => {
-        //     const subjectFilter = document.getElementById('q-manager-subject-filter').value;
-        //     const gradeFilter = document.getElementById('q-manager-grade-filter').value;
-        //     const semesterFilter = document.getElementById('q-manager-semester-filter').value;
+        // New "Delete English Questions" button listener
+        document.getElementById('delete-english-questions-btn').addEventListener('click', async (e) => {
+            const feedbackEl = document.getElementById('settings-feedback');
+            feedbackEl.textContent = ''; // Clear previous messages
 
-        //     // Prepare query constraints based on selected filters
-        //     const queryConstraints = [];
-        //     if (subjectFilter !== 'all') queryConstraints.push(where("subject", "==", subjectFilter));
-        //     if (gradeFilter !== 'all') queryConstraints.push(where("grade", "==", gradeFilter));
-        //     if (semesterFilter !== 'all') queryConstraints.push(where("semester", "==", semesterFilter));
+            const questionsToDelete = [];
+            fullQuestionCollection.forEach(q => {
+                let hasEnglish = false;
+                // Check question text
+                if (q.question && containsEnglishCharacters(q.question)) {
+                    hasEnglish = true;
+                }
+                // Check options
+                if (!hasEnglish && q.options && Array.isArray(q.options)) {
+                    for (const option of q.options) {
+                        if (containsEnglishCharacters(option)) {
+                            hasEnglish = true;
+                            break;
+                        }
+                    }
+                }
+                if (hasEnglish) {
+                    questionsToDelete.push(q.id); // Collect IDs of questions to delete
+                }
+            });
 
-        //     const feedbackEl = document.getElementById('settings-feedback'); // Using settings-feedback for consistency
-        //     feedbackEl.textContent = ''; // Clear previous messages
+            if (questionsToDelete.length === 0) {
+                feedbackEl.textContent = 'Không tìm thấy câu hỏi nào có tiếng Anh để xóa.';
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                setTimeout(() => feedbackEl.textContent = '', 3000);
+                return;
+            }
 
-        //     // Construct a readable message for the confirmation modal
-        //     let filterDescription = [];
-        //     const nameMap = {
-        //         toan: 'Toán Học', tiengviet: 'Tiếng Việt',
-        //         lop1: 'Lớp 1', lop2: 'Lớp 2',
-        //         hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2'
-        //     };
+            showConfirmationModal(`Bạn có chắc chắn muốn xóa ${questionsToDelete.length} câu hỏi có tiếng Anh không? Hành động này không thể hoàn tác.`, async () => {
+                const qCollectionRef = collection(db, `artifacts/${appId}/public/data/questions`);
+                
+                try {
+                    setButtonLoading(e.currentTarget, true);
+                    feedbackEl.textContent = `Đang xóa ${questionsToDelete.length} câu hỏi có tiếng Anh...`;
+                    feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-gray-700';
 
-        //     if (subjectFilter !== 'all') filterDescription.push(`Môn: ${nameMap[subjectFilter] || subjectFilter}`);
-        //     if (gradeFilter !== 'all') filterDescription.push(`Lớp: ${nameMap[gradeFilter] || gradeFilter}`);
-        //     if (semesterFilter !== 'all') filterDescription.push(`Học kỳ: ${nameMap[semesterFilter] || semesterFilter}`);
+                    const deletePromises = questionsToDelete.map(id => deleteDoc(doc(qCollectionRef, id)));
+                    await Promise.all(deletePromises);
 
-        //     let confirmationMessage = `Bạn có chắc chắn muốn xóa TẤT CẢ câu hỏi `;
-        //     if (filterDescription.length > 0) {
-        //         confirmationMessage += `cho ${filterDescription.join(', ')} `;
-        //     }
-        //     confirmationMessage += `không? Hành động này không thể hoàn tác.`;
+                    feedbackEl.textContent = `Đã xóa thành công ${questionsToDelete.length} câu hỏi có tiếng Anh.`;
+                    feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                    setTimeout(() => feedbackEl.textContent = '', 3000);
 
-        //     showConfirmationModal(confirmationMessage, async () => {
-        //         const qCollectionRef = collection(db, `artifacts/${appId}/public/data/questions`);
-        //         const qToDelete = query(qCollectionRef, ...queryConstraints); // Create query with filters
-
-        //         try {
-        //             setButtonLoading(e.currentTarget, true);
-        //             feedbackEl.textContent = `Đang xóa câu hỏi...`;
-        //             feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-gray-700';
-
-        //             const querySnapshot = await getDocs(qToDelete); // Fetch documents based on the filter
-        //             const deletePromises = [];
-        //             querySnapshot.forEach(doc => {
-        //                 deletePromises.push(deleteDoc(doc.ref));
-        //             });
-
-        //             if (deletePromises.length === 0) {
-        //                 feedbackEl.textContent = 'Không có câu hỏi nào phù hợp với bộ lọc để xóa.';
-        //                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
-        //                 setTimeout(() => feedbackEl.textContent = '', 3000);
-        //                 return;
-        //             }
-
-        //             await Promise.all(deletePromises); // Execute all delete operations
-                    
-        //             feedbackEl.textContent = `Đã xóa thành công ${deletePromises.length} câu hỏi.`;
-        //             feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
-        //             setTimeout(() => feedbackEl.textContent = '', 3000);
-
-        //             // Reload all questions and refresh the display after deletion
-        //             await loadQuestionsFromFirestore();
-        //             populateQuestionList();
-        //         } catch (error) {
-        //             console.error("Error deleting filtered questions:", error);
-        //             feedbackEl.textContent = "Lỗi khi xóa câu hỏi đang hiển thị.";
-        //             feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
-        //             setTimeout(() => feedbackEl.textContent = '', 3000);
-        //         } finally {
-        //             setButtonLoading(e.currentTarget, false);
-        //         }
-        //     });
-        // });
+                    await loadQuestionsFromFirestore(); // Reload all questions
+                    populateQuestionList(); // Refresh the displayed list
+                } catch (error) {
+                    console.error("Error deleting English questions:", error);
+                    feedbackEl.textContent = "Lỗi khi xóa câu hỏi có tiếng Anh.";
+                    feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+                } finally {
+                    setButtonLoading(e.currentTarget, false);
+                }
+            });
+        });
 
         document.getElementById('question-form').addEventListener('submit', handleQuestionFormSubmit); // Handle question form submission.
         document.getElementById('close-question-modal-btn').addEventListener('click', () => hideModal('questionEdit')); // Close question modal.
