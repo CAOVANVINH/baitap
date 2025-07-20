@@ -841,24 +841,32 @@
             const apiKey = userDefinedApiKey || ""; 
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
 
-            if (!response.ok) {
-                const errorBody = await response.text();
-                throw new Error(`API call failed with status: ${response.status}. Body: ${errorBody}`);
-            }
-            
-            const result = await response.json();
-            const generatedContent = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!response.ok) {
+                    const errorBody = await response.text();
+                    console.error("API call failed:", response.status, errorBody);
+                    throw new Error(`API call failed with status: ${response.status}. Chi tiết: ${errorBody.substring(0, 100)}...`);
+                }
+                
+                const result = await response.json();
+                const generatedContent = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
-            if (!generatedContent) {
-                throw new Error("Invalid response structure from API.");
+                if (!generatedContent) {
+                    console.error("Invalid response structure from API:", result);
+                    throw new Error("Cấu trúc phản hồi từ AI không hợp lệ. Vui lòng thử lại.");
+                }
+                return generatedContent;
+            } catch (error) {
+                console.error("Error during Gemini API call:", error);
+                // Re-throw the error to be caught by the calling function (handleAIGenerate)
+                throw error;
             }
-            return generatedContent;
         }
 
         // --- HISTORY & LEADERBOARD ---
@@ -940,7 +948,7 @@
                 quizHistory = results; // Cache results for detailed view.
 
                 // Mapping for display names (e.g., 'toan' to 'Toán').
-                const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
+                const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', 'lop2': 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
 
                 let tableHTML = `
                     <table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden">
@@ -1955,8 +1963,7 @@
         }
 
         /**
-         * Finds and removes duplicate questions from the local `fullQuestionCollection`,
-         * keeping only one unique instance. This operation does NOT interact with Firebase.
+         * Finds and removes duplicate questions from Firestore, keeping only one unique instance.
          * A question is considered a duplicate if its question text and correct answer are identical.
          * @param {HTMLButtonElement} button - The button element that triggered the action.
          * @returns {Promise<void>} A promise that resolves when duplicates are removed.
@@ -1967,45 +1974,60 @@
             feedbackEl.textContent = 'Đang tìm và xóa câu hỏi trùng lặp...';
             feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-gray-700';
 
+            const qCollectionRef = collection(db, `artifacts/${appId}/public/data/questions`);
+            
             try {
+                const querySnapshot = await getDocs(query(qCollectionRef));
                 const uniqueQuestionsMap = new Map(); // Map to store unique questions (key: question+answer, value: first encountered question object)
-                const questionsToKeep = [];
-                const duplicateCount = 0; // Initialize duplicate count
+                const duplicateQuestionIds = [];
 
-                fullQuestionCollection.forEach(q => {
-                    const key = `${q.question.trim().toLowerCase()}-${q.answer.trim().toLowerCase()}`;
+                querySnapshot.forEach(doc => {
+                    const qData = doc.data();
+                    const key = `${qData.question.trim().toLowerCase()}-${qData.answer.trim().toLowerCase()}`;
                     
-                    if (!uniqueQuestionsMap.has(key)) {
-                        // If key does not exist, add this question to the map as unique and keep it.
-                        uniqueQuestionsMap.set(key, q);
-                        questionsToKeep.push(q);
+                    if (uniqueQuestionsMap.has(key)) {
+                        // If key already exists, this is a duplicate. Add its ID to the list for deletion.
+                        duplicateQuestionIds.push(doc.id);
                     } else {
-                        // If key already exists, this is a duplicate. Increment count.
-                        duplicateCount++;
+                        // If key does not exist, add this question to the map as unique.
+                        uniqueQuestionsMap.set(key, qData);
                     }
                 });
 
-                if (duplicateCount === 0) {
+                if (duplicateQuestionIds.length === 0) {
                     feedbackEl.textContent = 'Không tìm thấy câu hỏi trùng lặp nào.';
                     feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
                     setTimeout(() => feedbackEl.textContent = '', 3000);
                     return;
                 }
 
-                showConfirmationModal(`Bạn có chắc chắn muốn xóa ${duplicateCount} câu hỏi trùng lặp không? Hành động này không thể hoàn tác. (Chỉ xóa cục bộ)`, async () => {
-                    // Update the local fullQuestionCollection with only unique questions
-                    fullQuestionCollection = questionsToKeep;
-                    restructureQuestionBank(); // Rebuild questionBank after local modification
-                    populateQuestionList(); // Refresh the displayed list
+                showConfirmationModal(`Bạn có chắc chắn muốn xóa ${duplicateQuestionIds.length} câu hỏi trùng lặp không? Hành động này không thể hoàn tác và sẽ xóa khỏi Firebase.`, async () => {
+                    try {
+                        setButtonLoading(button, true); // Re-apply loading state after modal
+                        feedbackEl.textContent = `Đang xóa ${duplicateQuestionIds.length} câu hỏi trùng lặp khỏi Firebase...`;
+                        feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-gray-700';
 
-                    feedbackEl.textContent = `Đã xóa thành công ${duplicateCount} câu hỏi trùng lặp cục bộ. (Không ảnh hưởng Firebase)`;
-                    feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
-                    setTimeout(() => feedbackEl.textContent = '', 4000);
+                        const deletePromises = duplicateQuestionIds.map(id => deleteDoc(doc(qCollectionRef, id)));
+                        await Promise.all(deletePromises);
+
+                        feedbackEl.textContent = `Đã xóa thành công ${duplicateQuestionIds.length} câu hỏi trùng lặp khỏi Firebase.`;
+                        feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                        setTimeout(() => feedbackEl.textContent = '', 4000);
+
+                        await loadQuestionsFromFirestore(); // Reload all questions
+                        populateQuestionList(); // Refresh the displayed list
+                    } catch (error) {
+                        console.error("Error deleting duplicate questions:", error);
+                        feedbackEl.textContent = "Lỗi khi xóa câu hỏi trùng lặp.";
+                        feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+                    } finally {
+                        setButtonLoading(button, false);
+                    }
                 });
 
             } catch (error) {
-                console.error("Error processing duplicate questions locally:", error);
-                feedbackEl.textContent = "Lỗi khi xử lý câu hỏi trùng lặp cục bộ.";
+                console.error("Error fetching questions for duplicate check:", error);
+                feedbackEl.textContent = "Lỗi khi quét câu hỏi trùng lặp.";
                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
             } finally {
                 setButtonLoading(button, false);
@@ -2013,15 +2035,15 @@
         }
 
         /**
-         * Deletes questions from the local `fullQuestionCollection` based on current filters.
-         * This operation does NOT interact with Firebase.
+         * Deletes questions from Firebase based on current filters.
+         * This operation interacts with Firebase.
          * @param {HTMLButtonElement} button - The button element that triggered the action.
          * @returns {Promise<void>} A promise that resolves when filtered questions are removed.
          */
-        async function deleteFilteredQuestionsLocal(button) {
+        async function deleteFilteredQuestionsFromFirebase(button) {
             setButtonLoading(button, true);
             const feedbackEl = document.getElementById('settings-feedback');
-            feedbackEl.textContent = 'Đang xóa câu hỏi đã lọc cục bộ...';
+            feedbackEl.textContent = 'Đang xóa câu hỏi đã lọc khỏi Firebase...';
             feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-gray-700';
 
             const subjectFilter = document.getElementById('q-manager-subject-filter').value;
@@ -2029,43 +2051,58 @@
             const semesterFilter = document.getElementById('q-manager-semester-filter').value;
             const textFilter = document.getElementById('q-manager-text-filter').value.toLowerCase().trim();
 
-            try {
-                let questionsToDeleteCount = 0;
-                const questionsToKeep = [];
+            const qCollectionRef = collection(db, `artifacts/${appId}/public/data/questions`);
 
-                fullQuestionCollection.forEach(q => {
-                    const matchesSubject = (subjectFilter === 'all' || q.subject === subjectFilter);
-                    const matchesGrade = (gradeFilter === 'all' || q.grade === gradeFilter);
-                    const matchesSemester = (semesterFilter === 'all' || q.semester === semesterFilter);
-                    const matchesText = (textFilter === '' || q.question.toLowerCase().includes(textFilter));
+            try {
+                const questionsToDeleteIds = [];
+                const querySnapshot = await getDocs(query(qCollectionRef)); // Fetch all questions to filter client-side
+
+                querySnapshot.forEach(doc => {
+                    const qData = doc.data();
+                    const matchesSubject = (subjectFilter === 'all' || qData.subject === subjectFilter);
+                    const matchesGrade = (gradeFilter === 'all' || qData.grade === gradeFilter);
+                    const matchesSemester = (semesterFilter === 'all' || qData.semester === semesterFilter);
+                    const matchesText = (textFilter === '' || qData.question.toLowerCase().includes(textFilter));
 
                     if (matchesSubject && matchesGrade && matchesSemester && matchesText) {
-                        questionsToDeleteCount++;
-                    } else {
-                        questionsToKeep.push(q);
+                        questionsToDeleteIds.push(doc.id);
                     }
                 });
 
-                if (questionsToDeleteCount === 0) {
+                if (questionsToDeleteIds.length === 0) {
                     feedbackEl.textContent = 'Không tìm thấy câu hỏi nào phù hợp với bộ lọc để xóa.';
                     feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
                     setTimeout(() => feedbackEl.textContent = '', 3000);
                     return;
                 }
 
-                showConfirmationModal(`Bạn có chắc chắn muốn xóa ${questionsToDeleteCount} câu hỏi đã lọc không? (Chỉ xóa cục bộ)`, async () => {
-                    fullQuestionCollection = questionsToKeep; // Update local collection
-                    restructureQuestionBank(); // Rebuild questionBank after local modification
-                    populateQuestionList(); // Refresh the displayed list
+                showConfirmationModal(`Bạn có chắc chắn muốn xóa ${questionsToDeleteIds.length} câu hỏi đã lọc không? Hành động này không thể hoàn tác và sẽ xóa khỏi Firebase.`, async () => {
+                    try {
+                        setButtonLoading(button, true); // Re-apply loading state after modal
+                        feedbackEl.textContent = `Đang xóa ${questionsToDeleteIds.length} câu hỏi đã lọc khỏi Firebase...`;
+                        feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-gray-700';
 
-                    feedbackEl.textContent = `Đã xóa thành công ${questionsToDeleteCount} câu hỏi đã lọc cục bộ. (Không ảnh hưởng Firebase)`;
-                    feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
-                    setTimeout(() => feedbackEl.textContent = '', 4000);
+                        const deletePromises = questionsToDeleteIds.map(id => deleteDoc(doc(qCollectionRef, id)));
+                        await Promise.all(deletePromises);
+
+                        feedbackEl.textContent = `Đã xóa thành công ${questionsToDeleteIds.length} câu hỏi đã lọc khỏi Firebase.`;
+                        feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                        setTimeout(() => feedbackEl.textContent = '', 4000);
+
+                        await loadQuestionsFromFirestore(); // Reload all questions
+                        populateQuestionList(); // Refresh the displayed list
+                    } catch (error) {
+                        console.error("Error deleting filtered questions from Firebase:", error);
+                        feedbackEl.textContent = "Lỗi khi xóa câu hỏi đã lọc khỏi Firebase.";
+                        feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+                    } finally {
+                        setButtonLoading(button, false);
+                    }
                 });
 
             } catch (error) {
-                console.error("Error deleting filtered questions locally:", error);
-                feedbackEl.textContent = "Lỗi khi xóa câu hỏi đã lọc cục bộ.";
+                console.error("Error fetching questions for filtered deletion:", error);
+                feedbackEl.textContent = "Lỗi khi quét câu hỏi để xóa.";
                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
             } finally {
                 setButtonLoading(button, false);
@@ -2281,7 +2318,7 @@
         });
         // New "Delete Filtered Questions" button listener
         document.getElementById('delete-filtered-questions-btn').addEventListener('click', (e) => {
-            deleteFilteredQuestionsLocal(e.currentTarget);
+            deleteFilteredQuestionsFromFirebase(e.currentTarget); // Call the Firebase deletion function
         });
 
         document.getElementById('question-form').addEventListener('submit', handleQuestionFormSubmit); // Handle question form submission.
@@ -2296,7 +2333,136 @@
         });
 
         // AI Generator actions.
-        document.getElementById('ai-execute-generation-btn').addEventListener('click', (e) => handleAIGenerate(e.currentTarget));
+        document.getElementById('ai-execute-generation-btn').addEventListener('click', async (e) => {
+            const button = e.currentTarget;
+            setButtonLoading(button, true);
+            const feedbackEl = document.getElementById('ai-generation-feedback');
+            const resultsContainer = document.getElementById('ai-results-container');
+            const resultsList = document.getElementById('ai-generated-questions-list');
+            const saveBtn = document.getElementById('ai-save-all-btn');
+            const discardBtn = document.getElementById('ai-discard-all-btn');
+
+            feedbackEl.textContent = '🤖 AI đang suy nghĩ, vui lòng chờ trong giây lát...';
+            resultsContainer.classList.remove('hidden');
+            resultsList.innerHTML = '';
+            saveBtn.classList.add('hidden');
+            discardBtn.classList.add('hidden');
+
+            const subjectValue = document.getElementById('ai-gen-subject').value;
+            const subjectText = document.getElementById('ai-gen-subject').options[document.getElementById('ai-gen-subject').selectedIndex].text;
+            const gradeValue = document.getElementById('ai-gen-grade').value;
+            const gradeText = document.getElementById('ai-gen-grade').options[document.getElementById('ai-gen-grade').selectedIndex].text;
+            const semesterValue = document.getElementById('ai-gen-semester').value;
+            const semesterText = document.getElementById('ai-gen-semester').options[document.getElementById('ai-gen-semester').selectedIndex].text;
+
+            const topic = document.getElementById('ai-gen-topic').value.trim();
+            const numQuestions = parseInt(document.getElementById('ai-gen-num-questions').value, 10);
+
+            if (isNaN(numQuestions) || numQuestions < 1 || numQuestions > 1000) {
+                feedbackEl.textContent = 'Số lượng câu hỏi phải là một số từ 1 đến 1000.';
+                setButtonLoading(button, false);
+                return;
+            }
+
+            if (!topic) {
+                feedbackEl.textContent = 'Vui lòng nhập một chủ đề cụ thể.';
+                setButtonLoading(button, false);
+                return;
+            }
+
+            const prompt = `Tạo ${numQuestions} câu hỏi trắc nghiệm cho môn ${subjectText} ${gradeText} về chủ đề "${topic}". Mỗi câu hỏi phải có 4 lựa chọn và 1 đáp án đúng. Trả về dưới dạng JSON.`;
+            
+            const schema = {
+                type: "ARRAY",
+                items: {
+                    type: "OBJECT",
+                    properties: {
+                        "question": { "type": "STRING" },
+                        "options": { "type": "ARRAY", "items": { "type": "STRING" } },
+                        "answer": { "type": "STRING" }
+                    },
+                    required: ["question", "options", "answer"]
+                }
+            };
+
+            try {
+                const jsonString = await callGeminiAPI(prompt, schema);
+                const generatedQuestions = JSON.parse(jsonString);
+
+                if (!Array.isArray(generatedQuestions) || generatedQuestions.length === 0) {
+                    throw new Error("AI did not return a valid list of questions or the list was empty.");
+                }
+
+                feedbackEl.textContent = `Đã tạo ${generatedQuestions.length} câu hỏi! Vui lòng xem lại và lưu.`;
+                
+                generatedQuestions.forEach(q => {
+                    const itemEl = document.createElement('div'); 
+                    itemEl.className = 'p-3 bg-black/10 rounded-lg text-sm';
+                    itemEl.innerHTML = `
+                        <p class="font-bold">${q.question}</p>
+                        <p>Đáp án: ${q.answer}</p>
+                        <p>Lựa chọn: ${q.options.join(', ')}</p>
+                    `;
+                    resultsList.appendChild(itemEl);
+                });
+
+                saveBtn.classList.remove('hidden');
+                discardBtn.classList.remove('hidden');
+
+                saveBtn.onclick = () => saveGeneratedQuestions(generatedQuestions, subjectValue, gradeValue, semesterValue);
+                discardBtn.onclick = () => { resultsContainer.classList.add('hidden'); };
+
+            } catch (error) {
+                console.error("Error generating questions with AI:", error);
+                feedbackEl.textContent = `Đã có lỗi xảy ra khi tạo câu hỏi: ${error.message}. Vui lòng thử lại hoặc kiểm tra cài đặt API Key và kết nối mạng.`;
+            } finally {
+                setButtonLoading(button, false);
+            }
+        });
+
+        /**
+         * Saves the AI-generated questions to Firestore.
+         * Filters out any invalid questions (e.g., where the answer is not among the options).
+         * Includes duplicate checking.
+         * @param {Array<object>} questions - An array of question objects generated by AI.
+         * @param {string} subject - The subject for these questions (using internal value like 'toan').
+         * @param {string} grade - The grade for these questions (using internal value like 'lop1').
+         * @param {string} semester - The semester for these questions (using internal value like 'hocky1').
+         * @returns {Promise<void>} A promise that resolves when questions are saved.
+         */
+        async function saveGeneratedQuestions(questions, subject, grade, semester) {
+            const feedbackEl = document.getElementById('ai-generation-feedback');
+            feedbackEl.textContent = 'Đang lưu câu hỏi...';
+
+            const qCollection = collection(db, `artifacts/${appId}/public/data/questions`);
+            const promises = questions.map(q => { 
+                // Normalize answer and options for robust comparison
+                const normalizedAnswer = q.answer.trim().toLowerCase();
+                const normalizedOptions = q.options.map(opt => opt.trim().toLowerCase());
+
+                // Create a temporary question object with correct subject/grade/semester values for duplicate check
+                const tempQuestion = { ...q, subject, grade, semester };
+                
+                // Check if the normalized answer is included in the normalized options
+                const isAnswerValid = normalizedOptions.includes(normalizedAnswer);
+
+                if (isAnswerValid && !isDuplicateQuestion(tempQuestion)) { 
+                    return addDoc(qCollection, tempQuestion); 
+                } 
+                console.warn("Skipping question due to invalid answer/options or duplication:", q);
+                return null; 
+            }).filter(p => p !== null); // Filter out null promises (invalid or duplicate questions).
+
+            try { 
+                await Promise.all(promises); // Wait for all valid questions to be added.
+                feedbackEl.textContent = `Đã lưu thành công ${promises.length} câu hỏi!`; 
+                document.getElementById('ai-results-container').classList.add('hidden'); // Hide results container.
+                await loadQuestionsFromFirestore(); // Reload all questions to update the local cache.
+            } catch (error) { 
+                console.error("Error saving AI questions:", error); 
+                feedbackEl.textContent = `Lỗi khi lưu câu hỏi: ${error.message}. Vui lòng kiểm tra Firebase Security Rules hoặc kết nối mạng.`; 
+            } 
+        }
 
     </script>
 </body>
