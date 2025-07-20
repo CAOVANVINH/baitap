@@ -167,7 +167,7 @@
              <div id="explanation-container" class="hidden relative mt-2 bg-black/10 p-4 rounded-2xl text-white text-center font-medium">
                  <p id="explanation-text" class="pr-10"></p>
                  <button id="read-explanation-btn" class="speaker-btn absolute top-1/2 -translate-y-1/2 right-3 text-white focus:outline-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
                  </button>
              </div>
              <button id="next-btn" class="hidden w-full mt-4 glass-btn bg-blue-500/60 text-white font-bold py-3 rounded-2xl shadow-lg hover:bg-blue-500/80">Câu tiếp theo</button>
@@ -1263,9 +1263,11 @@
                     timerDisplay.textContent = `⏰ ${timeLeft}`;
                     if (timeLeft <= 0) {
                         clearInterval(timerInterval); // Stop timer when time runs out.
-                        document.getElementById('feedback-container').textContent = '⌛ Hết giờ!';
-                        // Automatically check answer as incorrect if time runs out.
-                        checkAnswer({ textContent: null }, questionData.answer); 
+                        // --- FIX START ---
+                        // Automatically check answer as incorrect (timeout) by passing null.
+                        // The checkAnswer function will handle feedback, highlighting, and showing the next steps.
+                        checkAnswer(null, questionData.answer);
+                        // --- FIX END ---
                     }
                 }, 1000); // Update every second.
             } else {
@@ -1276,41 +1278,40 @@
         /**
          * Checks the user's selected answer against the correct answer, updates the score,
          * provides visual feedback, and triggers AI explanation.
-         * @param {HTMLButtonElement} selectedButton - The button element selected by the user.
+         * @param {HTMLButtonElement | null} selectedButton - The button element selected by the user, or null if time ran out.
          * @param {string} correctAnswer - The correct answer for the current question.
          */
         function checkAnswer(selectedButton, correctAnswer) {
-            clearInterval(timerInterval); // Stop the timer immediately after an answer is selected.
+            clearInterval(timerInterval); // Stop the timer immediately.
 
-            // Disable all option buttons to prevent further interaction after an answer is chosen.
+            // Disable all option buttons to prevent further interaction.
             document.querySelectorAll('.answer-option').forEach(btn => btn.disabled = true);
 
             const questionData = currentQuestions[currentQuestionIndex];
-            const userAnswer = selectedButton ? selectedButton.textContent : null; // Handle case where time runs out.
+            const userAnswer = selectedButton ? selectedButton.textContent : null;
             const isCorrect = userAnswer == correctAnswer;
 
             if (isCorrect) {
-                score++; // Increment score if correct.
-                if (selectedButton) selectedButton.classList.add('correct'); // Highlight correct answer.
+                score++;
+                if (selectedButton) selectedButton.classList.add('correct');
                 document.getElementById('feedback-container').textContent = '🎉 Đúng rồi!';
-                playSound('correct'); // Play correct sound
+                playSound('correct');
             } else {
-                // If selectedButton is null, it means time ran out.
-                if (!selectedButton) {
-                    document.getElementById('feedback-container').textContent = '⌛ Hết giờ! Đáp án sai.'; // More explicit feedback for timeout
+                playSound('incorrect');
+                // Handle timeout case vs. wrong answer case
+                if (selectedButton === null) {
+                    document.getElementById('feedback-container').textContent = '⌛ Hết giờ!';
                 } else {
-                    // If a button was selected, it was just incorrect.
                     selectedButton.classList.add('incorrect');
                     document.getElementById('feedback-container').textContent = '😥 Sai rồi!';
                 }
-                playSound('incorrect'); // Play incorrect sound
-                // Highlight the correct answer among all options.
+                // Highlight the correct answer in both cases (wrong answer or timeout).
                 document.querySelectorAll('.answer-option').forEach(btn => {
                     if (btn.textContent == correctAnswer) btn.classList.add('correct');
                 });
             }
 
-            // Record the question, user's answer, correct answer, and correctness for session history.
+            // Record the answer for session history.
             sessionAnswers.push({
                 questionText: questionData.question,
                 userAnswer: userAnswer,
@@ -1318,17 +1319,18 @@
                 isCorrect: isCorrect
             });
 
-            // FIX: Show the "Next" button after an answer is checked.
+            // Show the "Next" button.
             document.getElementById('next-btn').classList.remove('hidden');
 
-            getExplanationFromAI(questionData.question, questionData.answer, selectedGrade); // Re-added AI explanation call
+            // Get and display the AI explanation.
+            getExplanationFromAI(questionData.question, questionData.answer, selectedGrade);
 
             if (speechSynthesis.speaking) {
                 speechSynthesis.cancel(); // Stop any ongoing speech.
-                // Remove speaking-active class from all speaker buttons when speech is cancelled
                 document.querySelectorAll('.speaker-btn').forEach(btn => btn.classList.remove('speaking-active'));
             }
         }
+
 
         /**
          * Advances to the next question in the quiz or shows the final results
