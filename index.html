@@ -159,16 +159,16 @@
              <div id="question-container" class="bg-black/10 p-6 rounded-2xl text-center mb-6 min-h-[100px] flex items-center justify-center relative">
                  <p class="text-xl md:text-2xl font-semibold text-white"></p>
                  <button id="read-question-btn" class="speaker-btn absolute top-4 right-4 text-white focus:outline-none">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
                  </button>
              </div>
              <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
              <div id="feedback-container" class="text-center mt-4 font-bold text-2xl h-8 text-white"></div>
              <div id="explanation-container" class="hidden relative mt-2 bg-black/10 p-4 rounded-2xl text-white text-center font-medium">
-                  <p id="explanation-text" class="pr-10"></p>
-                  <button id="read-explanation-btn" class="speaker-btn absolute top-1/2 -translate-y-1/2 right-3 text-white focus:outline-none">
-                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
-                  </button>
+                 <p id="explanation-text" class="pr-10"></p>
+                 <button id="read-explanation-btn" class="speaker-btn absolute top-1/2 -translate-y-1/2 right-3 text-white focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
+                 </button>
              </div>
              <button id="next-btn" class="hidden w-full mt-4 glass-btn bg-blue-500/60 text-white font-bold py-3 rounded-2xl shadow-lg hover:bg-blue-500/80">Câu tiếp theo</button>
         </div>
@@ -269,18 +269,18 @@
                 <select id="q-manager-subject-filter" class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả môn</option><option value="toan">Toán Học</option><option value="tiengviet">Tiếng Việt</option></select>
                 <select id="q-manager-grade-filter" class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả lớp</option><option value="lop1">Lớp 1</option><option value="lop2">Lớp 2</option></select>
                 <select id="q-manager-semester-filter" class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả kỳ</option><option value="hocky1">Học Kỳ 1</option><option value="hocky2">Học Kỳ 2</option></select>
-                <select id="q-manager-english-filter" class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800">
-                    <option value="all">Tất cả Tiếng Anh</option>
-                    <option value="english-only">Chỉ Tiếng Anh</option>
-                    <option value="no-english">Không Tiếng Anh</option>
-                </select>
+                <!-- New input for question text filtering -->
+                <input type="text" id="q-manager-text-filter" placeholder="Lọc theo nội dung câu hỏi..." class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800 placeholder-gray-600">
             </div>
             <div id="question-list-container" class="space-y-3 p-3 bg-white/20 rounded-2xl custom-scrollbar">
                 <!-- Question list will be loaded here -->
             </div>
             <div class="flex gap-4 mt-6">
                     <button id="add-new-question-btn" class="w-full glass-btn bg-green-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-green-500/80">Thêm câu hỏi mới</button>
-                    <button id="delete-english-questions-btn" class="w-full glass-btn bg-red-600/70 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-600/90">Xóa Câu hỏi có Tiếng Anh</button>
+                    <!-- New button for removing duplicate questions -->
+                    <button id="remove-duplicates-btn" class="w-full glass-btn bg-red-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-500/80">Xóa câu hỏi trùng lặp</button>
+                    <!-- New button for deleting filtered questions locally -->
+                    <button id="delete-filtered-questions-btn" class="w-full glass-btn bg-orange-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-orange-500/80">Xóa câu hỏi đã lọc</button>
                     <button class="back-to-admin-btn w-full glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
             </div>
         </div>
@@ -1259,9 +1259,12 @@
                 document.getElementById('feedback-container').textContent = '🎉 Đúng rồi!';
                 playSound('correct'); // Play correct sound
             } else {
-                if (selectedButton) selectedButton.classList.add('incorrect'); // Highlight incorrect selected answer.
-                // Only show "Sai rồi!" if no other feedback is present (e.g., from timer).
-                if (document.getElementById('feedback-container').textContent === '') {
+                // If selectedButton is null, it means time ran out.
+                if (!selectedButton) {
+                    document.getElementById('feedback-container').textContent = '⌛ Hết giờ! Đáp án sai.'; // More explicit feedback for timeout
+                } else {
+                    // If a button was selected, it was just incorrect.
+                    selectedButton.classList.add('incorrect');
                     document.getElementById('feedback-container').textContent = '😥 Sai rồi!';
                 }
                 playSound('incorrect'); // Play incorrect sound
@@ -1319,7 +1322,7 @@
             // Customize the final message based on the user's performance.
             if (percentage === 100) finalMessageElement.textContent = "Xuất sắc! Bé thật là giỏi! Hãy chọn tên để lưu điểm nhé.";
             else if (percentage >= 70) finalMessageElement.textContent = "Giỏi lắm! Hãy chọn tên để lưu điểm nhé.";
-            else if (percentage >= 50) finalMessageElement.textContent = "Làm tốt lắm! Hãy chọn tên để lưu điểm nhé.";
+            else if (percentage >= 50) finalMessageElement.textContent = "Làm tốt lắm! Hãy chọn tên để lưu điểm nào.";
             else finalMessageElement.textContent = "Cố gắng hơn lần sau nhé! Chọn tên để lưu điểm nào.";
 
             // Prepare the result data to be saved to Firestore.
@@ -1467,7 +1470,7 @@
 
         /**
          * Clears all documents from a specified Firestore collection.
-         * This is a "dangerous action" usually performed by an admin.
+         * This is a "dangerous action" usually performed by an "admin".
          * @param {string} collectionName - The name of the collection to clear (e.g., 'leaderboard', 'quizResults', 'questions').
          * @param {HTMLButtonElement} button - The button element that triggered the action, used for showing loading state.
          * @returns {Promise<void>} A promise that resolves when the collection is cleared.
@@ -1691,22 +1694,17 @@
             const subjectFilter = document.getElementById('q-manager-subject-filter').value;
             const gradeFilter = document.getElementById('q-manager-grade-filter').value;
             const semesterFilter = document.getElementById('q-manager-semester-filter').value;
-            const englishFilter = document.getElementById('q-manager-english-filter').value; // Get English filter value
+            const textFilter = document.getElementById('q-manager-text-filter').value.toLowerCase().trim(); // New text filter
 
             // Filter questions from the full collection based on selected criteria.
             const filteredQuestions = fullQuestionCollection.filter(q => {
                 const matchesSubject = (subjectFilter === 'all' || q.subject === subjectFilter);
                 const matchesGrade = (gradeFilter === 'all' || q.grade === gradeFilter);
                 const matchesSemester = (semesterFilter === 'all' || q.semester === semesterFilter);
+                // New text filter logic
+                const matchesText = (textFilter === '' || q.question.toLowerCase().includes(textFilter));
                 
-                let matchesEnglish = true;
-                if (englishFilter === 'english-only') {
-                    matchesEnglish = containsEnglishCharacters(q.question) || q.options.some(opt => containsEnglishCharacters(opt));
-                } else if (englishFilter === 'no-english') {
-                    matchesEnglish = !(containsEnglishCharacters(q.question) || q.options.some(opt => containsEnglishCharacters(opt)));
-                }
-
-                return matchesSubject && matchesGrade && matchesSemester && matchesEnglish;
+                return matchesSubject && matchesGrade && matchesSemester && matchesText; // Updated filter condition
             });
 
             // --- Update Question Counts Summary ---
@@ -1957,87 +1955,57 @@
         }
 
         /**
-         * Checks if a string contains any English alphabet characters (a-z, A-Z).
-         * @param {string} text - The string to check.
-         * @returns {boolean} True if English characters are found, false otherwise.
-         */
-        function containsEnglishCharacters(text) {
-            return /[a-zA-Z]/.test(text);
-        }
-
-        /**
-         * Deletes all questions that contain English characters in their question text or options.
+         * Finds and removes duplicate questions from the local `fullQuestionCollection`,
+         * keeping only one unique instance. This operation does NOT interact with Firebase.
+         * A question is considered a duplicate if its question text and correct answer are identical.
          * @param {HTMLButtonElement} button - The button element that triggered the action.
-         * @returns {Promise<void>} A promise that resolves when deletion is complete.
+         * @returns {Promise<void>} A promise that resolves when duplicates are removed.
          */
-        async function deleteEnglishQuestions(button) {
+        async function removeDuplicateQuestions(button) {
             setButtonLoading(button, true);
-            const feedbackEl = document.getElementById('settings-feedback'); // Use a central feedback element
-
-            feedbackEl.textContent = 'Đang tìm và xóa câu hỏi có tiếng Anh...';
+            const feedbackEl = document.getElementById('settings-feedback'); // Using settings-feedback for general admin messages
+            feedbackEl.textContent = 'Đang tìm và xóa câu hỏi trùng lặp...';
             feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-gray-700';
 
-            const qCollectionRef = collection(db, `artifacts/${appId}/public/data/questions`);
-            
             try {
-                const querySnapshot = await getDocs(query(qCollectionRef));
-                const questionsToDelete = [];
+                const uniqueQuestionsMap = new Map(); // Map to store unique questions (key: question+answer, value: first encountered question object)
+                const questionsToKeep = [];
+                const duplicateCount = 0; // Initialize duplicate count
 
-                querySnapshot.forEach(doc => {
-                    const qData = doc.data();
-                    let hasEnglish = false;
-                    // Check question text
-                    if (qData.question && containsEnglishCharacters(qData.question)) {
-                        hasEnglish = true;
-                    }
-                    // Check options
-                    if (!hasEnglish && qData.options && Array.isArray(qData.options)) {
-                        for (const option of qData.options) {
-                            if (containsEnglishCharacters(option)) {
-                                hasEnglish = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (hasEnglish) {
-                        questionsToDelete.push(doc.ref);
+                fullQuestionCollection.forEach(q => {
+                    const key = `${q.question.trim().toLowerCase()}-${q.answer.trim().toLowerCase()}`;
+                    
+                    if (!uniqueQuestionsMap.has(key)) {
+                        // If key does not exist, add this question to the map as unique and keep it.
+                        uniqueQuestionsMap.set(key, q);
+                        questionsToKeep.push(q);
+                    } else {
+                        // If key already exists, this is a duplicate. Increment count.
+                        duplicateCount++;
                     }
                 });
 
-                if (questionsToDelete.length === 0) {
-                    feedbackEl.textContent = 'Không tìm thấy câu hỏi nào có tiếng Anh để xóa.';
+                if (duplicateCount === 0) {
+                    feedbackEl.textContent = 'Không tìm thấy câu hỏi trùng lặp nào.';
                     feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
                     setTimeout(() => feedbackEl.textContent = '', 3000);
                     return;
                 }
 
-                showConfirmationModal(`Bạn có chắc chắn muốn xóa ${questionsToDelete.length} câu hỏi có tiếng Anh không? Hành động này không thể hoàn tác.`, async () => {
-                    try {
-                        setButtonLoading(button, true); // Re-apply loading state after modal
-                        feedbackEl.textContent = `Đang xóa ${questionsToDelete.length} câu hỏi có tiếng Anh...`;
-                        feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-gray-700';
+                showConfirmationModal(`Bạn có chắc chắn muốn xóa ${duplicateCount} câu hỏi trùng lặp không? Hành động này không thể hoàn tác. (Chỉ xóa cục bộ)`, async () => {
+                    // Update the local fullQuestionCollection with only unique questions
+                    fullQuestionCollection = questionsToKeep;
+                    restructureQuestionBank(); // Rebuild questionBank after local modification
+                    populateQuestionList(); // Refresh the displayed list
 
-                        const deletePromises = questionsToDelete.map(docRef => deleteDoc(docRef));
-                        await Promise.all(deletePromises);
-
-                        feedbackEl.textContent = `Đã xóa thành công ${questionsToDelete.length} câu hỏi có tiếng Anh.`;
-                        feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
-                        setTimeout(() => feedbackEl.textContent = '', 3000);
-
-                        await loadQuestionsFromFirestore(); // Reload all questions
-                        populateQuestionList(); // Refresh the displayed list
-                    } catch (error) {
-                        console.error("Error deleting English questions:", error);
-                        feedbackEl.textContent = "Lỗi khi xóa câu hỏi có tiếng Anh.";
-                        feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
-                    } finally {
-                        setButtonLoading(button, false);
-                    }
+                    feedbackEl.textContent = `Đã xóa thành công ${duplicateCount} câu hỏi trùng lặp cục bộ. (Không ảnh hưởng Firebase)`;
+                    feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                    setTimeout(() => feedbackEl.textContent = '', 4000);
                 });
 
             } catch (error) {
-                console.error("Error fetching questions for English check:", error);
-                feedbackEl.textContent = "Lỗi khi quét câu hỏi để xóa.";
+                console.error("Error processing duplicate questions locally:", error);
+                feedbackEl.textContent = "Lỗi khi xử lý câu hỏi trùng lặp cục bộ.";
                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
             } finally {
                 setButtonLoading(button, false);
@@ -2045,140 +2013,65 @@
         }
 
         /**
-         * Handles the AI question generation process.
-         * Sends a prompt to the Gemini API and displays the generated questions for review.
+         * Deletes questions from the local `fullQuestionCollection` based on current filters.
+         * This operation does NOT interact with Firebase.
          * @param {HTMLButtonElement} button - The button element that triggered the action.
-         * @returns {Promise<void>} A promise that resolves when questions are generated and displayed.
+         * @returns {Promise<void>} A promise that resolves when filtered questions are removed.
          */
-        async function handleAIGenerate(button) {
-            setButtonLoading(button, true); // Show loading spinner.
-            const feedbackEl = document.getElementById('ai-generation-feedback');
-            const resultsContainer = document.getElementById('ai-results-container');
-            const resultsList = document.getElementById('ai-generated-questions-list');
-            const saveBtn = document.getElementById('ai-save-all-btn');
-            const discardBtn = document.getElementById('ai-discard-all-btn');
+        async function deleteFilteredQuestionsLocal(button) {
+            setButtonLoading(button, true);
+            const feedbackEl = document.getElementById('settings-feedback');
+            feedbackEl.textContent = 'Đang xóa câu hỏi đã lọc cục bộ...';
+            feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-gray-700';
 
-            // Reset UI elements for a new generation process.
-            feedbackEl.textContent = '🤖 AI đang suy nghĩ, vui lòng chờ trong giây lát...';
-            resultsContainer.classList.remove('hidden');
-            resultsList.innerHTML = '';
-            saveBtn.classList.add('hidden');
-            discardBtn.classList.add('hidden');
-
-            // Get selected criteria and topic for the AI prompt.
-            const subjectValue = document.getElementById('ai-gen-subject').value; // Get value (e.g., 'toan')
-            const subjectText = document.getElementById('ai-gen-subject').options[document.getElementById('ai-gen-subject').selectedIndex].text; // Get text (e.g., 'Toán Học')
-            const gradeValue = document.getElementById('ai-gen-grade').value;   // Get value (e.g., 'lop1')
-            const gradeText = document.getElementById('ai-gen-grade').options[document.getElementById('ai-gen-grade').selectedIndex].text; // Get text (e.g., 'Lớp 1')
-            const semesterValue = document.getElementById('ai-gen-semester').value; // Get value (e.g., 'hocky1')
-            const semesterText = document.getElementById('ai-gen-semester').options[document.getElementById('ai-gen-semester').selectedIndex].text; // Get text (e.g., 'Học Kỳ 1')
-
-            const topic = document.getElementById('ai-gen-topic').value.trim();
-            const numQuestions = parseInt(document.getElementById('ai-gen-num-questions').value, 10); // Get number of questions.
-
-            // Validate number of questions input.
-            if (isNaN(numQuestions) || numQuestions < 1 || numQuestions > 1000) { // Max changed to 1000
-                feedbackEl.textContent = 'Số lượng câu hỏi phải là một số từ 1 đến 1000.'; // Message changed
-                setButtonLoading(button, false);
-                return;
-            }
-
-            if (!topic) {
-                feedbackEl.textContent = 'Vui lòng nhập một chủ đề cụ thể.';
-                setButtonLoading(button, false);
-                return;
-            }
-
-            // Construct the prompt for the AI, including the requested number of questions.
-            const prompt = `Tạo ${numQuestions} câu hỏi trắc nghiệm cho môn ${subjectText} ${gradeText} về chủ đề "${topic}". Mỗi câu hỏi phải có 4 lựa chọn và 1 đáp án đúng. Trả về dưới dạng JSON.`;
-            
-            // Define the JSON schema for the expected AI response, ensuring structured output.
-            const schema = {
-                type: "ARRAY",
-                items: {
-                    type: "OBJECT",
-                    properties: {
-                        "question": { "type": "STRING" },
-                        "options": { "type": "ARRAY", "items": { "type": "STRING" } },
-                        "answer": { "type": "STRING" }
-                    },
-                    required: ["question", "options", "answer"]
-                }
-            };
+            const subjectFilter = document.getElementById('q-manager-subject-filter').value;
+            const gradeFilter = document.getElementById('q-manager-grade-filter').value;
+            const semesterFilter = document.getElementById('q-manager-semester-filter').value;
+            const textFilter = document.getElementById('q-manager-text-filter').value.toLowerCase().trim();
 
             try {
-                const jsonString = await callGeminiAPI(prompt, schema); // Call Gemini API.
-                const generatedQuestions = JSON.parse(jsonString); // Parse the JSON response.
+                let questionsToDeleteCount = 0;
+                const questionsToKeep = [];
 
-                if (!Array.isArray(generatedQuestions) || generatedQuestions.length === 0) {
-                    throw new Error("AI did not return a valid list of questions.");
-                }
+                fullQuestionCollection.forEach(q => {
+                    const matchesSubject = (subjectFilter === 'all' || q.subject === subjectFilter);
+                    const matchesGrade = (gradeFilter === 'all' || q.grade === gradeFilter);
+                    const matchesSemester = (semesterFilter === 'all' || q.semester === semesterFilter);
+                    const matchesText = (textFilter === '' || q.question.toLowerCase().includes(textFilter));
 
-                feedbackEl.textContent = `Đã tạo ${generatedQuestions.length} câu hỏi! Vui lòng xem lại và lưu.`;
-                
-                // Display generated questions for user review.
-                generatedQuestions.forEach(q => {
-                    const itemEl = document.createElement('div');
-                    itemEl.className = 'p-3 bg-black/10 rounded-lg text-sm';
-                    itemEl.innerHTML = `
-                        <p class="font-bold">${q.question}</p>
-                        <p>Đáp án: ${q.answer}</p>
-                        <p>Lựa chọn: ${q.options.join(', ')}</p>
-                    `;
-                    resultsList.appendChild(itemEl);
+                    if (matchesSubject && matchesGrade && matchesSemester && matchesText) {
+                        questionsToDeleteCount++;
+                    } else {
+                        questionsToKeep.push(q);
+                    }
                 });
 
-                saveBtn.classList.remove('hidden'); // Show save button.
-                discardBtn.classList.remove('hidden'); // Show discard button.
+                if (questionsToDeleteCount === 0) {
+                    feedbackEl.textContent = 'Không tìm thấy câu hỏi nào phù hợp với bộ lọc để xóa.';
+                    feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                    setTimeout(() => feedbackEl.textContent = '', 3000);
+                    return;
+                }
 
-                // Set up event listeners for saving or discarding generated questions.
-                // Pass the correct 'value' attributes for subject, grade, and semester.
-                saveBtn.onclick = () => saveGeneratedQuestions(generatedQuestions, subjectValue, gradeValue, semesterValue);
-                discardBtn.onclick = () => { resultsContainer.classList.add('hidden'); };
+                showConfirmationModal(`Bạn có chắc chắn muốn xóa ${questionsToDeleteCount} câu hỏi đã lọc không? (Chỉ xóa cục bộ)`, async () => {
+                    fullQuestionCollection = questionsToKeep; // Update local collection
+                    restructureQuestionBank(); // Rebuild questionBank after local modification
+                    populateQuestionList(); // Refresh the displayed list
+
+                    feedbackEl.textContent = `Đã xóa thành công ${questionsToDeleteCount} câu hỏi đã lọc cục bộ. (Không ảnh hưởng Firebase)`;
+                    feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                    setTimeout(() => feedbackEl.textContent = '', 4000);
+                });
 
             } catch (error) {
-                console.error("Error generating questions with AI:", error);
-                feedbackEl.textContent = 'Đã có lỗi xảy ra. Vui lòng thử lại hoặc kiểm tra API Key.';
+                console.error("Error deleting filtered questions locally:", error);
+                feedbackEl.textContent = "Lỗi khi xóa câu hỏi đã lọc cục bộ.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
             } finally {
-                setButtonLoading(button, false); // Reset button loading state.
+                setButtonLoading(button, false);
             }
         }
 
-        /**
-         * Saves the AI-generated questions to Firestore.
-         * Filters out any invalid questions (e.g., where the answer is not among the options).
-         * Includes duplicate checking.
-         * @param {Array<object>} questions - An array of question objects generated by AI.
-         * @param {string} subject - The subject for these questions (using internal value like 'toan').
-         * @param {string} grade - The grade for these questions (using internal value like 'lop1').
-         * @param {string} semester - The semester for these questions (using internal value like 'hocky1').
-         * @returns {Promise<void>} A promise that resolves when questions are saved.
-         */
-        async function saveGeneratedQuestions(questions, subject, grade, semester) {
-            const feedbackEl = document.getElementById('ai-generation-feedback');
-            feedbackEl.textContent = 'Đang lưu câu hỏi...';
-
-            const qCollection = collection(db, `artifacts/${appId}/public/data/questions`);
-            const promises = questions.map(q => { 
-                // Create a temporary question object with correct subject/grade/semester values for duplicate check
-                const tempQuestion = { ...q, subject, grade, semester };
-                if (q.options.includes(q.answer) && !isDuplicateQuestion(tempQuestion)) { 
-                    return addDoc(qCollection, tempQuestion); 
-                } 
-                console.warn("Skipping question due to invalid answer/options or duplication:", q);
-                return null; 
-            }).filter(p => p !== null); // Filter out null promises (invalid or duplicate questions).
-
-            try { 
-                await Promise.all(promises); // Wait for all valid questions to be added.
-                feedbackEl.textContent = `Đã lưu thành công ${promises.length} câu hỏi!`; 
-                document.getElementById('ai-results-container').classList.add('hidden'); // Hide results container.
-                await loadQuestionsFromFirestore(); // Reload all questions to update the local cache.
-            } catch (error) { 
-                console.error("Error saving AI questions:", error); 
-                feedbackEl.textContent = 'Lỗi khi lưu câu hỏi.'; 
-            } 
-        }
 
         // --- EVENT LISTENERS ---
         // Initialize Firebase and start audio context when the DOM is fully loaded.
@@ -2371,7 +2264,8 @@
         document.getElementById('q-manager-subject-filter').addEventListener('change', populateQuestionList);
         document.getElementById('q-manager-grade-filter').addEventListener('change', populateQuestionList);
         document.getElementById('q-manager-semester-filter').addEventListener('change', populateQuestionList);
-        document.getElementById('q-manager-english-filter').addEventListener('change', populateQuestionList); // New filter event listener
+        // New text filter event listener
+        document.getElementById('q-manager-text-filter').addEventListener('input', populateQuestionList); 
         document.getElementById('add-new-question-btn').addEventListener('click', () => openQuestionModal()); // Open modal for new question.
         document.getElementById('question-list-container').addEventListener('click', (e) => {
             if (e.target.classList.contains('edit-question-btn')) {
@@ -2381,64 +2275,13 @@
                 showConfirmationModal('Bạn có chắc chắn muốn xóa câu hỏi này không?', () => deleteQuestion(e.target.dataset.id));
             }
         });
-        // New "Delete English Questions" button listener
-        document.getElementById('delete-english-questions-btn').addEventListener('click', async (e) => {
-            const feedbackEl = document.getElementById('settings-feedback');
-            feedbackEl.textContent = ''; // Clear previous messages
-
-            const questionsToDelete = [];
-            fullQuestionCollection.forEach(q => {
-                let hasEnglish = false;
-                // Check question text
-                if (q.question && containsEnglishCharacters(q.question)) {
-                    hasEnglish = true;
-                }
-                // Check options
-                if (!hasEnglish && q.options && Array.isArray(q.options)) {
-                    for (const option of q.options) {
-                        if (containsEnglishCharacters(option)) {
-                            hasEnglish = true;
-                            break;
-                        }
-                    }
-                }
-                if (hasEnglish) {
-                    questionsToDelete.push(q.id); // Collect IDs of questions to delete
-                }
-            });
-
-            if (questionsToDelete.length === 0) {
-                feedbackEl.textContent = 'Không tìm thấy câu hỏi nào có tiếng Anh để xóa.';
-                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
-                setTimeout(() => feedbackEl.textContent = '', 3000);
-                return;
-            }
-
-            showConfirmationModal(`Bạn có chắc chắn muốn xóa ${questionsToDelete.length} câu hỏi có tiếng Anh không? Hành động này không thể hoàn tác.`, async () => {
-                const qCollectionRef = collection(db, `artifacts/${appId}/public/data/questions`);
-                
-                try {
-                    setButtonLoading(e.currentTarget, true);
-                    feedbackEl.textContent = `Đang xóa ${questionsToDelete.length} câu hỏi có tiếng Anh...`;
-                    feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-gray-700';
-
-                    const deletePromises = questionsToDelete.map(id => deleteDoc(doc(qCollectionRef, id)));
-                    await Promise.all(deletePromises);
-
-                    feedbackEl.textContent = `Đã xóa thành công ${questionsToDelete.length} câu hỏi có tiếng Anh.`;
-                    feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
-                    setTimeout(() => feedbackEl.textContent = '', 3000);
-
-                    await loadQuestionsFromFirestore(); // Reload all questions
-                    populateQuestionList(); // Refresh the displayed list
-                } catch (error) {
-                    console.error("Error deleting English questions:", error);
-                    feedbackEl.textContent = "Lỗi khi xóa câu hỏi có tiếng Anh.";
-                    feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
-                } finally {
-                    setButtonLoading(e.currentTarget, false);
-                }
-            });
+        // New "Remove Duplicates" button listener
+        document.getElementById('remove-duplicates-btn').addEventListener('click', (e) => {
+            removeDuplicateQuestions(e.currentTarget);
+        });
+        // New "Delete Filtered Questions" button listener
+        document.getElementById('delete-filtered-questions-btn').addEventListener('click', (e) => {
+            deleteFilteredQuestionsLocal(e.currentTarget);
         });
 
         document.getElementById('question-form').addEventListener('submit', handleQuestionFormSubmit); // Handle question form submission.
