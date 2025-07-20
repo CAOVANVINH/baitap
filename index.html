@@ -152,15 +152,15 @@
         <!-- Game Screen -->
         <div id="game-screen" class="hidden">
              <div class="flex justify-between items-center mb-4 text-white">
-                <div id="progress-text" class="font-semibold">Câu 1/10</div>
-                <div id="timer-display" class="font-bold text-lg hidden"></div>
-                <div id="score-text" class="font-bold text-lg">Điểm: 0</div>
+                 <div id="progress-text" class="font-semibold">Câu 1/10</div>
+                 <div id="timer-display" class="font-bold text-lg hidden"></div>
+                 <div id="score-text" class="font-bold text-lg">Điểm: 0</div>
              </div>
              <div id="question-container" class="bg-black/10 p-6 rounded-2xl text-center mb-6 min-h-[100px] flex items-center justify-center relative">
-                <p class="text-xl md:text-2xl font-semibold text-white"></p>
-                <button id="read-question-btn" class="speaker-btn absolute top-4 right-4 text-white focus:outline-none">
-                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
-                </button>
+                 <p class="text-xl md:text-2xl font-semibold text-white"></p>
+                 <button id="read-question-btn" class="speaker-btn absolute top-4 right-4 text-white focus:outline-none">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
+                 </button>
              </div>
              <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
              <div id="feedback-container" class="text-center mt-4 font-bold text-2xl h-8 text-white"></div>
@@ -207,12 +207,12 @@
                 <div>
                     <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">Cài đặt Gemini API Key</h3>
                      <div class="space-y-4 max-w-sm mx-auto p-4 bg-white/20 rounded-xl">
-                        <p class="text-xs text-center text-gray-600">Thêm API Key của bạn để sử dụng tính năng tạo câu hỏi bằng AI. Để trống để dùng key mặc định của hệ thống.</p>
-                        <input type="password" id="gemini-api-key-input" placeholder="Nhập Gemini API Key của bạn..." class="w-full px-3 py-2 border border-gray-300/50 rounded-lg bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
-                        <div class="flex gap-2">
-                            <button id="save-api-key-btn" class="w-full glass-btn bg-green-500/60 text-white font-bold py-2 rounded-xl shadow-lg hover:bg-green-500/80 flex justify-center items-center">Lưu Key</button>
-                            <button id="delete-api-key-btn" class="w-full glass-btn bg-gray-500/60 text-white font-bold py-2 rounded-xl shadow-lg hover:bg-gray-500/80 flex justify-center items-center">Xóa Key</button>
-                        </div>
+                         <p class="text-xs text-center text-gray-600">Thêm API Key của bạn để sử dụng tính năng tạo câu hỏi bằng AI. Để trống để dùng key mặc định của hệ thống.</p>
+                         <input type="password" id="gemini-api-key-input" placeholder="Nhập Gemini API Key của bạn..." class="w-full px-3 py-2 border border-gray-300/50 rounded-lg bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
+                         <div class="flex gap-2">
+                             <button id="save-api-key-btn" class="w-full glass-btn bg-green-500/60 text-white font-bold py-2 rounded-xl shadow-lg hover:bg-green-500/80 flex justify-center items-center">Lưu Key</button>
+                             <button id="delete-api-key-btn" class="w-full glass-btn bg-gray-500/60 text-white font-bold py-2 rounded-xl shadow-lg hover:bg-gray-500/80 flex justify-center items-center">Xóa Key</button>
+                         </div>
                      </div>
                 </div>
                 <!-- Game Settings -->
@@ -1130,12 +1130,12 @@
                     document.getElementById('start-btn').disabled = true;
                     document.getElementById('start-btn').classList.add('bg-gray-500/50', 'cursor-not-allowed');
                     document.getElementById('start-btn').classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90');
+                }
+            } else {
+                document.getElementById('start-btn').disabled = true;
+                document.getElementById('start-btn').classList.add('bg-gray-500/50', 'cursor-not-allowed');
+                document.getElementById('start-btn').classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90');
             }
-        } else {
-            document.getElementById('start-btn').disabled = true;
-            document.getElementById('start-btn').classList.add('bg-gray-500/50', 'cursor-not-allowed');
-            document.getElementById('start-btn').classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90');
-        }
         }
 
         /**
@@ -1278,6 +1278,9 @@
                 correctAnswer: correctAnswer,
                 isCorrect: isCorrect
             });
+
+            // FIX: Show the "Next" button after an answer is checked.
+            document.getElementById('next-btn').classList.remove('hidden');
 
             getExplanationFromAI(questionData.question, questionData.answer, selectedGrade); // Re-added AI explanation call
 
@@ -2065,7 +2068,7 @@
             // Get selected criteria and topic for the AI prompt.
             const subjectValue = document.getElementById('ai-gen-subject').value; // Get value (e.g., 'toan')
             const subjectText = document.getElementById('ai-gen-subject').options[document.getElementById('ai-gen-subject').selectedIndex].text; // Get text (e.g., 'Toán Học')
-            const gradeValue = document.getElementById('ai-gen-grade').value;     // Get value (e.g., 'lop1')
+            const gradeValue = document.getElementById('ai-gen-grade').value;   // Get value (e.g., 'lop1')
             const gradeText = document.getElementById('ai-gen-grade').options[document.getElementById('ai-gen-grade').selectedIndex].text; // Get text (e.g., 'Lớp 1')
             const semesterValue = document.getElementById('ai-gen-semester').value; // Get value (e.g., 'hocky1')
             const semesterText = document.getElementById('ai-gen-semester').options[document.getElementById('ai-gen-semester').selectedIndex].text; // Get text (e.g., 'Học Kỳ 1')
