@@ -422,7 +422,7 @@
         let db, auth, appId, questionBank = {}, userDefinedApiKey = null;
         let selectedSubject, selectedGrade, selectedSemester;
         let currentQuestions = [], currentQuestionIndex = 0, score = 0, sessionAnswers = [];
-        const NUM_OF_QUESTIONS_PER_GAME = 10; // Default number of questions per game
+        let quizQuestionLimit = 10; // Changed to let, initialized with default value
         let timerEnabled = false, timerDuration = 30, timerInterval;
         let fullQuestionCollection = []; // Stores all questions from Firestore for admin management
         let studentList = []; // Stores student names from Firestore
@@ -636,7 +636,7 @@
                     const settings = docSnap.data();
                     timerEnabled = settings.timerEnabled ?? false; // Default to false if not present.
                     timerDuration = settings.timerDuration ?? 30; // Default to 30 seconds if not present.
-                    // quizQuestionLimit = settings.quizQuestionLimit ?? 10; // Removed as it's now fixed
+                    quizQuestionLimit = settings.quizQuestionLimit ?? 10; // Load quiz question limit
                 }
             } catch (error) 
                 {console.error("Error loading admin settings:", error); 
@@ -654,7 +654,7 @@
             setButtonLoading(button, true); // Show loading spinner on the button.
             const newTimerEnabled = document.getElementById('timer-toggle').checked;
             const newTimerDuration = parseInt(document.getElementById('timer-duration').value, 10);
-            // const newQuizQuestionLimit = parseInt(document.getElementById('quiz-question-limit').value, 10); // Removed
+            const newQuizQuestionLimit = parseInt(document.getElementById('quiz-question-limit').value, 10); // Get new quiz question limit
             const feedbackEl = document.getElementById('settings-feedback');
 
             // Validate the input for timer duration.
@@ -664,13 +664,13 @@
                 setButtonLoading(button, false);
                 return;
             }
-            // Removed quiz question limit validation as it's now fixed
-            // if (isNaN(newQuizQuestionLimit) || newQuizQuestionLimit < 1 || newQuizQuestionLimit > 50) {
-            //     feedbackEl.textContent = "Số câu hỏi mỗi lần chơi phải từ 1 đến 50.";
-            //     feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
-            //     setButtonLoading(button, false);
-            //     return;
-            // }
+            // Validate quiz question limit
+            if (isNaN(newQuizQuestionLimit) || newQuizQuestionLimit < 1 || newQuizQuestionLimit > 50) {
+                feedbackEl.textContent = "Số câu hỏi mỗi lần chơi phải từ 1 đến 50.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+                setButtonLoading(button, false);
+                return;
+            }
 
             const settingsRef = doc(db, `artifacts/${appId}/public/data/adminSettings`, 'config');
             try {
@@ -678,12 +678,12 @@
                 await setDoc(settingsRef, { 
                     timerEnabled: newTimerEnabled, 
                     timerDuration: newTimerDuration,
-                    // quizQuestionLimit: newQuizQuestionLimit // Removed
+                    quizQuestionLimit: newQuizQuestionLimit // Save quiz question limit
                 }, { merge: true });
                 // Update local state after successful save.
                 timerEnabled = newTimerEnabled;
                 timerDuration = newTimerDuration;
-                // quizQuestionLimit = newQuizQuestionLimit; // Removed
+                quizQuestionLimit = newQuizQuestionLimit; // Update local variable
                 feedbackEl.textContent = "Đã lưu cài đặt!";
                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
                 setTimeout(() => feedbackEl.textContent = '', 3000); // Clear message after 3 seconds.
@@ -779,6 +779,24 @@
             }
         }
         
+        /**
+         * Normalizes text for better speech synthesis, replacing symbols with Vietnamese words.
+         * @param {string} text - The text to normalize.
+         * @returns {string} The normalized text.
+         */
+        function normalizeTextForSpeech(text) {
+            let normalized = text;
+            normalized = normalized.replace(/\+/g, ' cộng ');
+            normalized = normalized.replace(/-/g, ' trừ ');
+            normalized = normalized.replace(/\*/g, ' nhân ');
+            normalized = normalized.replace(/\//g, ' chia ');
+            normalized = normalized.replace(/=/g, ' bằng ');
+            normalized = normalized.replace(/\?/g, ' hỏi chấm ');
+            // Remove multiple spaces
+            normalized = normalized.replace(/\s+/g, ' ').trim();
+            return normalized;
+        }
+
         // --- AI EXPLANATION & GENERATION ---
         /**
          * Fetches an explanation for a given question and answer from the Gemini AI.
@@ -808,7 +826,7 @@
                 
                 // Set up text-to-speech for the explanation.
                 readExplanationBtn.onclick = () => {
-                    speakText(generatedText, readExplanationBtn); // Pass the button reference
+                    speakText(normalizeTextForSpeech(generatedText), readExplanationBtn); // Pass the button reference
                 };
                 readExplanationBtn.style.display = 'block'; // Show speaker button after explanation is ready
             } catch (error) {
@@ -1169,8 +1187,8 @@
             // Shuffle all available questions for the selected criteria.
             let allAvailableQuestions = questionsForSelection.sort(() => Math.random() - 0.5);
 
-            // Limit to the fixed number of questions (NUM_OF_QUESTIONS_PER_GAME)
-            currentQuestions = allAvailableQuestions.slice(0, NUM_OF_QUESTIONS_PER_GAME);
+            // Limit to the fixed number of questions (quizQuestionLimit)
+            currentQuestions = allAvailableQuestions.slice(0, quizQuestionLimit);
 
             if (currentQuestions.length === 0) {
                 errorEl.textContent = "Lỗi: Không đủ câu hỏi để bắt đầu. Vui lòng chọn lại.";
@@ -1221,7 +1239,7 @@
 
             // Set up text-to-speech for reading the question aloud.
             const readQuestionBtn = document.getElementById('read-question-btn');
-            readQuestionBtn.onclick = () => speakText(questionData.question, readQuestionBtn); // Pass button reference
+            readQuestionBtn.onclick = () => speakText(normalizeTextForSpeech(questionData.question), readQuestionBtn); // Pass button reference
             readQuestionBtn.style.display = 'block'; // Ensure the speaker button is visible
 
             // Timer logic: display and start countdown if enabled.
@@ -2165,13 +2183,13 @@
         });
 
         // Leaderboard button click listener.
-        leaderboardBtn.addEventListener('click', () => {
+        document.getElementById('leaderboard-btn').addEventListener('click', () => {
             playSound('click');
             displayLeaderboard(); // Display the leaderboard.
         });
 
         // Back to menu button click listener (from leaderboard).
-        backToMenuBtn.addEventListener('click', () => {
+        document.getElementById('back-to-menu-btn').addEventListener('click', () => {
             playSound('click');
             resetGame(); // Reset game state and return to selection.
         });
@@ -2238,7 +2256,7 @@
             // Populate settings inputs with current values.
             document.getElementById('timer-toggle').checked = timerEnabled;
             document.getElementById('timer-duration').value = timerDuration;
-            document.getElementById('quiz-question-limit').value = NUM_OF_QUESTIONS_PER_GAME; // Populate with fixed value
+            document.getElementById('quiz-question-limit').value = quizQuestionLimit; // Populate with loaded value
         });
         document.getElementById('manage-students-btn').addEventListener('click', () => {
             playSound('click');
@@ -2409,7 +2427,23 @@
                 saveBtn.classList.remove('hidden');
                 discardBtn.classList.remove('hidden');
 
-                saveBtn.onclick = () => saveGeneratedQuestions(generatedQuestions, subjectValue, gradeValue, semesterValue);
+                saveBtn.onclick = async () => { // Made onclick async
+                    setButtonLoading(saveBtn, true); // Show loading on save button
+                    try {
+                        await saveGeneratedQuestions(generatedQuestions, subjectValue, gradeValue, semesterValue);
+                        feedbackEl.textContent = `Đã lưu thành công ${generatedQuestions.length} câu hỏi!`;
+                        feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                        resultsContainer.classList.add('hidden'); // Hide results container after saving
+                        await loadQuestionsFromFirestore(); // Reload all questions to update the local cache
+                        populateQuestionList(); // Refresh the displayed question list in the admin panel
+                    } catch (error) {
+                        console.error("Error saving generated questions:", error);
+                        feedbackEl.textContent = `Lỗi khi lưu câu hỏi: ${error.message}. Vui lòng kiểm tra Firebase Security Rules hoặc kết nối mạng.`;
+                        feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+                    } finally {
+                        setButtonLoading(saveBtn, false); // Hide loading on save button
+                    }
+                };
                 discardBtn.onclick = () => { resultsContainer.classList.add('hidden'); };
 
             } catch (error) {
@@ -2461,6 +2495,7 @@
             } catch (error) { 
                 console.error("Error saving AI questions:", error); 
                 feedbackEl.textContent = `Lỗi khi lưu câu hỏi: ${error.message}. Vui lòng kiểm tra Firebase Security Rules hoặc kết nối mạng.`; 
+                throw error; // Re-throw to propagate the error
             } 
         }
 
