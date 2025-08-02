@@ -30,7 +30,7 @@
             transition: all 0.2s ease-in-out;
             color: #2d3748;
         }
-        #start-btn, #next-btn, #admin-login-btn, #logout-btn, .admin-action-btn, #back-to-admin-btn, #leaderboard-btn, #back-to-menu-btn, .name-btn, #save-settings-btn {
+        #start-btn, #next-btn, #admin-login-btn, #logout-btn, .admin-action-btn, #back-to-admin-btn, #leaderboard-btn, #back-to-menu-btn, .name-btn, #save-settings-btn, #save-api-key-btn, #delete-api-key-btn, #clear-leaderboard-btn, #clear-history-btn, #clear-all-questions-btn, #ai-execute-generation-btn, #ai-save-all-btn, #ai-discard-all-btn, #add-new-question-btn, #remove-duplicates-btn, #delete-filtered-questions-btn, #confirm-delete-btn, #cancel-delete-btn {
             color: white;
         }
         #admin-login-btn, #leaderboard-btn {
@@ -55,7 +55,7 @@
         .modal-overlay {
             transition: opacity 0.3s ease;
         }
-        #history-table-container, #leaderboard-table-container, #history-detail-content, #question-list-container, #student-list-container {
+        #history-table-container, #leaderboard-table-container, #history-detail-content, #question-list-container, #student-list-container, #ai-generated-questions-list {
             max-height: 400px;
             overflow-y: auto;
         }
@@ -275,13 +275,11 @@
             <div id="question-list-container" class="space-y-3 p-3 bg-white/20 rounded-2xl custom-scrollbar">
                 <!-- Question list will be loaded here -->
             </div>
-            <div class="flex gap-4 mt-6">
-                    <button id="add-new-question-btn" class="w-full glass-btn bg-green-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-green-500/80">Thêm câu hỏi mới</button>
-                    <!-- New button for removing duplicate questions -->
-                    <button id="remove-duplicates-btn" class="w-full glass-btn bg-red-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-500/80">Xóa câu hỏi trùng lặp</button>
-                    <!-- New button for deleting filtered questions locally -->
-                    <button id="delete-filtered-questions-btn" class="w-full glass-btn bg-orange-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-orange-500/80">Xóa câu hỏi đã lọc</button>
-                    <button class="back-to-admin-btn w-full glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
+            <div class="flex flex-wrap gap-4 mt-6">
+                 <button id="add-new-question-btn" class="w-full md:w-auto flex-grow glass-btn bg-green-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-green-500/80">Thêm câu hỏi mới</button>
+                 <button id="remove-duplicates-btn" class="w-full md:w-auto flex-grow glass-btn bg-red-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-500/80">Xóa câu hỏi trùng lặp</button>
+                 <button id="delete-filtered-questions-btn" class="w-full md:w-auto flex-grow glass-btn bg-orange-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-orange-500/80">Xóa câu hỏi đã lọc</button>
+                 <button class="back-to-admin-btn w-full md:w-auto flex-grow glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
             </div>
         </div>
 
@@ -296,8 +294,8 @@
                 </div>
                 <!-- New input for number of questions -->
                 <div>
-                    <label for="ai-gen-num-questions" class="block text-gray-700 font-semibold mb-1">Số lượng câu hỏi AI tạo (mặc định 200)</label>
-                    <input type="number" id="ai-gen-num-questions" value="200" min="1" max="1000" class="w-full glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800 placeholder-gray-600">
+                    <label for="ai-gen-num-questions" class="block text-gray-700 font-semibold mb-1">Số lượng câu hỏi AI tạo</label>
+                    <input type="number" id="ai-gen-num-questions" value="5" min="1" max="1000" class="w-full glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800 placeholder-gray-600">
                 </div>
                 <input type="text" id="ai-gen-topic" placeholder="Nhập chủ đề cụ thể (ví dụ: phép cộng phạm vi 20)" class="w-full glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800 placeholder-gray-600">
                 <button id="ai-execute-generation-btn" class="w-full glass-btn bg-blue-500/70 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-blue-500/90 flex justify-center items-center">🚀 Bắt đầu tạo!</button>
@@ -311,7 +309,7 @@
                     <button id="ai-discard-all-btn" class="w-full glass-btn bg-red-500/70 text-white font-bold py-2 rounded-xl shadow-lg hover:bg-red-500/90 hidden">Hủy bỏ</button>
                 </div>
             </div>
-             <button class="back-to-admin-btn w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
+            <button class="back-to-admin-btn w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
         </div>
 
         <div id="history-panel" class="hidden"><h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Lịch SỬ Làm Bài</h2><div id="history-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4 custom-scrollbar"></div><button class="back-to-admin-btn w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button></div>
@@ -339,6 +337,11 @@
             <h2 id="question-modal-title" class="text-2xl font-bold text-center text-gray-800 mb-6">Chỉnh sửa câu hỏi</h2>
             <form id="question-form" class="space-y-4">
                 <input type="hidden" id="question-id-input">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <select id="question-form-subject" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="toan">Toán Học</option><option value="tiengviet">Tiếng Việt</option></select>
+                    <select id="question-form-grade" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="lop1">Lớp 1</option><option value="lop2">Lớp 2</option></select>
+                    <select id="question-form-semester" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="hocky1">Học Kỳ 1</option><option value="hocky2">Học Kỳ 2</option></select>
+                </div>
                 <div>
                     <label for="question-text-input" class="block text-gray-700 font-semibold mb-1">Nội dung câu hỏi</label>
                     <textarea id="question-text-input" rows="2" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800" required></textarea>
@@ -378,7 +381,7 @@
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, query, serverTimestamp, doc, getDoc, setDoc, where, deleteDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- SOUND EFFECTS SETUP ---
@@ -456,6 +459,14 @@
         const leaderboardSubjectFilter = document.getElementById('leaderboard-subject-filter');
         const leaderboardGradeFilter = document.getElementById('leaderboard-grade-filter');
         const leaderboardNameFilter = document.getElementById('leaderboard-name-filter');
+        const questionManagerSubjectFilter = document.getElementById('q-manager-subject-filter');
+        const questionManagerGradeFilter = document.getElementById('q-manager-grade-filter');
+        const questionManagerSemesterFilter = document.getElementById('q-manager-semester-filter');
+        const questionManagerTextFilter = document.getElementById('q-manager-text-filter');
+        const qFormSubjectSelect = document.getElementById('question-form-subject');
+        const qFormGradeSelect = document.getElementById('question-form-grade');
+        const qFormSemesterSelect = document.getElementById('question-form-semester');
+
 
         // --- FIREBASE & DATA LOADING ---
         /**
@@ -464,29 +475,34 @@
          */
         async function initializeFirebase() {
             try {
-                // Your custom Firebase configuration
-                const firebaseConfig = {
-                    apiKey: "AIzaSyB6e_dhy8Z4zFGL-rAf572rgdyFG-dAMbI",
-                    authDomain: "congviec-cfa50.firebaseapp.com",
-                    projectId: "congviec-cfa50",
-                    storageBucket: "congviec-cfa50.firebasestorage.app",
-                    messagingSenderId: "320610123969",
-                    appId: "1:320610123969:web:00b68ee05d228fd8c21440",
-                    measurementId: "G-0V5KEJF57S"
+                // IMPORTANT: The __app_id and __firebase_config variables are provided by the Canvas environment
+                // They allow the app to securely connect to Firebase.
+                // We use a fallback for local testing if these variables are not present.
+                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+                    apiKey: "AIzaSyDxld3JTTxw1_2XmZLIirt4nc8WQ-xNB7o",
+                    authDomain: "du-an-a95c9.firebaseapp.com",
+                    projectId: "du-an-a95c9",
+                    storageBucket: "du-an-a95c9.firebasestorage.app",
+                    messagingSenderId: "395670033549",
+                    appId: "1:395670033549:web:49940a50a13099b88dfec4",
+                    measurementId: "G-3JZ8MS1H5J"
                 };
-                
-                // Set appId from your provided config
-                // Using projectId as appId for collection path consistency in this specific Canvas environment.
-                appId = firebaseConfig.projectId; 
+
+                // Use the provided app ID for Firestore path consistency
+                appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId;
 
                 // Initialize Firebase services
                 const app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                // Sign in anonymously as there's no custom token from this environment.
-                // This allows the app to interact with Firestore based on public rules.
-                await signInAnonymously(auth);
+                // Check for a custom auth token from the environment and sign in
+                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
 
                 // Listen for authentication state changes and load data once authenticated.
                 // This ensures data is loaded only after Firebase is ready.
@@ -855,9 +871,10 @@
          * @throws {Error} If the API call fails or returns an invalid response.
          */
         async function callGeminiAPI(prompt, jsonSchema = null) {
-            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+            const payload = { contents: chatHistory };
+            
             if (jsonSchema) {
-                // If a JSON schema is provided, configure the generation for structured output.
                 payload.generationConfig = {
                     responseMimeType: "application/json",
                     responseSchema: jsonSchema
@@ -867,7 +884,7 @@
             // Use user-defined API key if available, otherwise use default (empty string for Canvas runtime).
             // The Canvas environment automatically injects the API key if it's an empty string.
             const apiKey = userDefinedApiKey || ""; 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
             try {
                 const response = await fetch(apiUrl, {
@@ -1263,11 +1280,9 @@
                     timerDisplay.textContent = `⏰ ${timeLeft}`;
                     if (timeLeft <= 0) {
                         clearInterval(timerInterval); // Stop timer when time runs out.
-                        // --- FIX START ---
                         // Automatically check answer as incorrect (timeout) by passing null.
                         // The checkAnswer function will handle feedback, highlighting, and showing the next steps.
                         checkAnswer(null, questionData.answer);
-                        // --- FIX END ---
                     }
                 }, 1000); // Update every second.
             } else {
@@ -1721,10 +1736,10 @@
             container.innerHTML = ''; // Clear existing list.
 
             // Get current filter values.
-            const subjectFilter = document.getElementById('q-manager-subject-filter').value;
-            const gradeFilter = document.getElementById('q-manager-grade-filter').value;
-            const semesterFilter = document.getElementById('q-manager-semester-filter').value;
-            const textFilter = document.getElementById('q-manager-text-filter').value.toLowerCase().trim(); // New text filter
+            const subjectFilter = questionManagerSubjectFilter.value;
+            const gradeFilter = questionManagerGradeFilter.value;
+            const semesterFilter = questionManagerSemesterFilter.value;
+            const textFilter = questionManagerTextFilter.value.toLowerCase().trim(); // New text filter
 
             // Filter questions from the full collection based on selected criteria.
             const filteredQuestions = fullQuestionCollection.filter(q => {
@@ -1809,6 +1824,7 @@
             const form = document.getElementById('question-form');
             form.reset(); // Clear all form fields.
             document.getElementById('question-id-input').value = questionId || ''; // Store the question ID (empty for new).
+            document.getElementById('question-form-error').textContent = ''; // Clear error message
 
             const title = document.getElementById('question-modal-title');
             if (questionId) {
@@ -1816,15 +1832,23 @@
                 const questionData = fullQuestionCollection.find(q => q.id === questionId);
                 if (questionData) {
                     document.getElementById(`question-text-input`).value = questionData.question;
-                    // Populate option input fields.
-                    questionData.options.forEach((opt, i) => {
-                        document.getElementById(`option-${i+1}-input`).value = opt;
-                    });
+                    // Populate options, subject, grade, semester fields
+                    document.getElementById(`option-1-input`).value = questionData.options[0] || '';
+                    document.getElementById(`option-2-input`).value = questionData.options[1] || '';
+                    document.getElementById(`option-3-input`).value = questionData.options[2] || '';
+                    document.getElementById(`option-4-input`).value = questionData.options[3] || '';
+                    document.getElementById('question-form-subject').value = questionData.subject;
+                    document.getElementById('question-form-grade').value = questionData.grade;
+                    document.getElementById('question-form-semester').value = questionData.semester;
                     // Populate the correct answer select dropdown.
                     populateAnswerSelect(questionData.options, questionData.answer);
                 }
             } else {
                 title.textContent = 'Thêm câu hỏi mới';
+                // Use current filters as default values for new questions
+                document.getElementById('question-form-subject').value = questionManagerSubjectFilter.value !== 'all' ? questionManagerSubjectFilter.value : 'toan';
+                document.getElementById('question-form-grade').value = questionManagerGradeFilter.value !== 'all' ? questionManagerGradeFilter.value : 'lop1';
+                document.getElementById('question-form-semester').value = questionManagerSemesterFilter.value !== 'all' ? questionManagerSemesterFilter.value : 'hocky1';
                 // Clear option inputs for a new question.
                 document.getElementById(`option-1-input`).value = '';
                 document.getElementById(`option-2-input`).value = '';
@@ -1843,6 +1867,14 @@
         function populateAnswerSelect(options, selectedAnswer = null) {
             const select = document.getElementById('correct-answer-select');
             select.innerHTML = ''; // Clear existing options in the select.
+
+            // Add a default disabled option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = "";
+            defaultOption.textContent = "Chọn đáp án đúng...";
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            select.appendChild(defaultOption);
 
             options.forEach((opt, i) => {
                 if(opt) { // Only add non-empty options to the dropdown.
@@ -1902,6 +1934,9 @@
             const questionText = document.getElementById('question-text-input').value.trim();
             const options = Array.from(document.querySelectorAll('.option-input')).map(input => input.value.trim());
             const answer = document.getElementById('correct-answer-select').value;
+            const subject = qFormSubjectSelect.value;
+            const grade = qFormGradeSelect.value;
+            const semester = qFormSemesterSelect.value;
 
             // Basic input validation.
             if (!questionText || options.some(opt => !opt) || !answer) {
@@ -1911,17 +1946,6 @@
             }
             if (!options.includes(answer)) {
                 errorEl.textContent = 'Đáp án đúng phải là một trong các lựa chọn.';
-                setButtonLoading(button, false);
-                return;
-            }
-
-            // Ensure subject, grade, and semester are selected for new questions.
-            const subject = document.getElementById('q-manager-subject-filter').value;
-            const grade = document.getElementById('q-manager-grade-filter').value;
-            const semester = document.getElementById('q-manager-semester-filter').value;
-
-            if (subject === 'all' || grade === 'all' || semester === 'all') {
-                errorEl.textContent = 'Vui lòng chọn Môn, Lớp và Học kỳ cụ thể trước khi lưu.';
                 setButtonLoading(button, false);
                 return;
             }
@@ -2068,10 +2092,10 @@
             feedbackEl.textContent = 'Đang xóa câu hỏi đã lọc khỏi Firebase...';
             feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-gray-700';
 
-            const subjectFilter = document.getElementById('q-manager-subject-filter').value;
-            const gradeFilter = document.getElementById('q-manager-grade-filter').value;
-            const semesterFilter = document.getElementById('q-manager-semester-filter').value;
-            const textFilter = document.getElementById('q-manager-text-filter').value.toLowerCase().trim();
+            const subjectFilter = questionManagerSubjectFilter.value;
+            const gradeFilter = questionManagerGradeFilter.value;
+            const semesterFilter = questionManagerSemesterFilter.value;
+            const textFilter = questionManagerTextFilter.value.toLowerCase().trim();
 
             const qCollectionRef = collection(db, `artifacts/${appId}/public/data/questions`);
 
@@ -2320,11 +2344,11 @@
         });
 
         // Question Manager actions.
-        document.getElementById('q-manager-subject-filter').addEventListener('change', populateQuestionList);
-        document.getElementById('q-manager-grade-filter').addEventListener('change', populateQuestionList);
-        document.getElementById('q-manager-semester-filter').addEventListener('change', populateQuestionList);
+        questionManagerSubjectFilter.addEventListener('change', populateQuestionList);
+        questionManagerGradeFilter.addEventListener('change', populateQuestionList);
+        questionManagerSemesterFilter.addEventListener('change', populateQuestionList);
         // New text filter event listener
-        document.getElementById('q-manager-text-filter').addEventListener('input', populateQuestionList); 
+        questionManagerTextFilter.addEventListener('input', populateQuestionList); 
         document.getElementById('add-new-question-btn').addEventListener('click', () => openQuestionModal()); // Open modal for new question.
         document.getElementById('question-list-container').addEventListener('click', (e) => {
             if (e.target.classList.contains('edit-question-btn')) {
