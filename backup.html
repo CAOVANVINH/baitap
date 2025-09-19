@@ -1,0 +1,2171 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trò Chơi Học Tập Vui (Admin Pro)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Quicksand -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tone.js for Sound Effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(to right top, #6d8cf0, #8d8de0, #a98fcb, #be93b6, #ce99a6);
+        }
+        /* Fix for Tone.js startup message overlay */
+        body > div[style*="background: #000"] {
+            display: none !important;
+        }
+        .glass-container {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glass-btn {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.2s ease-in-out;
+            color: #2d3748;
+        }
+        #start-btn, #next-btn, #admin-login-btn, #logout-btn, .admin-action-btn, #back-to-admin-btn, #leaderboard-btn, #back-to-menu-btn, .name-btn, #save-settings-btn, #save-api-key-btn, #delete-api-key-btn, #clear-leaderboard-btn, #clear-history-btn, #clear-all-questions-btn, #ai-execute-generation-btn, #ai-save-all-btn, #ai-discard-all-btn, #add-new-question-btn, #remove-duplicates-btn, #delete-filtered-questions-btn, #confirm-delete-btn, #cancel-delete-btn {
+            color: white;
+        }
+        #admin-login-btn, #leaderboard-btn {
+            color: #cbd5e0;
+        }
+        .choice-btn.selected {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+            border-width: 2px;
+            border-color: rgba(255, 255, 255, 0.7);
+        }
+        .answer-option.correct {
+            background-color: rgba(34, 197, 94, 0.7) !important;
+            border-color: rgba(22, 163, 74, 0.8);
+            color: white !important;
+        }
+        .answer-option.incorrect {
+            background-color: rgba(239, 68, 68, 0.7) !important;
+            border-color: rgba(220, 38, 38, 0.8);
+            color: white !important;
+        }
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+        #history-table-container, #leaderboard-table-container, #history-detail-content, #question-list-container, #student-list-container, #ai-generated-questions-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .speaker-btn, #sound-toggle-btn {
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
+            display: block; /* Ensure speaker buttons are always visible by default */
+        }
+        .speaker-btn:hover, #sound-toggle-btn:hover {
+            transform: scale(1.1);
+            color: #6366f1;
+        }
+        .speaker-btn.speaking-active {
+            color: #ef4444; /* Red color when speaking */
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.4);
+        }
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-3xl mx-auto glass-container rounded-3xl shadow-2xl p-4 md:p-8 relative">
+        <!-- Sound Toggle Button -->
+        <button id="sound-toggle-btn" class="absolute top-4 left-5 text-white focus:outline-none z-10">
+            <svg id="speaker-on-icon" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="currentColor"><path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 10v4h3l4 4V6l-4 4H5z"></path><path d="M16 8.5v7l-4-4H8V8.5h4l4-4zM19 12c0 2.8-1.56 5.28-3.8 6.5l1.2 1.5c2.95-1.7 5.1-4.86 5.1-8.5s-2.15-6.8-5.1-8.5L15.2 5.5C17.44 6.72 19 9.2 19 12z"></path></svg>
+            <svg id="speaker-off-icon" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 hidden" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"></path></svg>
+        </button>
+
+        <!-- Selection Screen -->
+        <div id="selection-screen">
+            <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-2">Trò Chơi Học Tập</h1>
+            <p class="text-center text-gray-700 mb-6">Cùng bé vừa học vừa chơi!</p>
+            <div id="loading-questions" class="text-center text-gray-600 font-semibold mb-4"><p>Đang tải dữ liệu, vui lòng chờ...</p></div>
+            <div id="selections-container" class="hidden">
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold mb-3 text-gray-700">1. Chọn Môn Học</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button data-subject="toan" class="choice-btn glass-btn bg-sky-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-sky-500/60">🔢 Toán Học</button>
+                        <button data-subject="tiengviet" class="choice-btn glass-btn bg-emerald-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-emerald-500/60">✍️ Tiếng Việt</button>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold mb-3 text-gray-700">2. Chọn Lớp</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button data-grade="lop1" class="choice-btn glass-btn bg-amber-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-amber-500/60">Lớp 1</button>
+                        <button data-grade="lop2" class="choice-btn glass-btn bg-rose-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-rose-500/60">Lớp 2</button>
+                    </div>
+                </div>
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold mb-3 text-gray-700">3. Chọn Học Kỳ</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button data-semester="hocky1" class="choice-btn glass-btn bg-purple-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-purple-500/60">Học Kỳ 1</button>
+                        <button data-semester="hocky2" class="choice-btn glass-btn bg-pink-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-pink-500/60">Học Kỳ 2</button>
+                    </div>
+                </div>
+            </div>
+            <button id="start-btn" class="w-full glass-btn bg-gray-500/50 text-white font-bold py-4 rounded-2xl text-xl shadow-lg cursor-not-allowed" disabled>Bắt đầu!</button>
+            <p id="start-error" class="text-red-600 font-bold text-center text-sm h-5 mt-2"></p>
+            <div class="flex justify-between items-center mt-4">
+                <button id="leaderboard-btn" class="text-sm font-semibold hover:text-white">🏆 Bảng Xếp Hạng</button>
+                <button id="admin-login-btn" class="text-sm font-semibold hover:text-white">Quản trị viên</button>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="hidden">
+             <div class="flex justify-between items-center mb-4 text-white">
+                 <div id="progress-text" class="font-semibold">Câu 1/10</div>
+                 <div id="timer-display" class="font-bold text-lg hidden"></div>
+                 <div id="score-text" class="font-bold text-lg">Điểm: 0</div>
+             </div>
+             <div id="question-container" class="bg-black/10 p-6 rounded-2xl text-center mb-6 min-h-[100px] flex items-center justify-center relative">
+                 <p class="text-xl md:text-2xl font-semibold text-white"></p>
+                 <button id="read-question-btn" class="speaker-btn absolute top-4 right-4 text-white focus:outline-none">
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
+                 </button>
+             </div>
+             <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+             <div id="feedback-container" class="text-center mt-4 font-bold text-2xl h-8 text-white"></div>
+             <div id="explanation-container" class="hidden relative mt-2 bg-black/10 p-4 rounded-2xl text-white text-center font-medium">
+                 <p id="explanation-text" class="pr-10"></p>
+                 <button id="read-explanation-btn" class="speaker-btn absolute top-1/2 -translate-y-1/2 right-3 text-white focus:outline-none">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M13.5 4.06c0-1.34 1.61-2.26 2.86-1.48l.29.18c.54.33.86.94.86 1.58v13.32c0 .64-.32 1.25-.86 1.58l-.29.18c-1.25.78-2.86-.14-2.86-1.48V4.06Z" /></svg>
+                 </button>
+             </div>
+             <button id="next-btn" class="hidden w-full mt-4 glass-btn bg-blue-500/60 text-white font-bold py-3 rounded-2xl shadow-lg hover:bg-blue-500/80">Câu tiếp theo</button>
+        </div>
+        
+        <!-- Admin Panels -->
+        <div id="admin-panel" class="hidden">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Bảng điều khiển Admin</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button id="manage-questions-btn" class="admin-action-btn w-full glass-btn bg-blue-500/60 py-4 rounded-2xl text-lg shadow-lg hover:bg-blue-500/80">📝 Quản lý câu hỏi</button>
+                <button id="manage-students-btn" class="admin-action-btn w-full glass-btn bg-cyan-500/60 py-4 rounded-2xl text-lg shadow-lg hover:bg-cyan-500/80">🧑‍🎓 Quản lý học sinh</button>
+                <button id="ai-generate-btn" class="admin-action-btn w-full glass-btn bg-teal-500/60 py-4 rounded-2xl text-lg shadow-lg hover:bg-teal-500/80">🤖 Tạo câu hỏi bằng AI</button>
+                <button id="view-history-btn" class="admin-action-btn w-full glass-btn bg-indigo-500/60 py-4 rounded-2xl text-lg shadow-lg hover:bg-indigo-500/80">📊 Xem Lịch SỬ Thi</button>
+                <button id="manage-settings-btn" class="admin-action-btn w-full glass-btn bg-purple-500/60 py-4 rounded-2xl text-lg shadow-lg hover:bg-purple-500/80 md:col-span-2">⚙️ Cài đặt chung</button>
+            </div>
+            <button id="logout-btn" class="w-full glass-btn bg-red-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-500/80 mt-8">Đăng xuất</button>
+        </div>
+
+        <div id="settings-panel" class="hidden">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Cài đặt chung</h2>
+            <div class="space-y-6">
+                <!-- Timer Settings -->
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">Cài đặt Đồng hồ</h3>
+                    <div class="space-y-4 max-w-sm mx-auto p-4 bg-white/20 rounded-xl">
+                        <div class="flex items-center justify-between">
+                            <label for="timer-toggle" class="font-medium text-gray-800">Bật Đồng hồ đếm ngược</label>
+                            <input type="checkbox" id="timer-toggle" class="h-6 w-6 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <label for="timer-duration" class="font-medium text-gray-800">Thời gian (giây)</label>
+                            <input type="number" id="timer-duration" min="5" max="120" class="w-24 px-3 py-1 border border-gray-300/50 rounded-lg bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
+                        </div>
+                    </div>
+                </div>
+                <!-- API Key Settings -->
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">Cài đặt Gemini API Key</h3>
+                     <div class="space-y-4 max-w-sm mx-auto p-4 bg-white/20 rounded-xl">
+                         <p class="text-xs text-center text-gray-600">Thêm API Key của bạn để sử dụng tính năng tạo câu hỏi bằng AI. Để trống để dùng key mặc định của hệ thống.</p>
+                         <input type="password" id="gemini-api-key-input" placeholder="Nhập Gemini API Key của bạn..." class="w-full px-3 py-2 border border-gray-300/50 rounded-lg bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
+                         <div class="flex gap-2">
+                             <button id="save-api-key-btn" class="w-full glass-btn bg-green-500/60 text-white font-bold py-2 rounded-xl shadow-lg hover:bg-green-500/80 flex justify-center items-center">Lưu Key</button>
+                             <button id="delete-api-key-btn" class="w-full glass-btn bg-gray-500/60 text-white font-bold py-2 rounded-xl shadow-lg hover:bg-gray-500/80 flex justify-center items-center">Xóa Key</button>
+                         </div>
+                     </div>
+                </div>
+                <!-- Game Settings -->
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">Cài đặt Trò Chơi</h3>
+                    <div class="space-y-4 max-w-sm mx-auto p-4 bg-white/20 rounded-xl">
+                        <div class="flex items-center justify-between">
+                            <label for="quiz-question-limit" class="font-medium text-gray-800">Số câu hỏi mỗi lần chơi</label>
+                            <input type="number" id="quiz-question-limit" value="10" min="1" max="50" class="w-24 px-3 py-1 border border-gray-300/50 rounded-lg bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
+                        </div>
+                    </div>
+                </div>
+                <!-- Dangerous Actions -->
+                <div>
+                    <h3 class="text-xl font-semibold text-red-700 mb-4 text-center">Tác Vụ Nguy Hiểm</h3>
+                    <div class="space-y-4 max-w-sm mx-auto p-4 bg-red-500/10 rounded-xl">
+                        <button id="clear-leaderboard-btn" class="w-full glass-btn bg-amber-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-amber-500/80 flex justify-center items-center">Xóa Bảng Xếp Hạng</button>
+                        <button id="clear-history-btn" class="w-full glass-btn bg-amber-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-amber-500/80 flex justify-center items-center">Xóa Lịch SỬ Thi</button>
+                        <button id="clear-all-questions-btn" class="w-full glass-btn bg-red-600/70 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-600/90 flex justify-center items-center">Xóa TẤT CẢ Câu Hỏi</button>
+                    </div>
+                </div>
+            </div>
+            <p id="settings-feedback" class="text-center text-sm font-bold h-4 mt-4"></p>
+            <button id="save-settings-btn" class="w-full glass-btn bg-blue-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-blue-500/80 mt-6 flex justify-center items-center">Lưu tất cả cài đặt</button>
+            <button class="back-to-admin-btn w-full mt-4 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
+        </div>
+
+        <div id="student-manager-panel" class="hidden">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Quản lý học sinh</h2>
+            <div class="p-4 bg-white/20 rounded-2xl space-y-4">
+                <form id="add-student-form" class="flex gap-2">
+                    <input type="text" id="new-student-name" placeholder="Nhập tên học sinh mới..." class="w-full glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800 placeholder-gray-600" required>
+                    <button type="submit" class="glass-btn bg-green-500/70 text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:bg-green-500/90 flex justify-center items-center">Thêm</button>
+                </form>
+                <p id="student-manager-feedback" class="text-center text-sm font-bold h-4"></p>
+            </div>
+            <div id="student-list-container" class="mt-4 space-y-2 p-3 bg-white/20 rounded-2xl custom-scrollbar">
+                <!-- Student list will be loaded here -->
+            </div>
+            <button class="back-to-admin-btn w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
+        </div>
+
+        <div id="question-manager-panel" class="hidden">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Quản lý câu hỏi</h2>
+            <!-- Question counts summary -->
+            <div id="question-counts-summary" class="p-4 bg-white/20 rounded-2xl mb-4 text-gray-800">
+                <p class="font-semibold text-lg mb-2">Tổng số câu hỏi: <span id="total-questions-count" class="font-bold">0</span></p>
+                <div id="subject-grade-semester-counts" class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                    <!-- Counts will be populated here -->
+                </div>
+                <p class="font-semibold text-lg mt-2">Câu hỏi đang hiển thị: <span id="filtered-questions-count" class="font-bold">0</span></p>
+            </div>
+            <div class="flex flex-wrap justify-center items-center gap-2 md:gap-4 mb-4 p-2 bg-black/10 rounded-xl">
+                <select id="q-manager-subject-filter" class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả môn</option><option value="toan">Toán Học</option><option value="tiengviet">Tiếng Việt</option></select>
+                <select id="q-manager-grade-filter" class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả lớp</option><option value="lop1">Lớp 1</option><option value="lop2">Lớp 2</option></select>
+                <select id="q-manager-semester-filter" class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả kỳ</option><option value="hocky1">Học Kỳ 1</option><option value="hocky2">Học Kỳ 2</option></select>
+                <!-- New input for question text filtering -->
+                <input type="text" id="q-manager-text-filter" placeholder="Lọc theo nội dung câu hỏi..." class="flex-grow glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800 placeholder-gray-600">
+            </div>
+            <div id="question-list-container" class="space-y-3 p-3 bg-white/20 rounded-2xl custom-scrollbar">
+                <!-- Question list will be loaded here -->
+            </div>
+            <div class="flex flex-wrap gap-4 mt-6">
+                <button id="add-new-question-btn" class="w-full md:w-auto flex-grow glass-btn bg-green-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-green-500/80">Thêm câu hỏi mới</button>
+                <button id="remove-duplicates-btn" class="w-full md:w-auto flex-grow glass-btn bg-red-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-red-500/80">Xóa câu hỏi trùng lặp</button>
+                <button id="delete-filtered-questions-btn" class="w-full md:w-auto flex-grow glass-btn bg-orange-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-orange-500/80">Xóa câu hỏi đã lọc</button>
+                <button class="back-to-admin-btn w-full md:w-auto flex-grow glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
+            </div>
+        </div>
+
+        <div id="ai-generator-panel" class="hidden">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Tạo câu hỏi bằng AI</h2>
+            <div class="p-4 bg-white/20 rounded-2xl space-y-4">
+                <p class="text-center text-gray-700 font-medium">Chọn chủ đề và để AI tự động tạo ra các câu hỏi trắc nghiệm mới!</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <select id="ai-gen-subject" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="toan">Toán Học</option><option value="tiengviet">Tiếng Việt</option></select>
+                    <select id="ai-gen-grade" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="lop1">Lớp 1</option><option value="lop2">Lớp 2</option></select>
+                    <select id="ai-gen-semester" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="hocky1">Học Kỳ 1</option><option value="hocky2">Học Kỳ 2</option></select>
+                </div>
+                <!-- New input for number of questions -->
+                <div>
+                    <label for="ai-gen-num-questions" class="block text-gray-700 font-semibold mb-1">Số lượng câu hỏi AI tạo</label>
+                    <input type="number" id="ai-gen-num-questions" value="5" min="1" max="1000" class="w-full glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800 placeholder-gray-600">
+                </div>
+                <input type="text" id="ai-gen-topic" placeholder="Nhập chủ đề cụ thể (ví dụ: phép cộng phạm vi 20)" class="w-full glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800 placeholder-gray-600">
+                <button id="ai-execute-generation-btn" class="w-full glass-btn bg-blue-500/70 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-blue-500/90 flex justify-center items-center">🚀 Bắt đầu tạo!</button>
+            </div>
+            <div id="ai-results-container" class="mt-4 p-4 bg-white/20 rounded-2xl hidden">
+                <h3 class="text-xl font-bold text-gray-800 mb-2 text-center">Xem lại câu hỏi do AI tạo</h3>
+                <div id="ai-generated-questions-list" class="space-y-3 max-h-64 overflow-y-auto custom-scrollbar"></div>
+                <div id="ai-generation-feedback" class="text-center font-semibold my-2"></div>
+                <div class="flex gap-4 mt-4">
+                    <button id="ai-save-all-btn" class="w-full glass-btn bg-green-500/70 text-white font-bold py-2 rounded-xl shadow-lg hover:bg-green-500/90 hidden">Lưu tất cả câu hỏi</button>
+                    <button id="ai-discard-all-btn" class="w-full glass-btn bg-red-500/70 text-white font-bold py-2 rounded-xl shadow-lg hover:bg-red-500/90 hidden">Hủy bỏ</button>
+                </div>
+            </div>
+            <button class="back-to-admin-btn w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
+        </div>
+
+        <div id="history-panel" class="hidden"><h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Lịch SỬ Làm Bài</h2><div id="history-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4 custom-scrollbar"></div><button class="back-to-admin-btn w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button></div>
+        
+        <div id="leaderboard-panel" class="hidden">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">🏆 Bảng Xếp Hạng 🏆</h2>
+            <div class="flex flex-wrap justify-center items-center gap-4 mb-4">
+                <select id="leaderboard-subject-filter" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả môn</option><option value="toan">Toán Học</option><option value="tiengviet">Tiếng Việt</option></select>
+                <select id="leaderboard-grade-filter" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="all">Tất cả lớp</option><option value="lop1">Lớp 1</option><option value="lop2">Lớp 2</option></select>
+                <input type="text" id="leaderboard-name-filter" placeholder="Lọc theo tên..." class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800 placeholder-gray-600">
+            </div>
+            <div id="leaderboard-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4 custom-scrollbar"></div>
+            <button id="back-to-menu-btn" class="w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Chơi Lại</button>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="login-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0"><div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative"><h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Đăng Nhập Admin</h2><form id="login-form"><div class="mb-4"><label for="username" class="block text-gray-700 font-semibold mb-2">Tên đăng nhập</label><input type="text" id="username" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"></div><div class="mb-6"><label for="password" class="block text-gray-700 font-semibold mb-2">Mật khẩu</label><input type="password" id="password" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"></div><p id="login-error" class="text-red-500 text-center text-sm h-4 mb-4"></p><button type="submit" class="w-full glass-btn bg-blue-600/70 text-white font-bold py-3 rounded-2xl hover:bg-blue-600/90">Đăng nhập</button></form><button id="close-modal-btn" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl">&times;</button></div></div>
+    <div id="name-selection-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0"><div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative text-center"><h2 class="text-3xl font-bold text-gray-800 mb-2">Hoàn thành!</h2><p id="modal-final-score" class="text-6xl font-bold text-blue-600 my-4">0/10</p><p id="modal-final-message" class="text-lg text-gray-600 mb-6">Bé đã làm rất tốt! Hãy chọn tên của mình để lưu điểm nhé.</p><div id="name-selection-container" class="space-y-3"></div></div></div>
+    <div id="history-detail-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0"><div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-2xl relative"><h2 class="text-2xl font-bold text-center text-gray-800 mb-4">Chi Tiết Lần Chơi</h2><div id="history-detail-summary" class="text-center text-gray-700 mb-4"></div><div id="history-detail-content" class="space-y-3 bg-white/30 p-4 rounded-2xl custom-scrollbar"></div><button id="close-history-detail-btn" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-3xl">&times;</button></div></div>
+    <div id="confirmation-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0"><div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative text-center"><h2 class="text-2xl font-bold text-gray-800 mb-4">Xác nhận hành động</h2><p id="confirmation-message" class="text-gray-700 mb-6"></p><div class="flex justify-center gap-4"><button id="confirm-delete-btn" class="w-full glass-btn bg-red-600/70 text-white font-bold py-3 rounded-2xl hover:bg-red-600/90">Xác nhận</button><button id="cancel-delete-btn" class="w-full glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl hover:bg-gray-500/80">Hủy</button></div></div></div>
+    
+    <div id="question-edit-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0">
+        <div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-2xl relative">
+            <h2 id="question-modal-title" class="text-2xl font-bold text-center text-gray-800 mb-6">Chỉnh sửa câu hỏi</h2>
+            <form id="question-form" class="space-y-4">
+                <input type="hidden" id="question-id-input">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <select id="question-form-subject" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="toan">Toán Học</option><option value="tiengviet">Tiếng Việt</option></select>
+                    <select id="question-form-grade" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="lop1">Lớp 1</option><option value="lop2">Lớp 2</option></select>
+                    <select id="question-form-semester" class="glass-btn bg-white/30 rounded-lg px-3 py-2 font-semibold text-gray-800"><option value="hocky1">Học Kỳ 1</option><option value="hocky2">Học Kỳ 2</option></select>
+                </div>
+                <div>
+                    <label for="question-text-input" class="block text-gray-700 font-semibold mb-1">Nội dung câu hỏi</label>
+                    <textarea id="question-text-input" rows="2" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800" required></textarea>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="option-1-input" class="block text-gray-700 font-semibold mb-1">Lựa chọn 1</label>
+                        <input type="text" id="option-1-input" class="option-input w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50" required>
+                    </div>
+                     <div>
+                        <label for="option-2-input" class="block text-gray-700 font-semibold mb-1">Lựa chọn 2</label>
+                        <input type="text" id="option-2-input" class="option-input w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50" required>
+                    </div>
+                     <div>
+                        <label for="option-3-input" class="block text-gray-700 font-semibold mb-1">Lựa chọn 3</label>
+                        <input type="text" id="option-3-input" class="option-input w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50" required>
+                    </div>
+                     <div>
+                        <label for="option-4-input" class="block text-gray-700 font-semibold mb-1">Lựa chọn 4</label>
+                        <input type="text" id="option-4-input" class="option-input w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50" required>
+                    </div>
+                </div>
+                <div>
+                    <label for="correct-answer-select" class="block text-gray-700 font-semibold mb-1">Đáp án đúng</label>
+                    <select id="correct-answer-select" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50" required></select>
+                </div>
+                <p id="question-form-error" class="text-red-500 text-center text-sm h-4"></p>
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" class="w-full glass-btn bg-green-600/70 text-white font-bold py-3 rounded-2xl hover:bg-green-600/90 flex justify-center items-center">Lưu thay đổi</button>
+                    <button type="button" id="close-question-modal-btn" class="w-full glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl hover:bg-gray-500/80">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script type="module">
+        const { createClient } = supabase;
+        // --- SOUND EFFECTS SETUP ---
+        // Tone.js is now accessed globally, assuming it's loaded by the script tag
+        let soundsEnabled = true; 
+        const synths = {
+            click: new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 0.1 } }).toDestination(),
+            correct: new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.005, decay: 0.2, sustain: 0.1, release: 0.2 } }).toDestination(),
+            incorrect: new Tone.Synth({ oscillator: { type: "square" }, envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 0.2 } }).toDestination(),
+            complete: new Tone.PolySynth(Tone.Synth).toDestination()
+        };
+        /**
+         * Plays a sound effect based on the given type.
+         * @param {string} soundType - The type of sound to play ('click', 'correct', 'incorrect', 'complete').
+         */
+        function playSound(soundType) {
+            if (!soundsEnabled) return;
+            // Ensure Tone.js context is running before playing sounds
+            if (Tone.context.state !== 'running') {
+                Tone.context.resume().then(() => { // Ensure context is resumed
+                    console.log('Audio context resumed');
+                }).catch(e => console.error("Failed to resume audio context:", e));
+            } else {
+                _triggerSound(soundType);
+            }
+        }
+
+        function _triggerSound(soundType) {
+            try {
+                switch (soundType) {
+                    case 'click': synths.click.triggerAttackRelease("C5", "8n"); break;
+                    case 'correct': synths.correct.triggerAttackRelease("G5", "8n", Tone.now()); break;
+                    case 'incorrect': synths.incorrect.triggerAttackRelease("C3", "8n"); break;
+                    case 'complete': const now = Tone.now(); synths.complete.triggerAttackRelease(["C4", "E4", "G4"], "8n", now); synths.complete.triggerAttackRelease(["E4", "G4", "B4"], "8n", now + 0.2); synths.complete.triggerAttackRelease(["G4", "B4", "D5"], "8n", now + 0.4); break;
+                }
+            } catch (error) { console.error("Sound play error:", error); }
+        }
+
+
+        // --- STATE & DOM VARIABLES ---
+        let supabaseClient;
+        let questionBank = {}, userDefinedApiKey = null;
+        let selectedSubject, selectedGrade, selectedSemester;
+        let currentQuestions = [], currentQuestionIndex = 0, score = 0, sessionAnswers = [];
+        let quizQuestionLimit = 10;
+        let timerEnabled = false, timerDuration = 30, timerInterval;
+        let fullQuestionCollection = []; // Acts as a cache for questions from Supabase
+        let studentList = []; // Acts as a cache for students from Supabase
+        let quizHistory = []; // Cache for history
+        
+        // References to main screen elements
+        const screens = {
+            selection: document.getElementById('selection-screen'),
+            game: document.getElementById('game-screen'),
+            admin: document.getElementById('admin-panel'),
+            settings: document.getElementById('settings-panel'),
+            studentManager: document.getElementById('student-manager-panel'),
+            history: document.getElementById('history-panel'),
+            leaderboard: document.getElementById('leaderboard-panel'),
+            questionManager: document.getElementById('question-manager-panel'),
+            aiGenerator: document.getElementById('ai-generator-panel'),
+        };
+        // References to modal elements
+        const modals = {
+            login: document.getElementById('login-modal'),
+            nameSelection: document.getElementById('name-selection-modal'),
+            historyDetail: document.getElementById('history-detail-modal'),
+            confirmation: document.getElementById('confirmation-modal'),
+            questionEdit: document.getElementById('question-edit-modal'),
+        };
+        
+        // References to specific filter/button elements for convenience
+        const leaderboardBtn = document.getElementById('leaderboard-btn');
+        const backToMenuBtn = document.getElementById('back-to-menu-btn');
+        const leaderboardSubjectFilter = document.getElementById('leaderboard-subject-filter');
+        const leaderboardGradeFilter = document.getElementById('leaderboard-grade-filter');
+        const leaderboardNameFilter = document.getElementById('leaderboard-name-filter');
+        const questionManagerSubjectFilter = document.getElementById('q-manager-subject-filter');
+        const questionManagerGradeFilter = document.getElementById('q-manager-grade-filter');
+        const questionManagerSemesterFilter = document.getElementById('q-manager-semester-filter');
+        const questionManagerTextFilter = document.getElementById('q-manager-text-filter');
+        const qFormSubjectSelect = document.getElementById('question-form-subject');
+        const qFormGradeSelect = document.getElementById('question-form-grade');
+        const qFormSemesterSelect = document.getElementById('question-form-semester');
+
+        // --- SUPABASE SETUP ---
+        /**
+         * Initializes the Supabase client and loads all initial data.
+         */
+        async function initializeSupabase() {
+            const supabaseUrl = 'https://wswlqmfljjupcuflnvte.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indzd2xxbWZsamp1cGN1ZmxudnRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyMzg0NTQsImV4cCI6MjA3MjgxNDQ1NH0.7wwrvbjHqENJTOXuYJLD-HGp8o1MKZX3oJvfEKnxyGU';
+            
+            supabaseClient = createClient(supabaseUrl, supabaseKey);
+
+            try {
+                 await Promise.all([
+                    loadQuestionsFromSupabase(),
+                    loadStudentList(),
+                    loadAdminSettings(),
+                    loadApiKey()
+                ]);
+
+                document.getElementById('loading-questions').classList.add('hidden');
+                document.getElementById('selections-container').classList.remove('hidden');
+                updateStartButtonState();
+
+            } catch (error) {
+                 console.error("Error loading initial data from Supabase:", error);
+                 document.getElementById('loading-questions').innerHTML = `<p class="text-red-500 font-bold">Lỗi khi tải dữ liệu ban đầu. Vui lòng kiểm tra console và cài đặt Supabase.</p>`;
+            }
+        }
+
+        /**
+         * Loads questions from Supabase and seeds initial data if the table is empty.
+         */
+        async function loadQuestionsFromSupabase() {
+            const { data, error } = await supabaseClient.from('questions').select('*');
+            if (error) {
+                console.error("Error loading questions:", error);
+                throw error;
+            }
+
+            if (data.length === 0) {
+                console.log("No questions found in Supabase. Seeding initial data...");
+                await seedInitialQuestions();
+            } else {
+                fullQuestionCollection = data;
+                restructureQuestionBank();
+                console.log("Successfully loaded questions from Supabase.");
+            }
+        }
+
+        /**
+         * Seeds initial questions into the Supabase 'questions' table.
+         */
+        async function seedInitialQuestions() {
+            const seedData = [
+                { subject: 'toan', grade: 'lop1', semester: 'hocky1', question: "1 + 1 = ?", options: ["1", "2", "3", "4"], answer: "2" },
+                { subject: 'tiengviet', grade: 'lop1', semester: 'hocky1', question: "Chữ cái đầu tiên trong bảng chữ cái là?", options: ["b", "c", "a", "d"], answer: "a" },
+                { subject: 'toan', grade: 'lop2', semester: 'hocky1', question: "2 + 3 = ?", options: ["4", "5", "6", "7"], answer: "5" },
+                { subject: 'tiengviet', grade: 'lop2', semester: 'hocky1', question: "Từ nào sau đây là danh từ chỉ người?", options: ["bàn", "sách", "giáo viên", "cây"], answer: "giáo viên" },
+                { subject: 'toan', grade: 'lop1', semester: 'hocky2', question: "5 - 2 = ?", options: ["2", "3", "4", "5"], answer: "3" },
+                { subject: 'tiengviet', grade: 'lop1', semester: 'hocky2', question: "Điền vào chỗ trống: 'Con ... hú dài'", options: ["chó", "mèo", "sói", "gà"], answer: "sói" },
+                { subject: 'toan', grade: 'lop2', semester: 'hocky2', question: "10 - 4 = ?", options: ["5", "6", "7", "8"], answer: "6" },
+                { subject: 'tiengviet', grade: 'lop2', semester: 'hocky2', question: "Từ nào trái nghĩa với 'buồn'?", options: ["vui", "khóc", "ngủ", "ăn"], answer: "vui" },
+                { subject: 'tiengviet', grade: 'lop1', semester: 'hocky1', question: "Từ nào viết đúng chính tả?", options: ["sách vở", "sách vỡ", "sách vờ", "sách vỡ"], answer: "sách vở" },
+                { subject: 'tiengviet', grade: 'lop1', semester: 'hocky1', question: "Điền vần 'ay' hoặc 'ây': 'Cây ... tre'", options: ["cay", "cây", "cai", "câi"], answer: "cây" },
+                { subject: 'tiengviet', grade: 'lop1', semester: 'hocky2', question: "Từ nào chỉ hoạt động?", options: ["cái bàn", "đi học", "quyển sách", "con mèo"], answer: "đi học" },
+                { subject: 'tiengviet', grade: 'lop1', semester: 'hocky2', question: "Điền từ còn thiếu: 'Chim ... hót líu lo'", options: ["sẻ", "mèo", "chó", "cá"], answer: "sẻ" },
+                { subject: 'toan', grade: 'lop1', semester: 'hocky1', question: "3 + 2 = ?", options: ["4", "5", "6", "7"], answer: "5" },
+                { subject: 'toan', grade: 'lop1', semester: 'hocky1', question: "Số liền sau của 8 là?", options: ["7", "9", "10", "8"], answer: "9" },
+                { subject: 'toan', grade: 'lop1', semester: 'hocky2', question: "7 - 3 = ?", options: ["3", "4", "5", "6"], answer: "4" },
+                { subject: 'toan', grade: 'lop1', semester: 'hocky2', question: "Có 5 quả táo, ăn đi 2 quả. Còn lại mấy quả?", options: ["2", "3", "4", "5"], answer: "3" },
+                { subject: 'tiengviet', grade: 'lop2', semester: 'hocky1', question: "Từ nào là từ láy?", options: ["xinh đẹp", "lung linh", "nhà cửa", "học bài"], answer: "lung linh" },
+                { subject: 'tiengviet', grade: 'lop2', semester: 'hocky1', question: "Điền vào chỗ trống: 'Mặt trời ... rực rỡ'", options: ["sáng", "chói", "tỏa", "lên"], answer: "chói" },
+                { subject: 'tiengviet', grade: 'lop2', semester: 'hocky2', question: "Từ nào là từ ghép tổng hợp?", options: ["sách vở", "bàn ghế", "học hành", "tất cả"], answer: "tất cả" },
+                { subject: 'tiengviet', grade: 'lop2', semester: 'hocky2', question: "Tìm từ đồng nghĩa với 'chăm chỉ'?", options: ["lười biếng", "siêng năng", "nhanh nhẹn", "thông minh"], answer: "siêng năng" },
+                { subject: 'toan', grade: 'lop2', semester: 'hocky1', question: "15 + 7 = ?", options: ["20", "21", "22", "23"], answer: "22" },
+                { subject: 'toan', grade: 'lop2', semester: 'hocky1', question: "Số lớn nhất có hai chữ số là?", options: ["90", "99", "100", "98"], answer: "99" },
+                { subject: 'toan', grade: 'lop2', semester: 'hocky2', question: "30 - 12 = ?", options: ["16", "18", "20", "22"], answer: "18" },
+                { subject: 'toan', grade: 'lop2', semester: 'hocky2', question: "Một tuần có mấy ngày?", options: ["5", "6", "7", "8"], answer: "7" },
+            ];
+
+            const { error } = await supabaseClient.from('questions').insert(seedData);
+            if (error) {
+                console.error("Error seeding questions:", error);
+                throw error;
+            }
+            await loadQuestionsFromSupabase();
+        }
+
+        /**
+         * Loads student list from Supabase, seeding if empty.
+         */
+        async function loadStudentList() {
+            let { data, error } = await supabaseClient.from('students').select('id, name');
+            if (error) {
+                 console.error("Error loading students:", error);
+                 throw error;
+            }
+            if (data.length === 0) {
+                console.log("No students found. Seeding default students.");
+                const { data: insertedData, error: insertError } = await supabaseClient.from('students').insert([{ name: 'Thảo Huyền' }, { name: 'Hằng Nga' }]).select();
+                if (insertError) {
+                    console.error("Error seeding students:", insertError);
+                    throw insertError;
+                }
+                studentList = insertedData;
+            } else {
+                studentList = data;
+            }
+            console.log("Student list loaded:", studentList);
+        }
+
+        /**
+         * Restructures the flat `fullQuestionCollection` into a nested `questionBank` object.
+         */
+        function restructureQuestionBank() {
+            questionBank = {}; // Reset the questionBank.
+            fullQuestionCollection.forEach(q => {
+                const { subject, grade, semester } = q;
+                if (!subject || !grade || !semester) return;
+                if (!questionBank[subject]) questionBank[subject] = {};
+                if (!questionBank[subject][grade]) questionBank[subject][grade] = {};
+                if (!questionBank[subject][grade][semester]) questionBank[subject][grade][semester] = [];
+                questionBank[subject][grade][semester].push(q);
+            });
+        }
+
+        /**
+         * Loads admin settings from Supabase.
+         */
+        async function loadAdminSettings() {
+            const { data, error } = await supabaseClient
+                .from('settings')
+                .select('key, value')
+                .in('key', ['timerEnabled', 'timerDuration', 'quizQuestionLimit']);
+
+            if (error) {
+                console.error("Error loading admin settings:", error);
+                return; // Use defaults on error
+            }
+
+            if (data) {
+                const settingsMap = new Map(data.map(item => [item.key, item.value]));
+                timerEnabled = settingsMap.get('timerEnabled')?.enabled ?? false;
+                timerDuration = settingsMap.get('timerDuration')?.duration ?? 30;
+                quizQuestionLimit = settingsMap.get('quizQuestionLimit')?.limit ?? 10;
+            }
+        }
+
+        /**
+         * Saves admin settings to Supabase.
+         */
+        async function saveAdminSettings(button) {
+            setButtonLoading(button, true);
+            const newTimerEnabled = document.getElementById('timer-toggle').checked;
+            const newTimerDuration = parseInt(document.getElementById('timer-duration').value, 10);
+            const newQuizQuestionLimit = parseInt(document.getElementById('quiz-question-limit').value, 10);
+            const feedbackEl = document.getElementById('settings-feedback');
+
+            if (isNaN(newTimerDuration) || newTimerDuration < 5 || newTimerDuration > 120) {
+                feedbackEl.textContent = "Thời gian phải từ 5 đến 120 giây.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+                setButtonLoading(button, false);
+                return;
+            }
+            if (isNaN(newQuizQuestionLimit) || newQuizQuestionLimit < 1 || newQuizQuestionLimit > 50) {
+                feedbackEl.textContent = "Số câu hỏi mỗi lần chơi phải từ 1 đến 50.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+                setButtonLoading(button, false);
+                return;
+            }
+
+            try {
+                const { error } = await supabaseClient.from('settings').upsert([
+                    { key: 'timerEnabled', value: { enabled: newTimerEnabled } },
+                    { key: 'timerDuration', value: { duration: newTimerDuration } },
+                    { key: 'quizQuestionLimit', value: { limit: newQuizQuestionLimit } }
+                ], { onConflict: 'key' });
+
+                if (error) throw error;
+
+                timerEnabled = newTimerEnabled;
+                timerDuration = newTimerDuration;
+                quizQuestionLimit = newQuizQuestionLimit;
+
+                feedbackEl.textContent = "Đã lưu cài đặt!";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+            } catch (error) {
+                console.error("Error saving settings:", error);
+                feedbackEl.textContent = "Lỗi khi lưu cài đặt.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+            } finally {
+                setTimeout(() => feedbackEl.textContent = '', 3000);
+                setButtonLoading(button, false);
+            }
+        }
+
+        /**
+         * Loads the API key from Supabase.
+         */
+        async function loadApiKey() {
+            const { data, error } = await supabaseClient
+                .from('settings')
+                .select('value')
+                .eq('key', 'geminiApiKey')
+                .single();
+
+            if (error && error.code !== 'PGRST116') { // Ignore 'missing row' error
+                console.error("Error loading API key:", error);
+                return;
+            }
+
+            if (data && data.value && data.value.key) {
+                userDefinedApiKey = data.value.key;
+                document.getElementById('gemini-api-key-input').placeholder = "API Key đã được lưu. Nhập để thay thế.";
+            } else {
+                userDefinedApiKey = null;
+                document.getElementById('gemini-api-key-input').placeholder = "Nhập Gemini API Key của bạn...";
+            }
+        }
+
+        /**
+         * Saves the API key to Supabase.
+         */
+        async function saveApiKey(button) {
+            setButtonLoading(button, true);
+            const newKey = document.getElementById('gemini-api-key-input').value.trim();
+            const feedbackEl = document.getElementById('settings-feedback');
+
+            if (!newKey) {
+                feedbackEl.textContent = "API Key không được để trống.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+                setButtonLoading(button, false);
+                return;
+            }
+            
+            try {
+                const { error } = await supabaseClient.from('settings').upsert(
+                    { key: 'geminiApiKey', value: { key: newKey } },
+                    { onConflict: 'key' }
+                );
+                if (error) throw error;
+                
+                userDefinedApiKey = newKey;
+                feedbackEl.textContent = "Đã lưu API Key thành công!";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                document.getElementById('gemini-api-key-input').value = "";
+                document.getElementById('gemini-api-key-input').placeholder = "API Key đã được lưu. Nhập để thay thế.";
+            } catch (error) {
+                 console.error("Error saving API key:", error);
+                 feedbackEl.textContent = "Lỗi khi lưu API Key.";
+                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+            } finally {
+                setButtonLoading(button, false);
+            }
+        }
+
+        /**
+         * Deletes the API key from Supabase.
+         */
+        async function deleteApiKey(button) {
+            setButtonLoading(button, true);
+            const feedbackEl = document.getElementById('settings-feedback');
+            
+            try {
+                const { error } = await supabaseClient
+                    .from('settings')
+                    .delete()
+                    .eq('key', 'geminiApiKey');
+                if (error) throw error;
+
+                userDefinedApiKey = null;
+                feedbackEl.textContent = "Đã xóa API Key. Hệ thống sẽ dùng key mặc định.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                document.getElementById('gemini-api-key-input').value = "";
+                document.getElementById('gemini-api-key-input').placeholder = "Nhập Gemini API Key của bạn...";
+            } catch (error) {
+                console.error("Error deleting API key:", error);
+                feedbackEl.textContent = "Lỗi khi xóa API Key.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+            } finally {
+                setButtonLoading(button, false);
+            }
+        }
+        
+        /**
+         * Normalizes text for better speech synthesis.
+         */
+        function normalizeTextForSpeech(text) {
+            let normalized = text;
+            normalized = normalized.replace(/\+/g, ' cộng ');
+            normalized = normalized.replace(/-/g, ' trừ ');
+            normalized = normalized.replace(/\*/g, ' nhân ');
+            normalized = normalized.replace(/\//g, ' chia ');
+            normalized = normalized.replace(/=/g, ' bằng ');
+            normalized = normalized.replace(/>/g, ' lớn hơn ');
+            normalized = normalized.replace(/</g, ' bé hơn ');
+
+            if (/\d/.test(normalized) || /[+\-*/=<>]/.test(normalized)) {
+                normalized = normalized.replace(/\?/g, ' bao nhiêu ');
+            } else {
+                normalized = normalized.replace(/\?/g, ' hỏi chấm ');
+            }
+            
+            normalized = normalized.replace(/\s+/g, ' ').trim();
+            return normalized;
+        }
+
+        // --- AI EXPLANATION & GENERATION ---
+        /**
+         * Fetches an explanation from the Gemini AI.
+         */
+        async function getExplanationFromAI(question, answer, grade) {
+            const explanationContainer = document.getElementById('explanation-container');
+            const explanationTextEl = document.getElementById('explanation-text');
+            const readExplanationBtn = document.getElementById('read-explanation-btn');
+
+            explanationTextEl.textContent = 'Đang tạo giải thích...';
+            explanationContainer.classList.remove('hidden');
+            readExplanationBtn.classList.remove('speaking-active');
+            readExplanationBtn.style.display = 'block';
+
+            const gradeMap = { lop1: "lớp 1", lop2: "lớp 2" };
+            const gradeText = gradeMap[grade] || "học sinh tiểu học";
+            const prompt = `Hãy giải thích đáp án cho câu hỏi sau một cách thật ngắn gọn và dễ hiểu, phù hợp với trình độ của học sinh ${gradeText}. Câu hỏi: "${question}" Đáp án đúng là: "${answer}".`;
+
+            try {
+                const generatedText = await callGeminiAPI(prompt);
+                explanationTextEl.textContent = `💡 Giải thích: ${generatedText}`;
+                
+                readExplanationBtn.onclick = () => {
+                    speakText(normalizeTextForSpeech(generatedText), readExplanationBtn);
+                };
+                readExplanationBtn.style.display = 'block';
+            } catch (error) {
+                console.error("Error in explanation process:", error);
+                explanationTextEl.textContent = 'Không thể tạo giải thích lúc này.';
+                readExplanationBtn.style.display = 'none';
+            }
+        }
+
+        /**
+         * Makes a call to the Gemini API.
+         */
+        async function callGeminiAPI(prompt, jsonSchema = null) {
+            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+            const payload = { contents: chatHistory };
+            
+            if (jsonSchema) {
+                payload.generationConfig = {
+                    responseMimeType: "application/json",
+                    responseSchema: jsonSchema
+                };
+            }
+            
+            const apiKey = userDefinedApiKey || ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.text();
+                    console.error("API call failed:", response.status, errorBody);
+                    throw new Error(`API call failed with status: ${response.status}. Chi tiết: ${errorBody.substring(0, 100)}...`);
+                }
+                
+                const result = await response.json();
+                const generatedContent = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (!generatedContent) {
+                    console.error("Invalid response structure from API:", result);
+                    throw new Error("Cấu trúc phản hồi từ AI không hợp lệ. Vui lòng thử lại.");
+                }
+                return generatedContent;
+            } catch (error) {
+                console.error("Error during Gemini API call:", error);
+                throw error;
+            }
+        }
+
+        // --- HISTORY & LEADERBOARD ---
+        /**
+         * Saves quiz results to Supabase.
+         */
+        async function saveResult(resultData, playerName = null) {
+             const historyData = {
+                name: playerName,
+                score: resultData.score,
+                total_questions: resultData.totalQuestions,
+                subject: resultData.subject,
+                grade: resultData.grade,
+                semester: resultData.semester,
+                questions: resultData.questions
+            };
+
+            const { error: historyError } = await supabaseClient.from('quiz_history').insert(historyData);
+            if (historyError) console.error("Error saving history:", historyError);
+            else console.log("History saved!");
+
+            if (playerName) {
+                const leaderboardData = {
+                    name: playerName,
+                    score: resultData.score,
+                    total_questions: resultData.totalQuestions,
+                    subject: resultData.subject,
+                    grade: resultData.grade,
+                };
+                const { error: leaderboardError } = await supabaseClient.from('leaderboard').insert(leaderboardData);
+                if (leaderboardError) console.error("Error saving to leaderboard:", leaderboardError);
+                else console.log("Leaderboard score saved!");
+            }
+        }
+
+        /**
+         * Displays the quiz history from Supabase.
+         */
+        async function displayHistory() {
+            showScreen('history');
+            const container = document.getElementById('history-table-container');
+            container.innerHTML = '<p class="text-center text-gray-500">Đang tải lịch sử...</p>';
+
+            const { data, error } = await supabaseClient
+                .from('quiz_history')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (error) {
+                console.error("Error fetching history:", error);
+                container.innerHTML = '<p class="text-center text-red-500">Không thể tải lịch sử.</p>';
+                return;
+            }
+            
+            if (data.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500">Chưa có lịch sử làm bài.</p>';
+                return;
+            }
+
+            quizHistory = data; // Cache results for detailed view.
+
+            const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', 'lop2': 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
+
+            let tableHTML = `
+                <table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden">
+                    <thead class="bg-gray-100/50">
+                        <tr>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Ngày Giờ</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Môn</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Chi tiết</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body" class="bg-white/30 divide-y divide-gray-200 text-gray-800">
+            `;
+
+            data.forEach((r, index) => {
+                const date = r.created_at ? new Date(r.created_at).toLocaleString('vi-VN') : 'N/A';
+                const scoreDisplay = `${r.score}/${r.total_questions || 10}`;
+                tableHTML += `
+                    <tr>
+                        <td class="px-3 py-2 text-sm">${date}</td>
+                        <td class="px-3 py-2 text-sm font-semibold">${r.name || 'Không lưu'}</td>
+                        <td class="px-3 py-2 text-sm">${nameMap[r.subject] || r.subject}</td>
+                        <td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td>
+                        <td class="px-3 py-2 text-sm">
+                            <button data-index="${index}" class="view-detail-btn bg-blue-500 text-white px-2 py-1 rounded-md text-xs hover:bg-blue-600">Xem</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tableHTML += '</tbody></table>';
+            container.innerHTML = tableHTML;
+
+            document.getElementById('history-table-body').addEventListener('click', (e) => {
+                if (e.target.classList.contains('view-detail-btn')) {
+                    const index = e.target.dataset.index;
+                    showHistoryDetail(data[index]);
+                }
+            });
+        }
+
+        /**
+         * Displays detailed information for a specific quiz session.
+         */
+        function showHistoryDetail(result) {
+            const summaryEl = document.getElementById('history-detail-summary');
+            const contentEl = document.getElementById('history-detail-content');
+
+            summaryEl.innerHTML = `<strong>Tên:</strong> ${result.name || 'Không lưu'} | <strong>Điểm:</strong> ${result.score}/${result.total_questions}`;
+            contentEl.innerHTML = '';
+
+            if (result.questions && Array.isArray(result.questions)) {
+                result.questions.forEach((q, index) => {
+                    const isCorrect = q.isCorrect;
+                    const itemEl = document.createElement('div');
+                    itemEl.className = `p-3 rounded-lg border ${isCorrect ? 'border-green-500 bg-green-100/50' : 'border-red-500 bg-red-100/50'}`;
+                    itemEl.innerHTML = `
+                        <p class="font-bold text-gray-800">${index + 1}. ${q.questionText}</p>
+                        <p class="text-sm ${isCorrect ? 'text-green-700' : 'text-red-700'}"><strong>Bé chọn:</strong> ${q.userAnswer || 'Không trả lời'}</p>
+                        ${!isCorrect ? `<p class="text-sm text-blue-700"><strong>Đáp án đúng:</strong> ${q.correctAnswer}</p>` : ''}
+                    `;
+                    contentEl.appendChild(itemEl);
+                });
+            } else {
+                contentEl.innerHTML = '<p>Không có dữ liệu chi tiết cho lần chơi này.</p>';
+            }
+            showModal('historyDetail');
+        }
+
+        /**
+         * Displays the leaderboard from Supabase.
+         */
+        async function displayLeaderboard() {
+            showScreen('leaderboard');
+            const container = document.getElementById('leaderboard-table-container');
+            container.innerHTML = '<p class="text-center text-gray-500">Đang tải bảng xếp hạng...</p>';
+            
+            let query = supabaseClient.from('leaderboard').select('*');
+
+            const subjectFilter = leaderboardSubjectFilter.value;
+            const gradeFilter = leaderboardGradeFilter.value;
+            const nameFilter = leaderboardNameFilter.value.trim();
+
+            if (subjectFilter !== 'all') query = query.eq('subject', subjectFilter);
+            if (gradeFilter !== 'all') query = query.eq('grade', gradeFilter);
+            if (nameFilter) query = query.ilike('name', `%${nameFilter}%`);
+
+            query = query.order('score', { ascending: false }).order('created_at', { ascending: false }).limit(10);
+            
+            const { data: results, error } = await query;
+
+            if (error) {
+                console.error("Error fetching leaderboard:", error);
+                container.innerHTML = '<p class="text-center text-red-500">Không thể tải bảng xếp hạng.</p>';
+                return;
+            }
+            
+            if (!results || results.length === 0) {
+                 container.innerHTML = '<p class="text-center text-gray-500">Chưa có ai trên bảng xếp hạng cho mục này.</p>';
+                 return;
+            }
+
+            let tableHTML = `
+                <table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden">
+                    <thead class="bg-gray-100/50">
+                        <tr>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Hạng</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tên Bé</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Điểm</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white/30 divide-y divide-gray-200 text-gray-800">
+            `;
+
+            results.forEach((data, index) => {
+                const scoreDisplay = `${data.score}/${data.total_questions || 10}`;
+                tableHTML += `
+                    <tr>
+                        <td class="px-3 py-2 text-center text-sm font-bold">${index + 1}</td>
+                        <td class="px-3 py-2 text-sm font-semibold">${data.name}</td>
+                        <td class="px-3 py-2 text-sm font-bold">${scoreDisplay}</td>
+                    </tr>
+                `;
+            });
+            tableHTML += '</tbody></table>';
+            container.innerHTML = tableHTML;
+        }
+        
+        // --- GAME LOGIC ---
+        /**
+         * Updates the state of the "Start" button.
+         */
+        function updateStartButtonState() {
+            if (selectedSubject && selectedGrade && selectedSemester && questionBank) {
+                const questionsExist = questionBank[selectedSubject]?.[selectedGrade]?.[selectedSemester]?.length > 0;
+                if (questionsExist) {
+                    document.getElementById('start-btn').disabled = false;
+                    document.getElementById('start-btn').classList.remove('bg-gray-500/50', 'cursor-not-allowed');
+                    document.getElementById('start-btn').classList.add('bg-blue-600/70', 'hover:bg-blue-600/90');
+                } else {
+                    document.getElementById('start-btn').disabled = true;
+                    document.getElementById('start-btn').classList.add('bg-gray-500/50', 'cursor-not-allowed');
+                    document.getElementById('start-btn').classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90');
+                }
+            } else {
+                document.getElementById('start-btn').disabled = true;
+                document.getElementById('start-btn').classList.add('bg-gray-500/50', 'cursor-not-allowed');
+                document.getElementById('start-btn').classList.remove('bg-blue-600/70', 'hover:bg-blue-600/90');
+            }
+        }
+
+        /**
+         * Initializes and starts a new quiz game session.
+         */
+        function startGame() {
+            clearInterval(timerInterval);
+            sessionAnswers = [];
+
+            const errorEl = document.getElementById('start-error');
+            errorEl.textContent = '';
+
+            const questionsForSelection = questionBank?.[selectedSubject]?.[selectedGrade]?.[selectedSemester];
+
+            if (!questionsForSelection || questionsForSelection.length === 0) {
+                errorEl.textContent = "Lỗi: Không tìm thấy bộ câu hỏi cho lựa chọn này. Vui lòng chọn lại.";
+                setTimeout(() => { errorEl.textContent = '', 4000 });
+                return;
+            }
+
+            let allAvailableQuestions = questionsForSelection.sort(() => Math.random() - 0.5);
+            currentQuestions = allAvailableQuestions.slice(0, quizQuestionLimit);
+
+            if (currentQuestions.length === 0) {
+                errorEl.textContent = "Lỗi: Không đủ câu hỏi để bắt đầu. Vui lòng chọn lại.";
+                setTimeout(() => { errorEl.textContent = '', 4000 });
+                return;
+            }
+
+            currentQuestionIndex = 0;
+            score = 0;
+            showScreen('game');
+            displayQuestion();
+        }
+
+        /**
+         * Displays the current question and its answer options.
+         */
+        function displayQuestion() {
+            clearInterval(timerInterval);
+            document.getElementById('feedback-container').innerHTML = '';
+            document.getElementById('explanation-container').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+
+            const questionData = currentQuestions[currentQuestionIndex];
+            document.getElementById('question-container').querySelector('p').textContent = questionData.question;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            const shuffledOptions = [...questionData.options].sort(() => Math.random() - 0.5);
+
+            shuffledOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.className = 'answer-option w-full p-4 rounded-2xl font-semibold glass-btn bg-white/20 hover:bg-white/40 text-gray-800';
+                button.onclick = (e) => {
+                    playSound('click');
+                    checkAnswer(e.target, questionData.answer);
+                };
+                optionsContainer.appendChild(button);
+            });
+
+            document.getElementById('progress-text').textContent = `Câu ${currentQuestionIndex + 1}/${currentQuestions.length}`;
+            document.getElementById('score-text').textContent = `Điểm: ${score}`;
+
+            const readQuestionBtn = document.getElementById('read-question-btn');
+            readQuestionBtn.onclick = () => speakText(normalizeTextForSpeech(questionData.question), readQuestionBtn);
+            readQuestionBtn.style.display = 'block';
+
+            const timerDisplay = document.getElementById('timer-display');
+            if (timerEnabled) {
+                timerDisplay.classList.remove('hidden');
+                let timeLeft = timerDuration;
+                timerDisplay.textContent = `⏰ ${timeLeft}`;
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    timerDisplay.textContent = `⏰ ${timeLeft}`;
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        checkAnswer(null, questionData.answer);
+                    }
+                }, 1000);
+            } else {
+                timerDisplay.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Checks the user's selected answer.
+         */
+        function checkAnswer(selectedButton, correctAnswer) {
+            clearInterval(timerInterval);
+            document.querySelectorAll('.answer-option').forEach(btn => btn.disabled = true);
+
+            const questionData = currentQuestions[currentQuestionIndex];
+            const userAnswer = selectedButton ? selectedButton.textContent : null;
+            const isCorrect = userAnswer == correctAnswer;
+
+            if (isCorrect) {
+                score++;
+                if (selectedButton) selectedButton.classList.add('correct');
+                document.getElementById('feedback-container').textContent = '🎉 Đúng rồi!';
+                playSound('correct');
+            } else {
+                playSound('incorrect');
+                if (selectedButton === null) {
+                    document.getElementById('feedback-container').textContent = '⌛ Hết giờ!';
+                } else {
+                    selectedButton.classList.add('incorrect');
+                    document.getElementById('feedback-container').textContent = '😥 Sai rồi!';
+                }
+                document.querySelectorAll('.answer-option').forEach(btn => {
+                    if (btn.textContent == correctAnswer) btn.classList.add('correct');
+                });
+            }
+
+            sessionAnswers.push({
+                questionText: questionData.question,
+                userAnswer: userAnswer,
+                correctAnswer: correctAnswer,
+                isCorrect: isCorrect
+            });
+
+            document.getElementById('next-btn').classList.remove('hidden');
+            getExplanationFromAI(questionData.question, questionData.answer, selectedGrade);
+
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+                document.querySelectorAll('.speaker-btn').forEach(btn => btn.classList.remove('speaking-active'));
+            }
+        }
+
+        /**
+         * Advances to the next question or shows results.
+         */
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < currentQuestions.length) {
+                displayQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        /**
+         * Displays the final quiz results.
+         */
+        function showResults() {
+            playSound('complete');
+            const finalScore = score;
+            const totalQuestions = currentQuestions.length;
+            document.getElementById('modal-final-score').textContent = `${finalScore}/${totalQuestions}`;
+
+            const percentage = (finalScore / totalQuestions) * 100;
+            const finalMessageElement = document.getElementById('modal-final-message');
+
+            if (percentage === 100) finalMessageElement.textContent = "Xuất sắc! Bé thật là giỏi! Hãy chọn tên để lưu điểm nhé.";
+            else if (percentage >= 70) finalMessageElement.textContent = "Giỏi lắm! Hãy chọn tên để lưu điểm nhé.";
+            else if (percentage >= 50) finalMessageElement.textContent = "Làm tốt lắm! Hãy chọn tên để lưu điểm nào.";
+            else finalMessageElement.textContent = "Cố gắng hơn lần sau nhé! Chọn tên để lưu điểm nào.";
+
+            const resultData = {
+                // date is handled by created_at in supabase
+                subject: selectedSubject,
+                grade: selectedGrade,
+                semester: selectedSemester,
+                score: score,
+                totalQuestions: currentQuestions.length,
+                questions: sessionAnswers
+            };
+
+            populateNameSelectionModal();
+
+            document.getElementById('name-selection-container').onclick = (e) => {
+                if (e.target.classList.contains('name-btn')) {
+                    playSound('click');
+                    const playerName = e.target.dataset.name;
+                    saveResult(resultData, playerName);
+                    hideModal('nameSelection');
+                    displayLeaderboard();
+                }
+            };
+
+            showModal('nameSelection');
+        }
+
+        /**
+         * Resets the game to its initial state.
+         */
+        function resetGame() {
+            showScreen('selection');
+            selectedSubject = null;
+            selectedGrade = null;
+            selectedSemester = null;
+            document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('selected'));
+            updateStartButtonState();
+        }
+
+        // --- UI & MODAL MANAGEMENT ---
+        /**
+         * Hides all screens and shows the specified one.
+         */
+        function showScreen(screenName) {
+            Object.values(screens).forEach(s => s.classList.add('hidden')); 
+            if (screens[screenName]) {
+                screens[screenName].classList.remove('hidden'); 
+            }
+        }
+
+        /**
+         * Displays a modal window.
+         */
+        function showModal(modalName) {
+            if (modals[modalName]) {
+                modals[modalName].classList.remove('hidden');
+                void modals[modalName].offsetWidth; 
+                setTimeout(() => modals[modalName].classList.remove('opacity-0'), 10);
+            }
+        }
+
+        /**
+         * Hides a modal window.
+         */
+        function hideModal(modalName) {
+            if (modals[modalName]) {
+                modals[modalName].classList.add('opacity-0');
+                setTimeout(() => modals[modalName].classList.add('hidden'), 300); 
+            }
+        }
+
+        /**
+         * Uses the Web Speech API to speak text.
+         */
+        function speakText(text, buttonElement = null) {
+            if (!'speechSynthesis' in window) {
+                console.error("Speech synthesis not supported.");
+                return;
+            }
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+                document.querySelectorAll('.speaker-btn').forEach(btn => btn.classList.remove('speaking-active'));
+            }
+            try {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'vi-VN';
+                const voice = speechSynthesis.getVoices().find(v => v.lang === 'vi-VN');
+                if (voice) {
+                    utterance.voice = voice;
+                } else {
+                    console.warn("Vietnamese voice not found.");
+                }
+
+                if (buttonElement) {
+                    buttonElement.classList.add('speaking-active');
+                    utterance.onend = () => {
+                        buttonElement.classList.remove('speaking-active');
+                    };
+                    utterance.onerror = (event) => {
+                        console.error("Speech synthesis error:", event.error);
+                        buttonElement.classList.remove('speaking-active');
+                    };
+                }
+                speechSynthesis.speak(utterance);
+            } catch (error) {
+                console.error("Error speaking text:", error);
+            }
+        }
+
+        let confirmCallback = null;
+
+        /**
+         * Displays a confirmation modal.
+         */
+        function showConfirmationModal(message, onConfirm) {
+            document.getElementById('confirmation-message').textContent = message;
+            confirmCallback = onConfirm;
+            showModal('confirmation');
+        }
+
+        /**
+         * Clears a Supabase table.
+         */
+        async function clearCollection(tableName, button) {
+            setButtonLoading(button, true);
+            const feedbackEl = document.getElementById('settings-feedback');
+            
+            let friendlyName = '';
+            if (tableName === 'leaderboard') friendlyName = 'Bảng xếp hạng';
+            else if (tableName === 'quiz_history') friendlyName = 'Lịch sử thi';
+            else if (tableName === 'questions') friendlyName = 'TẤT CẢ Câu Hỏi';
+
+            feedbackEl.textContent = `Đang xóa ${friendlyName}...`;
+            feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-gray-700';
+
+            try {
+                // Supabase requires a filter for delete, so we delete where a column is not null.
+                // This is a way to delete all rows.
+                const { error } = await supabaseClient.from(tableName).delete().neq('id', '00000000-0000-0000-0000-000000000000'); 
+                if (error) throw error;
+                
+                feedbackEl.textContent = `Đã xóa thành công ${friendlyName}!`;
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+
+                if (tableName === 'questions') {
+                    await seedInitialQuestions(); // Re-seed default questions
+                    populateQuestionList();
+                }
+            } catch (error) {
+                 console.error(`Error clearing ${tableName}:`, error);
+                 feedbackEl.textContent = `Lỗi khi xóa ${friendlyName}.`;
+                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+            } finally {
+                setTimeout(() => feedbackEl.textContent = '', 4000);
+                setButtonLoading(button, false);
+            }
+        }
+
+        /**
+         * Toggles a loading spinner on a button.
+         */
+        function setButtonLoading(button, isLoading) {
+            if (isLoading) {
+                button.disabled = true;
+                button.dataset.originalContent = button.innerHTML;
+                button.innerHTML = '<div class="spinner mx-auto"></div>';
+            } else {
+                button.disabled = false;
+                if(button.dataset.originalContent) button.innerHTML = button.dataset.originalContent;
+            }
+        }
+
+        // --- ADMIN STUDENT MANAGEMENT ---
+        /**
+         * Displays the student management panel.
+         */
+        function displayStudentManager() {
+            showScreen('studentManager');
+            populateStudentList();
+        }
+
+        /**
+         * Populates the student list display.
+         */
+        function populateStudentList() {
+            const container = document.getElementById('student-list-container');
+            container.innerHTML = '';
+            const feedbackEl = document.getElementById('student-manager-feedback');
+            feedbackEl.textContent = '';
+
+            if (studentList.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-600 font-semibold p-4">Chưa có học sinh nào.</p>';
+                return;
+            }
+
+            studentList.forEach(student => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'p-3 bg-black/10 rounded-lg flex justify-between items-center';
+                itemEl.innerHTML = `
+                    <p class="font-semibold text-gray-800">${student.name}</p>
+                    <button data-id="${student.id}" class="delete-student-btn text-xs bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Xóa</button>
+                `;
+                container.appendChild(itemEl);
+            });
+        }
+
+        /**
+         * Adds a new student name to Supabase.
+         */
+        async function addStudent(name) {
+            const feedbackEl = document.getElementById('student-manager-feedback');
+            feedbackEl.textContent = '';
+
+            if (!name || studentList.map(s => s.name.toLowerCase()).includes(name.toLowerCase())) {
+                feedbackEl.textContent = "Tên không hợp lệ hoặc đã tồn tại.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 text-red-600';
+                setTimeout(() => feedbackEl.textContent = '', 3000);
+                return;
+            }
+            
+            const { data, error } = await supabaseClient.from('students').insert({ name: name }).select().single();
+
+            if (error) {
+                console.error("Error adding student:", error);
+                feedbackEl.textContent = "Lỗi khi thêm học sinh (có thể tên đã tồn tại).";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 text-red-600';
+            } else {
+                studentList.push(data); // Add new student object {id, name} to cache
+                populateStudentList();
+                feedbackEl.textContent = `Đã thêm học sinh "${name}" thành công!`;
+                feedbackEl.className = 'text-center text-sm font-bold h-4 text-green-800';
+            }
+            setTimeout(() => feedbackEl.textContent = '', 3000);
+        }
+
+        /**
+         * Deletes a student from Supabase.
+         */
+        async function deleteStudent(studentId) {
+            const feedbackEl = document.getElementById('student-manager-feedback');
+            feedbackEl.textContent = '';
+
+            const { error } = await supabaseClient
+                .from('students')
+                .delete()
+                .eq('id', studentId);
+
+            if (error) {
+                console.error("Error deleting student:", error);
+                feedbackEl.textContent = "Lỗi khi xóa học sinh.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 text-red-600';
+            } else {
+                const studentName = studentList.find(s => s.id === studentId)?.name || '';
+                studentList = studentList.filter(s => s.id !== studentId); // Remove from cache
+                populateStudentList();
+                feedbackEl.textContent = `Đã xóa học sinh "${studentName}" thành công!`;
+                feedbackEl.className = 'text-center text-sm font-bold h-4 text-green-800';
+            }
+            setTimeout(() => feedbackEl.textContent = '', 3000);
+        }
+
+        /**
+         * Populates the name selection modal.
+         */
+        function populateNameSelectionModal() {
+            const container = document.getElementById('name-selection-container');
+            container.innerHTML = '';
+            const colors = ["bg-pink-500/60", "bg-indigo-500/60", "bg-teal-500/60", "bg-amber-500/60"];
+            studentList.forEach((student, index) => {
+                const color = colors[index % colors.length];
+                const button = document.createElement('button');
+                button.dataset.name = student.name;
+                button.className = `name-btn w-full glass-btn ${color} text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:opacity-80`;
+                button.textContent = student.name;
+                container.appendChild(button);
+            });
+        }
+
+        // --- ADMIN QUESTION MANAGEMENT ---
+        /**
+         * Displays the question management panel.
+         */
+        function displayQuestionManager() {
+            showScreen('questionManager');
+            populateQuestionList();
+        }
+
+        /**
+         * Populates the question list display, applying filters.
+         */
+        function populateQuestionList() {
+            const container = document.getElementById('question-list-container');
+            container.innerHTML = '';
+
+            const subjectFilter = questionManagerSubjectFilter.value;
+            const gradeFilter = questionManagerGradeFilter.value;
+            const semesterFilter = questionManagerSemesterFilter.value;
+            const textFilter = questionManagerTextFilter.value.toLowerCase().trim();
+
+            const filteredQuestions = fullQuestionCollection.filter(q => {
+                const matchesSubject = (subjectFilter === 'all' || q.subject === subjectFilter);
+                const matchesGrade = (gradeFilter === 'all' || q.grade === gradeFilter);
+                const matchesSemester = (semesterFilter === 'all' || q.semester === semesterFilter);
+                const matchesText = (textFilter === '' || q.question.toLowerCase().includes(textFilter));
+                return matchesSubject && matchesGrade && matchesSemester && matchesText;
+            });
+
+            const totalQuestionsCountEl = document.getElementById('total-questions-count');
+            const filteredQuestionsCountEl = document.getElementById('filtered-questions-count');
+            const subjectGradeSemesterCountsEl = document.getElementById('subject-grade-semester-counts');
+
+            totalQuestionsCountEl.textContent = fullQuestionCollection.length;
+            filteredQuestionsCountEl.textContent = filteredQuestions.length;
+            subjectGradeSemesterCountsEl.innerHTML = '';
+
+            const counts = {};
+            fullQuestionCollection.forEach(q => {
+                const key = `${q.subject}-${q.grade}-${q.semester}`;
+                if (!counts[key]) counts[key] = 0;
+                counts[key]++;
+            });
+
+            const nameMap = { toan: 'Toán Học', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
+            const sortedKeys = Object.keys(counts).sort();
+
+            sortedKeys.forEach(key => {
+                const [subject, grade, semester] = key.split('-');
+                const count = counts[key];
+                const displaySubject = nameMap[subject] || subject;
+                const displayGrade = nameMap[grade] || grade;
+                const displaySemester = nameMap[semester] || semester;
+
+                const countItem = document.createElement('div');
+                countItem.className = 'p-1 bg-black/5 rounded-lg';
+                countItem.textContent = `${displaySubject} - ${displayGrade} - ${displaySemester}: ${count} câu`;
+                subjectGradeSemesterCountsEl.appendChild(countItem);
+            });
+
+            if (filteredQuestions.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-600 font-semibold p-4">Không có câu hỏi nào phù hợp với bộ lọc.</p>';
+                return;
+            }
+
+            filteredQuestions.forEach(q => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'p-3 bg-black/10 rounded-lg';
+                itemEl.innerHTML = `
+                    <p class="font-bold text-gray-800">${q.question}</p>
+                    <p class="text-sm text-gray-600">Đáp án: <span class="font-semibold">${q.answer}</span></p>
+                    <div class="flex gap-2 mt-2">
+                        <button data-id="${q.id}" class="edit-question-btn text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">Sửa</button>
+                        <button data-id="${q.id}" class="delete-question-btn text-xs bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Xóa</button>
+                    </div>
+                `;
+                container.appendChild(itemEl);
+            });
+        }
+
+        /**
+         * Opens the question edit/add modal.
+         */
+        function openQuestionModal(questionId = null) {
+            const form = document.getElementById('question-form');
+            form.reset();
+            document.getElementById('question-id-input').value = questionId || '';
+            document.getElementById('question-form-error').textContent = '';
+
+            const title = document.getElementById('question-modal-title');
+            if (questionId) {
+                title.textContent = 'Chỉnh sửa câu hỏi';
+                const questionData = fullQuestionCollection.find(q => q.id === questionId);
+                if (questionData) {
+                    document.getElementById(`question-text-input`).value = questionData.question;
+                    document.getElementById(`option-1-input`).value = questionData.options[0] || '';
+                    document.getElementById(`option-2-input`).value = questionData.options[1] || '';
+                    document.getElementById(`option-3-input`).value = questionData.options[2] || '';
+                    document.getElementById(`option-4-input`).value = questionData.options[3] || '';
+                    document.getElementById('question-form-subject').value = questionData.subject;
+                    document.getElementById('question-form-grade').value = questionData.grade;
+                    document.getElementById('question-form-semester').value = questionData.semester;
+                    populateAnswerSelect(questionData.options, questionData.answer);
+                }
+            } else {
+                title.textContent = 'Thêm câu hỏi mới';
+                document.getElementById('question-form-subject').value = questionManagerSubjectFilter.value !== 'all' ? questionManagerSubjectFilter.value : 'toan';
+                document.getElementById('question-form-grade').value = questionManagerGradeFilter.value !== 'all' ? questionManagerGradeFilter.value : 'lop1';
+                document.getElementById('question-form-semester').value = questionManagerSemesterFilter.value !== 'all' ? questionManagerSemesterFilter.value : 'hocky1';
+                document.getElementById(`option-1-input`).value = '';
+                document.getElementById(`option-2-input`).value = '';
+                document.getElementById(`option-3-input`).value = '';
+                document.getElementById(`option-4-input`).value = '';
+                populateAnswerSelect(['', '', '', '']);
+            }
+            showModal('questionEdit');
+        }
+
+        /**
+         * Populates the correct answer select dropdown.
+         */
+        function populateAnswerSelect(options, selectedAnswer = null) {
+            const select = document.getElementById('correct-answer-select');
+            select.innerHTML = '';
+
+            const defaultOption = document.createElement('option');
+            defaultOption.value = "";
+            defaultOption.textContent = "Chọn đáp án đúng...";
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            select.appendChild(defaultOption);
+
+            options.forEach((opt, i) => {
+                if(opt) {
+                    const optionEl = document.createElement('option');
+                    optionEl.value = opt;
+                    optionEl.textContent = `Lựa chọn ${i + 1}: ${opt}`;
+                    if (opt === selectedAnswer) {
+                        optionEl.selected = true;
+                    }
+                    select.appendChild(optionEl);
+                }
+            });
+        }
+
+        /**
+         * Checks if a new question is a duplicate.
+         */
+        function isDuplicateQuestion(newQuestion) {
+            const normalizedNewOptions = [...newQuestion.options].sort().join('|');
+            return fullQuestionCollection.some(existingQuestion => {
+                if (newQuestion.id && existingQuestion.id === newQuestion.id) {
+                    return false;
+                }
+                const normalizedExistingOptions = [...existingQuestion.options].sort().join('|');
+                return (
+                    existingQuestion.question.trim() === newQuestion.question.trim() &&
+                    normalizedExistingOptions === normalizedNewOptions &&
+                    existingQuestion.answer.trim() === newQuestion.answer.trim() &&
+                    existingQuestion.subject === newQuestion.subject &&
+                    existingQuestion.grade === newQuestion.grade &&
+                    existingQuestion.semester === newQuestion.semester
+                );
+            });
+        }
+
+        /**
+         * Handles the submission of the question add/edit form to Supabase.
+         */
+        async function handleQuestionFormSubmit(e) {
+            e.preventDefault();
+            const button = e.target.querySelector('button[type="submit"]');
+            setButtonLoading(button, true);
+
+            const errorEl = document.getElementById('question-form-error');
+            errorEl.textContent = '';
+
+            const questionId = document.getElementById('question-id-input').value;
+            const questionData = {
+                question: document.getElementById('question-text-input').value.trim(),
+                options: Array.from(document.querySelectorAll('.option-input')).map(input => input.value.trim()),
+                answer: document.getElementById('correct-answer-select').value,
+                subject: qFormSubjectSelect.value,
+                grade: qFormGradeSelect.value,
+                semester: qFormSemesterSelect.value,
+            };
+
+            if (!questionData.question || questionData.options.some(opt => !opt) || !questionData.answer) {
+                errorEl.textContent = 'Vui lòng điền đầy đủ tất cả các trường.';
+                setButtonLoading(button, false);
+                return;
+            }
+            if (!questionData.options.includes(questionData.answer)) {
+                errorEl.textContent = 'Đáp án đúng phải là một trong các lựa chọn.';
+                setButtonLoading(button, false);
+                return;
+            }
+
+            if (isDuplicateQuestion({ ...questionData, id: questionId })) {
+                errorEl.textContent = 'Câu hỏi này đã tồn tại trong ngân hàng câu hỏi.';
+                setButtonLoading(button, false);
+                return;
+            }
+
+            try {
+                let error;
+                if (questionId) {
+                    ({ error } = await supabaseClient.from('questions').update(questionData).eq('id', questionId));
+                } else {
+                    ({ error } = await supabaseClient.from('questions').insert(questionData));
+                }
+                if (error) throw error;
+                
+                hideModal('questionEdit');
+                await loadQuestionsFromSupabase();
+                populateQuestionList();
+            } catch (error) {
+                console.error("Error saving question:", error);
+                errorEl.textContent = 'Lỗi khi lưu câu hỏi vào CSDL.';
+            } finally {
+                setButtonLoading(button, false);
+            }
+        }
+
+        /**
+         * Deletes a question from Supabase.
+         */
+        async function deleteQuestion(questionId) {
+            const { error } = await supabaseClient.from('questions').delete().eq('id', questionId);
+            const feedbackEl = document.getElementById('question-form-error');
+
+            if(error) {
+                console.error("Error deleting question:", error);
+                feedbackEl.textContent = "Lỗi khi xóa câu hỏi.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 text-red-600';
+            } else {
+                await loadQuestionsFromSupabase();
+                populateQuestionList();
+                feedbackEl.textContent = "Đã xóa câu hỏi.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 text-green-800';
+            }
+            setTimeout(() => feedbackEl.textContent = '', 3000);
+        }
+        
+        /**
+         * Finds and removes duplicate questions from Supabase.
+         */
+        async function removeDuplicateQuestions(button) {
+            setButtonLoading(button, true);
+            const feedbackEl = document.getElementById('settings-feedback');
+            feedbackEl.textContent = 'Đang tìm và xóa câu hỏi trùng lặp...';
+            feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-gray-700';
+
+            try {
+                const uniqueQuestionsMap = new Map();
+                const duplicateQuestionIds = [];
+
+                fullQuestionCollection.forEach(q => {
+                    const key = `${q.question.trim().toLowerCase()}-${q.answer.trim().toLowerCase()}`;
+                    if (uniqueQuestionsMap.has(key)) {
+                        duplicateQuestionIds.push(q.id);
+                    } else {
+                        uniqueQuestionsMap.set(key, q);
+                    }
+                });
+
+                if (duplicateQuestionIds.length === 0) {
+                    feedbackEl.textContent = 'Không tìm thấy câu hỏi trùng lặp nào.';
+                    feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                    return;
+                }
+
+                showConfirmationModal(`Bạn có chắc chắn muốn xóa ${duplicateQuestionIds.length} câu hỏi trùng lặp không?`, async () => {
+                    const { error } = await supabaseClient.from('questions').delete().in('id', duplicateQuestionIds);
+                    if (error) throw error;
+
+                    feedbackEl.textContent = `Đã xóa thành công ${duplicateQuestionIds.length} câu hỏi trùng lặp.`;
+                    feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                    await loadQuestionsFromSupabase();
+                    populateQuestionList();
+                });
+
+            } catch (error) {
+                console.error("Error removing duplicates:", error);
+                feedbackEl.textContent = "Lỗi khi xóa câu hỏi trùng lặp.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+            } finally {
+                setTimeout(() => feedbackEl.textContent = '', 4000);
+                setButtonLoading(button, false);
+            }
+        }
+        
+        /**
+         * Deletes questions from Supabase based on current filters.
+         */
+        async function deleteFilteredQuestions(button) {
+            setButtonLoading(button, true);
+            const feedbackEl = document.getElementById('settings-feedback');
+            
+            const subjectFilter = questionManagerSubjectFilter.value;
+            const gradeFilter = questionManagerGradeFilter.value;
+            const semesterFilter = questionManagerSemesterFilter.value;
+            const textFilter = questionManagerTextFilter.value.toLowerCase().trim();
+
+            const questionsToDelete = fullQuestionCollection.filter(q => {
+                const matchesSubject = (subjectFilter === 'all' || q.subject === subjectFilter);
+                const matchesGrade = (gradeFilter === 'all' || q.grade === gradeFilter);
+                const matchesSemester = (semesterFilter === 'all' || q.semester === semesterFilter);
+                const matchesText = (textFilter === '' || q.question.toLowerCase().includes(textFilter));
+                return matchesSubject && matchesGrade && matchesSemester && matchesText;
+            });
+            const idsToDelete = questionsToDelete.map(q => q.id);
+
+            if (idsToDelete.length === 0) {
+                 feedbackEl.textContent = 'Không có câu hỏi nào khớp với bộ lọc để xóa.';
+                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                 setTimeout(() => feedbackEl.textContent = '', 3000);
+                 setButtonLoading(button, false);
+                 return;
+            }
+
+            showConfirmationModal(`Bạn có chắc chắn muốn xóa ${idsToDelete.length} câu hỏi đã lọc không?`, async () => {
+                try {
+                    const { error } = await supabaseClient.from('questions').delete().in('id', idsToDelete);
+                    if (error) throw error;
+                    
+                    feedbackEl.textContent = `Đã xóa thành công ${idsToDelete.length} câu hỏi đã lọc.`;
+                    feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                    await loadQuestionsFromSupabase();
+                    populateQuestionList();
+                } catch(error) {
+                    console.error("Error deleting filtered questions:", error);
+                    feedbackEl.textContent = "Lỗi khi xóa câu hỏi đã lọc.";
+                    feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+                } finally {
+                     setTimeout(() => feedbackEl.textContent = '', 4000);
+                }
+            });
+            setButtonLoading(button, false);
+        }
+
+        // --- EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeSupabase();
+            document.body.addEventListener('click', async () => {
+                if (Tone.context.state !== 'running') {
+                    Tone.context.resume().then(() => {
+                        console.log('Audio context resumed');
+                    }).catch(e => console.error("Failed to resume audio context:", e));
+                }
+            }, { once: true });
+        });
+
+        document.getElementById('sound-toggle-btn').addEventListener('click', () => {
+            soundsEnabled = !soundsEnabled;
+            document.getElementById('speaker-on-icon').classList.toggle('hidden', !soundsEnabled);
+            document.getElementById('speaker-off-icon').classList.toggle('hidden', soundsEnabled);
+        });
+
+        document.querySelectorAll('.choice-btn').forEach(btn => btn.addEventListener('click', (e) => {
+            playSound('click');
+            const type = Object.keys(e.target.dataset)[0];
+            const value = e.target.dataset[type];
+
+            if (type === 'subject') selectedSubject = value;
+            if (type === 'grade') selectedGrade = value;
+            if (type === 'semester') selectedSemester = value;
+
+            document.querySelectorAll(`[data-${type}]`).forEach(b => b.classList.remove('selected'));
+            e.target.classList.add('selected');
+            updateStartButtonState();
+        }));
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            if (!document.getElementById('start-btn').disabled) {
+                playSound('click');
+                startGame();
+            }
+        });
+
+        document.getElementById('next-btn').addEventListener('click', () => {
+            playSound('click');
+            nextQuestion();
+        });
+
+        leaderboardBtn.addEventListener('click', () => {
+            playSound('click');
+            displayLeaderboard();
+        });
+
+        backToMenuBtn.addEventListener('click', () => {
+            playSound('click');
+            resetGame();
+        });
+
+        leaderboardSubjectFilter.addEventListener('change', displayLeaderboard);
+        leaderboardGradeFilter.addEventListener('change', displayLeaderboard);
+        leaderboardNameFilter.addEventListener('input', displayLeaderboard);
+
+        document.getElementById('admin-login-btn').addEventListener('click',_=> {
+            playSound('click');
+            showModal('login');
+        });
+
+        document.getElementById('close-modal-btn').addEventListener('click', () => hideModal('login'));
+        document.getElementById('close-history-detail-btn').addEventListener('click', () => hideModal('historyDetail'));
+
+        document.getElementById('confirm-delete-btn').addEventListener('click', () => {
+            if (typeof confirmCallback === 'function') {
+                playSound('click');
+                confirmCallback();
+            }
+            hideModal('confirmation');
+            confirmCallback = null;
+        });
+        document.getElementById('cancel-delete-btn').addEventListener('click', () => {
+            playSound('click');
+            hideModal('confirmation');
+            confirmCallback = null;
+        });
+
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            playSound('click');
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            if (u === 'admin' && p === 'admin') {
+                hideModal('login');
+                showScreen('admin');
+            } else {
+                document.getElementById('login-error').textContent = 'Tên đăng nhập hoặc mật khẩu không đúng.';
+            }
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            playSound('click');
+            showScreen('selection');
+        });
+        
+        document.getElementById('view-history-btn').addEventListener('click', () => {
+            playSound('click');
+            displayHistory();
+        });
+        document.getElementById('manage-settings-btn').addEventListener('click', () => {
+            playSound('click');
+            showScreen('settings');
+            document.getElementById('timer-toggle').checked = timerEnabled;
+            document.getElementById('timer-duration').value = timerDuration;
+            document.getElementById('quiz-question-limit').value = quizQuestionLimit;
+        });
+        document.getElementById('manage-students-btn').addEventListener('click', () => {
+            playSound('click');
+            displayStudentManager();
+        });
+        document.getElementById('manage-questions-btn').addEventListener('click', () => {
+            playSound('click');
+            displayQuestionManager();
+        });
+        document.getElementById('ai-generate-btn').addEventListener('click', () => {
+            playSound('click');
+            showScreen('aiGenerator');
+        });
+        document.querySelectorAll('.back-to-admin-btn').forEach(btn => btn.addEventListener('click', () => {
+            playSound('click');
+            showScreen('admin');
+        }));
+
+        document.getElementById('save-settings-btn').addEventListener('click', (e) => {
+            playSound('click');
+            saveAdminSettings(e.currentTarget);
+        });
+        document.getElementById('save-api-key-btn').addEventListener('click', (e) => {
+            playSound('click');
+            saveApiKey(e.currentTarget);
+        });
+        document.getElementById('delete-api-key-btn').addEventListener('click', (e) => {
+            playSound('click');
+            deleteApiKey(e.currentTarget);
+        });
+        document.getElementById('clear-leaderboard-btn').addEventListener('click', (e) => {
+            showConfirmationModal('Bạn có chắc chắn muốn xóa TOÀN BỘ bảng xếp hạng không?', () => clearCollection('leaderboard', e.currentTarget));
+        });
+        document.getElementById('clear-history-btn').addEventListener('click', (e) => {
+            showConfirmationModal('Bạn có chắc chắn muốn xóa TOÀN BỘ lịch sử thi không?', () => clearCollection('quiz_history', e.currentTarget));
+        });
+        document.getElementById('clear-all-questions-btn').addEventListener('click', (e) => {
+            showConfirmationModal('Bạn có chắc chắn muốn xóa TẤT CẢ câu hỏi không? Hành động này sẽ đặt lại ngân hàng câu hỏi về mặc định!', () => clearCollection('questions', e.currentTarget));
+        });
+
+        document.getElementById('add-student-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('new-student-name');
+            const name = input.value.trim();
+            addStudent(name);
+            input.value = '';
+        });
+        document.getElementById('student-list-container').addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-student-btn')) {
+                const id = e.target.dataset.id;
+                const name = studentList.find(s => s.id === id)?.name;
+                showConfirmationModal(`Bạn có chắc muốn xóa học sinh "${name}" không?`, () => deleteStudent(id));
+            }
+        });
+
+        questionManagerSubjectFilter.addEventListener('change', populateQuestionList);
+        questionManagerGradeFilter.addEventListener('change', populateQuestionList);
+        questionManagerSemesterFilter.addEventListener('change', populateQuestionList);
+        questionManagerTextFilter.addEventListener('input', populateQuestionList); 
+        document.getElementById('add-new-question-btn').addEventListener('click', () => openQuestionModal());
+        document.getElementById('question-list-container').addEventListener('click', (e) => {
+            if (e.target.classList.contains('edit-question-btn')) {
+                openQuestionModal(e.target.dataset.id);
+            }
+            if (e.target.classList.contains('delete-question-btn')) {
+                showConfirmationModal('Bạn có chắc chắn muốn xóa câu hỏi này không?', () => deleteQuestion(e.target.dataset.id));
+            }
+        });
+        document.getElementById('remove-duplicates-btn').addEventListener('click', (e) => {
+            removeDuplicateQuestions(e.currentTarget);
+        });
+        document.getElementById('delete-filtered-questions-btn').addEventListener('click', (e) => {
+            deleteFilteredQuestions(e.currentTarget);
+        });
+
+        document.getElementById('question-form').addEventListener('submit', handleQuestionFormSubmit);
+        document.getElementById('close-question-modal-btn').addEventListener('click', () => hideModal('questionEdit'));
+        document.querySelectorAll('.option-input').forEach(input => {
+            input.addEventListener('input', () => {
+                const options = Array.from(document.querySelectorAll('.option-input')).map(i => i.value.trim());
+                const selected = document.getElementById('correct-answer-select').value;
+                populateAnswerSelect(options, selected);
+            });
+        });
+
+        document.getElementById('ai-execute-generation-btn').addEventListener('click', async (e) => {
+            const button = e.currentTarget;
+            setButtonLoading(button, true);
+            const feedbackEl = document.getElementById('ai-generation-feedback');
+            const resultsContainer = document.getElementById('ai-results-container');
+            const resultsList = document.getElementById('ai-generated-questions-list');
+            const saveBtn = document.getElementById('ai-save-all-btn');
+            const discardBtn = document.getElementById('ai-discard-all-btn');
+
+            feedbackEl.textContent = '🤖 AI đang suy nghĩ, vui lòng chờ trong giây lát...';
+            resultsContainer.classList.remove('hidden');
+            resultsList.innerHTML = '';
+            saveBtn.classList.add('hidden');
+            discardBtn.classList.add('hidden');
+
+            const subjectValue = document.getElementById('ai-gen-subject').value;
+            const subjectText = document.getElementById('ai-gen-subject').options[document.getElementById('ai-gen-subject').selectedIndex].text;
+            const gradeValue = document.getElementById('ai-gen-grade').value;
+            const gradeText = document.getElementById('ai-gen-grade').options[document.getElementById('ai-gen-grade').selectedIndex].text;
+            const semesterValue = document.getElementById('ai-gen-semester').value;
+            
+            const topic = document.getElementById('ai-gen-topic').value.trim();
+            const numQuestions = parseInt(document.getElementById('ai-gen-num-questions').value, 10);
+
+            if (isNaN(numQuestions) || numQuestions < 1 || numQuestions > 1000) {
+                feedbackEl.textContent = 'Số lượng câu hỏi phải là một số từ 1 đến 1000.';
+                setButtonLoading(button, false);
+                return;
+            }
+
+            if (!topic) {
+                feedbackEl.textContent = 'Vui lòng nhập một chủ đề cụ thể.';
+                setButtonLoading(button, false);
+                return;
+            }
+
+            const prompt = `Tạo ${numQuestions} câu hỏi trắc nghiệm cho môn ${subjectText} ${gradeText} về chủ đề "${topic}". Mỗi câu hỏi phải có 4 lựa chọn và 1 đáp án đúng. Trả về dưới dạng JSON.`;
+            
+            const schema = {
+                type: "ARRAY",
+                items: {
+                    type: "OBJECT",
+                    properties: {
+                        "question": { "type": "STRING" },
+                        "options": { "type": "ARRAY", "items": { "type": "STRING" } },
+                        "answer": { "type": "STRING" }
+                    },
+                    required: ["question", "options", "answer"]
+                }
+            };
+
+            try {
+                const jsonString = await callGeminiAPI(prompt, schema);
+                const generatedQuestions = JSON.parse(jsonString);
+
+                if (!Array.isArray(generatedQuestions) || generatedQuestions.length === 0) {
+                    throw new Error("AI did not return a valid list of questions or the list was empty.");
+                }
+
+                feedbackEl.textContent = `Đã tạo ${generatedQuestions.length} câu hỏi! Vui lòng xem lại và lưu.`;
+                
+                generatedQuestions.forEach(q => {
+                    const itemEl = document.createElement('div'); 
+                    itemEl.className = 'p-3 bg-black/10 rounded-lg text-sm';
+                    itemEl.innerHTML = `
+                        <p class="font-bold">${q.question}</p>
+                        <p>Đáp án: ${q.answer}</p>
+                        <p>Lựa chọn: ${q.options.join(', ')}</p>
+                    `;
+                    resultsList.appendChild(itemEl);
+                });
+
+                saveBtn.classList.remove('hidden');
+                discardBtn.classList.remove('hidden');
+
+                saveBtn.onclick = async () => {
+                    setButtonLoading(saveBtn, true);
+                    try {
+                        await saveGeneratedQuestions(generatedQuestions, subjectValue, gradeValue, semesterValue);
+                        feedbackEl.textContent = `Đã lưu thành công!`;
+                        feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
+                        setTimeout(() => resultsContainer.classList.add('hidden'), 1500);
+                    } catch (error) {
+                        feedbackEl.textContent = `Lỗi khi lưu: ${error.message}.`;
+                        feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-red-600';
+                    } finally {
+                        setButtonLoading(saveBtn, false);
+                    }
+                };
+                discardBtn.onclick = () => { resultsContainer.classList.add('hidden'); };
+
+            } catch (error) {
+                console.error("Error generating questions with AI:", error);
+                feedbackEl.textContent = `Đã có lỗi xảy ra khi tạo câu hỏi: ${error.message}. Vui lòng thử lại hoặc kiểm tra cài đặt API Key và kết nối mạng.`;
+            } finally {
+                setButtonLoading(button, false);
+            }
+        });
+
+        /**
+         * Saves the AI-generated questions to Supabase.
+         */
+        async function saveGeneratedQuestions(questions, subject, grade, semester) {
+            const feedbackEl = document.getElementById('ai-generation-feedback');
+            feedbackEl.textContent = 'Đang lọc và lưu câu hỏi...';
+            
+            const questionsToInsert = questions.map(q => ({
+                ...q,
+                subject,
+                grade,
+                semester
+            })).filter(q => {
+                const isAnswerValid = q.options.map(opt => opt.trim().toLowerCase()).includes(q.answer.trim().toLowerCase());
+                const isNew = !isDuplicateQuestion(q);
+                if (!isAnswerValid) console.warn("Skipping invalid AI question (answer not in options):", q);
+                if (!isNew) console.warn("Skipping duplicate AI question:", q);
+                return isAnswerValid && isNew;
+            });
+
+            if (questionsToInsert.length > 0) {
+                 const { error } = await supabaseClient.from('questions').insert(questionsToInsert);
+                 if (error) {
+                    console.error("Error saving AI questions:", error);
+                    feedbackEl.textContent = `Lỗi khi lưu câu hỏi: ${error.message}.`;
+                    throw error;
+                 }
+            }
+            
+            feedbackEl.textContent = `Đã lưu thành công ${questionsToInsert.length} / ${questions.length} câu hỏi mới!`;
+            await loadQuestionsFromSupabase();
+            populateQuestionList();
+        }
+    </script>
+</body>
+</html>
+
