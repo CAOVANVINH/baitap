@@ -4,9 +4,25 @@ Trò chơi học tập cho bé (Toán, Tiếng Việt lớp 1–2), chạy hoàn
 
 ## Lưu trữ & đồng bộ
 
-- Dữ liệu chính được lưu trên Supabase (gói Free). Gói này không có ngày hết hạn, nhưng project có thể bị tạm dừng sau 7 ngày không có hoạt động; dữ liệu vẫn còn và có thể khôi phục.
-- App tự lưu bản sao câu hỏi, học sinh và cài đặt vào `localStorage` của từng thiết bị. Nếu Supabase tạm dừng hoặc mất mạng, app vẫn chạy bằng dữ liệu đã lưu và hiện băng thông báo.
-- Kết quả làm bài khi mất mạng được xếp hàng trong `localStorage` và tự gửi lại khi có mạng.
-- App tự đồng bộ lại dữ liệu mỗi 15 giây khi đang mở, và ngay khi quay lại tab.
-- Mỗi lần mở app (tối đa 6 giờ một lần) sẽ gửi một truy vấn nhỏ để giữ project Supabase hoạt động.
-- Workflow `.github/workflows/keep-supabase-awake.yml` gửi thêm một ping mỗi ngày. GitHub chỉ chạy workflow định kỳ trên nhánh mặc định (`main`), nên workflow có hiệu lực sau khi thay đổi này được gộp vào `main`; GitHub cũng tự tắt workflow định kỳ nếu repo không có hoạt động trong 60 ngày. Vì vậy cơ chế giữ project hoạt động chính vẫn là ping tự động mỗi khi có người mở app.
+- Dữ liệu chính được lưu trên **Firebase Realtime Database** (gói Spark – miễn phí, không có ngày hết hạn và không bị tạm dừng vì không hoạt động như Supabase).
+- Realtime Database của Firebase tự đẩy thay đổi về mọi thiết bị đang mở app, nên câu hỏi, học sinh, cài đặt, bảng xếp hạng và lịch sử làm bài được đồng bộ gần như tức thì, không cần chờ 15 giây.
+- App tự lưu bản sao câu hỏi, học sinh và cài đặt vào `localStorage` của từng thiết bị. Nếu mất mạng, app vẫn chạy bằng dữ liệu đã lưu và hiện băng thông báo màu vàng.
+- Kết quả làm bài khi mất mạng được xếp hàng trong `localStorage` và tự gửi lại ngay khi Firebase báo đã kết nối lại.
+- Không cần cron job hay keep-alive: Firebase không tạm dừng project vì không có truy cập.
+
+## Cấu hình Firebase
+
+App dùng cấu hình web Firebase đã nhúng trong `index.html` (project `data-chung-a62ee`). Trong **Firebase Console → Realtime Database → Rules**, cần cho phép đọc/ghi ở mức phù hợp. Nếu để rules mặc định (chỉ cho phép người đã đăng nhập), app sẽ hiện băng "Đang dùng dữ liệu đã lưu trên máy" và không đồng bộ được.
+
+Ví dụ rules mở hoàn toàn cho ứng dụng gia đình (không chứa dữ liệu nhạy cảm):
+
+```json
+{
+  "rules": {
+    ".read": true,
+    ".write": true
+  }
+}
+```
+
+Sau khi dán rules và bấm **Publish**, mở lại app: dữ liệu mẫu (câu hỏi, học sinh) sẽ tự được tạo ở lần chạy đầu tiên nếu database đang trống.
