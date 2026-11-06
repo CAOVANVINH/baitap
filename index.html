@@ -12,8 +12,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Tone.js for Sound Effects -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
-    <!-- Supabase Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
             font-family: 'Quicksand', sans-serif;
@@ -40,7 +38,10 @@
             color: white;
         }
         #admin-login-btn, #leaderboard-btn {
-            color: #cbd5e0;
+            color: #475569;
+        }
+        #admin-login-btn:hover, #leaderboard-btn:hover {
+            color: #1e293b;
         }
         .choice-btn.selected {
             transform: scale(1.05);
@@ -123,6 +124,7 @@
         <div id="selection-screen">
             <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-2">Trò Chơi Học Tập</h1>
             <p class="text-center text-gray-700 mb-6">Cùng bé vừa học vừa chơi!</p>
+            <p id="offline-banner" class="hidden text-center text-sm font-semibold text-amber-900 bg-amber-200/70 rounded-xl px-3 py-2 mb-4"></p>
             <div id="loading-questions" class="text-center text-gray-600 font-semibold mb-4"><p>Đang tải dữ liệu, vui lòng chờ...</p></div>
             <div id="selections-container" class="hidden">
                 <div class="mb-6">
@@ -139,12 +141,23 @@
                         <button data-grade="lop2" class="choice-btn glass-btn bg-rose-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-rose-500/60">Lớp 2</button>
                     </div>
                 </div>
-                <div class="mb-8">
+                <div class="mb-6">
                     <h2 class="text-xl font-semibold mb-3 text-gray-700">3. Chọn Học Kỳ</h2>
                     <div class="grid grid-cols-2 gap-4">
                         <button data-semester="hocky1" class="choice-btn glass-btn bg-purple-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-purple-500/60">Học Kỳ 1</button>
                         <button data-semester="hocky2" class="choice-btn glass-btn bg-pink-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-pink-500/60">Học Kỳ 2</button>
                     </div>
+                </div>
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold mb-3 text-gray-700">4. Số Câu Hỏi</h2>
+                    <select id="game-question-count" class="w-full glass-btn bg-white/30 rounded-2xl px-4 py-3 font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="5">5 câu</option>
+                        <option value="10" selected>10 câu</option>
+                        <option value="15">15 câu</option>
+                        <option value="20">20 câu</option>
+                        <option value="30">30 câu</option>
+                        <option value="0">Tất cả câu hỏi</option>
+                    </select>
                 </div>
             </div>
             <button id="start-btn" class="w-full glass-btn bg-gray-500/50 text-white font-bold py-4 rounded-2xl text-xl shadow-lg cursor-not-allowed" disabled>Bắt đầu!</button>
@@ -157,9 +170,10 @@
 
         <!-- Game Screen -->
         <div id="game-screen" class="hidden">
-             <div class="flex justify-between items-center mb-4 text-white">
-                 <div id="progress-text" class="font-semibold">Câu 1/10</div>
+             <div class="flex justify-between items-center mb-4 text-white gap-2 pl-11 md:pl-4">
+                 <div id="progress-text" class="font-semibold whitespace-nowrap">Câu 1/10</div>
                  <div id="timer-display" class="font-bold text-lg hidden"></div>
+                 <div id="streak-display" class="font-bold text-lg hidden">🔥 0</div>
                  <div id="score-text" class="font-bold text-lg">Điểm: 0</div>
              </div>
              <div id="question-container" class="bg-black/10 p-6 rounded-2xl text-center mb-6 min-h-[100px] flex items-center justify-center relative">
@@ -169,6 +183,7 @@
                  </button>
              </div>
              <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+             <p id="shortcut-hint" class="text-center text-xs text-white/70 mt-3">Mẹo: nhấn phím 1–4 để chọn đáp án, Enter để sang câu tiếp theo</p>
              <div id="feedback-container" class="text-center mt-4 font-bold text-2xl h-8 text-white"></div>
              <div id="explanation-container" class="hidden relative mt-2 bg-black/10 p-4 rounded-2xl text-white text-center font-medium">
                  <p id="explanation-text" class="pr-10"></p>
@@ -318,7 +333,19 @@
             <button class="back-to-admin-btn w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
         </div>
 
-        <div id="history-panel" class="hidden"><h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Lịch SỬ Làm Bài</h2><div id="history-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4 custom-scrollbar"></div><button class="back-to-admin-btn w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button></div>
+        <div id="review-screen" class="hidden">
+            <h2 class="text-3xl font-bold text-gray-800 mb-3 text-center">📋 Xem Lại Bài Làm</h2>
+            <div id="review-summary" class="p-4 bg-white/30 rounded-2xl mb-4 text-gray-800 text-center font-semibold"></div>
+            <p id="review-sync-note" class="hidden text-center text-sm font-semibold text-amber-900 bg-amber-200/70 rounded-xl px-3 py-2 mb-4"></p>
+            <div id="review-list" class="space-y-3 p-3 bg-white/20 rounded-2xl custom-scrollbar max-h-96 overflow-y-auto"></div>
+            <div class="flex flex-col md:flex-row gap-3 mt-6">
+                <button id="retry-wrong-btn" class="w-full glass-btn bg-orange-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-orange-500/80">🔁 Luyện lại câu sai</button>
+                <button id="review-leaderboard-btn" class="w-full glass-btn bg-indigo-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-indigo-500/80">🏆 Bảng Xếp Hạng</button>
+                <button id="review-home-btn" class="w-full glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">🏠 Về Menu</button>
+            </div>
+        </div>
+
+        <div id="history-panel" class="hidden"><h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Lịch SỬ Làm Bài</h2><div id="history-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4 custom-scrollbar"></div><button id="export-history-btn" class="w-full mt-4 glass-btn bg-emerald-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-emerald-500/80">⬇️ Xuất lịch sử (CSV)</button><button class="back-to-admin-btn w-full mt-4 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button></div>
         
         <div id="leaderboard-panel" class="hidden">
             <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">🏆 Bảng Xếp Hạng 🏆</h2>
@@ -334,7 +361,7 @@
 
     <!-- Modals -->
     <div id="login-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0"><div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative"><h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Đăng Nhập Admin</h2><form id="login-form"><div class="mb-4"><label for="username" class="block text-gray-700 font-semibold mb-2">Tên đăng nhập</label><input type="text" id="username" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"></div><div class="mb-6"><label for="password" class="block text-gray-700 font-semibold mb-2">Mật khẩu</label><input type="password" id="password" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"></div><p id="login-error" class="text-red-500 text-center text-sm h-4 mb-4"></p><button type="submit" class="w-full glass-btn bg-blue-600/70 text-white font-bold py-3 rounded-2xl hover:bg-blue-600/90">Đăng nhập</button></form><button id="close-modal-btn" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl">&times;</button></div></div>
-    <div id="name-selection-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0"><div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative text-center"><h2 class="text-3xl font-bold text-gray-800 mb-2">Hoàn thành!</h2><p id="modal-final-score" class="text-6xl font-bold text-blue-600 my-4">0/10</p><p id="modal-final-message" class="text-lg text-gray-600 mb-6">Bé đã làm rất tốt! Hãy chọn tên của mình để lưu điểm nhé.</p><div id="name-selection-container" class="space-y-3"></div></div></div>
+    <div id="name-selection-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0"><div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative text-center"><h2 class="text-3xl font-bold text-gray-800 mb-2">Hoàn thành!</h2><p id="modal-final-score" class="text-6xl font-bold text-blue-600 my-4">0/10</p><p id="modal-final-message" class="text-lg text-gray-600 mb-3">Bé đã làm rất tốt! Hãy chọn tên của mình để lưu điểm nhé.</p><p id="modal-best-streak" class="text-sm font-bold text-orange-600 mb-4"></p><div id="name-selection-container" class="space-y-3"></div><button id="show-review-btn" class="mt-4 w-full text-sm font-semibold text-blue-700 hover:text-blue-900">👀 Xem lại bài làm</button></div></div>
     <div id="history-detail-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0"><div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-2xl relative"><h2 class="text-2xl font-bold text-center text-gray-800 mb-4">Chi Tiết Lần Chơi</h2><div id="history-detail-summary" class="text-center text-gray-700 mb-4"></div><div id="history-detail-content" class="space-y-3 bg-white/30 p-4 rounded-2xl custom-scrollbar"></div><button id="close-history-detail-btn" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-3xl">&times;</button></div></div>
     <div id="confirmation-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0"><div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative text-center"><h2 class="text-2xl font-bold text-gray-800 mb-4">Xác nhận hành động</h2><p id="confirmation-message" class="text-gray-700 mb-6"></p><div class="flex justify-center gap-4"><button id="confirm-delete-btn" class="w-full glass-btn bg-red-600/70 text-white font-bold py-3 rounded-2xl hover:bg-red-600/90">Xác nhận</button><button id="cancel-delete-btn" class="w-full glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl hover:bg-gray-500/80">Hủy</button></div></div></div>
     
@@ -384,8 +411,23 @@
     </div>
 
 
+    <!-- Firebase SDK -->
     <script type="module">
-        const { createClient } = supabase;
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+        import { getDatabase, ref, onValue, update, set, push, remove } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBzwiBxX_7A0F0qh0-Z023Z3M7bxw2I9KI",
+            authDomain: "data-chung-a62ee.firebaseapp.com",
+            databaseURL: "https://data-chung-a62ee-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "data-chung-a62ee",
+            storageBucket: "data-chung-a62ee.firebasestorage.app",
+            messagingSenderId: "453115303161",
+            appId: "1:453115303161:web:36f0ceed3c50af4c863e28",
+            measurementId: "G-DR2XPW5P13"
+        };
+
+        let db;
         // --- SOUND EFFECTS SETUP ---
         // Tone.js is now accessed globally, assuming it's loaded by the script tag
         let soundsEnabled = true; 
@@ -424,16 +466,56 @@
 
 
         // --- STATE & DOM VARIABLES ---
-        let supabaseClient;
         let questionBank = {}, userDefinedApiKey = null;
         let selectedSubject, selectedGrade, selectedSemester;
         let currentQuestions = [], currentQuestionIndex = 0, score = 0, sessionAnswers = [];
+        let currentStreak = 0, bestStreak = 0, lastWrongQuestions = [], answeredCurrentQuestion = false;
         let quizQuestionLimit = 10;
         let timerEnabled = false, timerDuration = 30, timerInterval;
-        let fullQuestionCollection = []; // Acts as a cache for questions from Supabase
-        let studentList = []; // Acts as a cache for students from Supabase
+        let fullQuestionCollection = []; // Acts as a cache for questions from Firebase
+        let studentList = []; // Acts as a cache for students from Firebase
         let quizHistory = []; // Cache for history
-        
+
+        // --- LOCAL STORAGE (offline cache & retry queue) ---
+        const CACHE_PREFIX = 'baitap_cache_v1_';
+        const PENDING_RESULTS_KEY = 'baitap_pending_results_v1';
+        let usedOfflineCache = false;
+        let lastQuestionsSignature = null;
+        let lastStudentsSignature = null;
+
+        function cacheSet(key, value) {
+            try {
+                localStorage.setItem(CACHE_PREFIX + key, JSON.stringify(value));
+            } catch (error) {
+                console.warn('Cannot cache', key, error);
+            }
+        }
+
+        function cacheGet(key) {
+            try {
+                const raw = localStorage.getItem(CACHE_PREFIX + key);
+                return raw ? JSON.parse(raw) : null;
+            } catch (error) {
+                console.warn('Cannot read cache', key, error);
+                return null;
+            }
+        }
+
+        function isScreenVisible(name) {
+            return !!screens[name] && !screens[name].classList.contains('hidden');
+        }
+
+        function updateOfflineBanner() {
+            const banner = document.getElementById('offline-banner');
+            if (!banner) return;
+            if (!navigator.onLine || usedOfflineCache) {
+                banner.textContent = '📴 Đang dùng dữ liệu đã lưu trên máy. Khi có mạng, mọi thay đổi sẽ tự đồng bộ.';
+                banner.classList.remove('hidden');
+            } else {
+                banner.classList.add('hidden');
+            }
+        }
+
         // References to main screen elements
         const screens = {
             selection: document.getElementById('selection-screen'),
@@ -443,6 +525,7 @@
             studentManager: document.getElementById('student-manager-panel'),
             history: document.getElementById('history-panel'),
             leaderboard: document.getElementById('leaderboard-panel'),
+            review: document.getElementById('review-screen'),
             questionManager: document.getElementById('question-manager-panel'),
             aiGenerator: document.getElementById('ai-generator-panel'),
         };
@@ -469,56 +552,184 @@
         const qFormGradeSelect = document.getElementById('question-form-grade');
         const qFormSemesterSelect = document.getElementById('question-form-semester');
 
-        // --- SUPABASE SETUP ---
+        // --- FIREBASE SETUP ---
+        let firebaseConnected = false;
+        let seedingQuestions = false;
+        let seedingStudents = false;
+        let bootFinished = false;
+        let leaderboardCache = [];
+        let leaderboardLoaded = false;
+
         /**
-         * Initializes the Supabase client and loads all initial data.
+         * Reveals the main UI. Safe to call multiple times.
          */
-        async function initializeSupabase() {
-            const supabaseUrl = 'https://wswlqmfljjupcuflnvte.supabase.co';
-            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indzd2xxbWZsamp1cGN1ZmxudnRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyMzg0NTQsImV4cCI6MjA3MjgxNDQ1NH0.7wwrvbjHqENJTOXuYJLD-HGp8o1MKZX3oJvfEKnxyGU';
-            
-            supabaseClient = createClient(supabaseUrl, supabaseKey);
+        function finishBoot() {
+            if (bootFinished) return;
+            bootFinished = true;
+            document.getElementById('loading-questions').classList.add('hidden');
+            document.getElementById('selections-container').classList.remove('hidden');
+            syncGameQuestionCountFromSettings();
+            updateStartButtonState();
+            updateOfflineBanner();
+        }
 
+        function handleFirebaseError(error) {
+            console.error('Firebase error:', error);
+            usedOfflineCache = true;
+            updateOfflineBanner();
+            finishBoot();
+        }
+
+        /**
+         * Starts Firebase Realtime Database and attaches live listeners.
+         */
+        function initializeFirebase() {
             try {
-                 await Promise.all([
-                    loadQuestionsFromSupabase(),
-                    loadStudentList(),
-                    loadAdminSettings(),
-                    loadApiKey()
-                ]);
+                const app = initializeApp(firebaseConfig);
+                db = getDatabase(app);
 
-                document.getElementById('loading-questions').classList.add('hidden');
-                document.getElementById('selections-container').classList.remove('hidden');
-                updateStartButtonState();
+                const cachedQuestions = cacheGet('questions');
+                if (Array.isArray(cachedQuestions) && cachedQuestions.length > 0) {
+                    fullQuestionCollection = cachedQuestions;
+                    restructureQuestionBank();
+                    lastQuestionsSignature = JSON.stringify(cachedQuestions);
+                }
+                const cachedStudents = cacheGet('students');
+                if (Array.isArray(cachedStudents)) {
+                    studentList = cachedStudents;
+                    lastStudentsSignature = JSON.stringify(cachedStudents);
+                }
+                const cachedSettings = cacheGet('settings');
+                if (cachedSettings) applyAdminSettings(cachedSettings);
+
+                finishBoot();
+                attachFirebaseListeners();
+                flushPendingResults();
+
+                // If Firebase cannot be reached, do not block the user.
+                setTimeout(() => {
+                    if (!bootFinished) finishBoot();
+                }, 4000);
 
             } catch (error) {
-                 console.error("Error loading initial data from Supabase:", error);
-                 document.getElementById('loading-questions').innerHTML = `<p class="text-red-500 font-bold">Lỗi khi tải dữ liệu ban đầu. Vui lòng kiểm tra console và cài đặt Supabase.</p>`;
+                console.error('Cannot initialize Firebase:', error);
+                document.getElementById('loading-questions').innerHTML = `<p class="text-red-500 font-bold mb-2">Không thể kết nối Firebase. Vui lòng kiểm tra mạng hoặc cấu hình.</p><button onclick="location.reload()" class="glass-btn bg-blue-600/70 text-white font-bold py-2 px-4 rounded-xl">Thử lại</button>`;
             }
         }
 
         /**
-         * Loads questions from Supabase and seeds initial data if the table is empty.
+         * Attaches realtime listeners for every collection.
          */
-        async function loadQuestionsFromSupabase() {
-            const { data, error } = await supabaseClient.from('questions').select('*');
-            if (error) {
-                console.error("Error loading questions:", error);
-                throw error;
-            }
+        function attachFirebaseListeners() {
+            onValue(ref(db, '.info/connected'), snapshot => {
+                firebaseConnected = snapshot.val() === true;
+                if (firebaseConnected) {
+                    usedOfflineCache = false;
+                    updateOfflineBanner();
+                    flushPendingResults();
+                }
+            });
 
-            if (data.length === 0) {
-                console.log("No questions found in Supabase. Seeding initial data...");
-                await seedInitialQuestions();
-            } else {
-                fullQuestionCollection = data;
+            onValue(ref(db, 'questions'), snapshot => {
+                const value = snapshot.val();
+                finishBoot();
+                if (!value) {
+                    seedQuestionsIfNeeded();
+                    return;
+                }
+                const list = Object.entries(value).map(([id, question]) => ({ id, ...question }));
+                const signature = JSON.stringify(list);
+                if (signature === lastQuestionsSignature) return;
+                lastQuestionsSignature = signature;
+                fullQuestionCollection = list;
                 restructureQuestionBank();
-                console.log("Successfully loaded questions from Supabase.");
+                cacheSet('questions', list);
+                updateStartButtonState();
+                if (isScreenVisible('questionManager')) populateQuestionList();
+            }, handleFirebaseError);
+
+            onValue(ref(db, 'students'), snapshot => {
+                const value = snapshot.val();
+                if (!value) {
+                    seedStudentsIfNeeded();
+                    return;
+                }
+                const list = Object.entries(value).map(([id, student]) => ({ id, name: student.name }));
+                const signature = JSON.stringify(list);
+                if (signature === lastStudentsSignature) return;
+                lastStudentsSignature = signature;
+                studentList = list;
+                cacheSet('students', list);
+                if (isScreenVisible('studentManager')) populateStudentList();
+            }, handleFirebaseError);
+
+            onValue(ref(db, 'settings'), snapshot => {
+                const value = snapshot.val() || {};
+                const settings = {
+                    timerEnabled: value.timerEnabled?.enabled ?? false,
+                    timerDuration: value.timerDuration?.duration ?? 30,
+                    quizQuestionLimit: value.quizQuestionLimit?.limit ?? 10,
+                };
+                applyAdminSettings(settings);
+                cacheSet('settings', settings);
+                syncGameQuestionCountFromSettings();
+                updateStartButtonState();
+
+                const apiKey = value.geminiApiKey?.key || null;
+                userDefinedApiKey = apiKey;
+                const apiKeyInput = document.getElementById('gemini-api-key-input');
+                if (apiKeyInput) {
+                    apiKeyInput.placeholder = apiKey
+                        ? 'API Key đã được lưu. Nhập để thay thế.'
+                        : 'Nhập Gemini API Key của bạn...';
+                }
+            }, handleFirebaseError);
+
+            onValue(ref(db, 'leaderboard'), snapshot => {
+                const value = snapshot.val() || {};
+                leaderboardCache = Object.entries(value).map(([id, record]) => ({ id, ...record }));
+                leaderboardLoaded = true;
+                if (isScreenVisible('leaderboard')) renderLeaderboardFromCache();
+            }, handleFirebaseError);
+
+            onValue(ref(db, 'quiz_history'), snapshot => {
+                const value = snapshot.val() || {};
+                const list = Object.entries(value).map(([id, record]) => ({ id, ...record }));
+                list.sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
+                quizHistory = list;
+                if (isScreenVisible('history')) renderHistoryTable();
+            }, handleFirebaseError);
+        }
+
+        /**
+         * Seeds default questions once when the database is empty.
+         */
+        async function seedQuestionsIfNeeded() {
+            if (!navigator.onLine || seedingQuestions) return;
+            seedingQuestions = true;
+            try {
+                await seedInitialQuestions();
+            } catch (error) {
+                console.error('Error seeding questions:', error);
+            } finally {
+                seedingQuestions = false;
+            }
+        }
+
+        async function seedStudentsIfNeeded() {
+            if (!navigator.onLine || seedingStudents) return;
+            seedingStudents = true;
+            try {
+                await seedInitialStudents();
+            } catch (error) {
+                console.error('Error seeding students:', error);
+            } finally {
+                seedingStudents = false;
             }
         }
 
         /**
-         * Seeds initial questions into the Supabase 'questions' table.
+         * Seeds initial questions into the Firebase 'questions' collection.
          */
         async function seedInitialQuestions() {
             const seedData = [
@@ -548,35 +759,24 @@
                 { subject: 'toan', grade: 'lop2', semester: 'hocky2', question: "Một tuần có mấy ngày?", options: ["5", "6", "7", "8"], answer: "7" },
             ];
 
-            const { error } = await supabaseClient.from('questions').insert(seedData);
-            if (error) {
-                console.error("Error seeding questions:", error);
-                throw error;
-            }
-            await loadQuestionsFromSupabase();
+            const updates = {};
+            seedData.forEach(question => {
+                const key = push(ref(db, 'questions')).key;
+                updates[`questions/${key}`] = { ...question, created_at: new Date().toISOString() };
+            });
+            await update(ref(db), updates);
         }
 
         /**
-         * Loads student list from Supabase, seeding if empty.
+         * Seeds default students into the 'students' collection.
          */
-        async function loadStudentList() {
-            let { data, error } = await supabaseClient.from('students').select('id, name');
-            if (error) {
-                 console.error("Error loading students:", error);
-                 throw error;
-            }
-            if (data.length === 0) {
-                console.log("No students found. Seeding default students.");
-                const { data: insertedData, error: insertError } = await supabaseClient.from('students').insert([{ name: 'Thảo Huyền' }, { name: 'Hằng Nga' }]).select();
-                if (insertError) {
-                    console.error("Error seeding students:", insertError);
-                    throw insertError;
-                }
-                studentList = insertedData;
-            } else {
-                studentList = data;
-            }
-            console.log("Student list loaded:", studentList);
+        async function seedInitialStudents() {
+            const updates = {};
+            ['Thảo Huyền', 'Hằng Nga'].forEach(name => {
+                const key = push(ref(db, 'students')).key;
+                updates[`students/${key}`] = { name };
+            });
+            await update(ref(db), updates);
         }
 
         /**
@@ -595,29 +795,35 @@
         }
 
         /**
-         * Loads admin settings from Supabase.
+         * Applies a settings object to the in-memory state.
          */
-        async function loadAdminSettings() {
-            const { data, error } = await supabaseClient
-                .from('settings')
-                .select('key, value')
-                .in('key', ['timerEnabled', 'timerDuration', 'quizQuestionLimit']);
-
-            if (error) {
-                console.error("Error loading admin settings:", error);
-                return; // Use defaults on error
-            }
-
-            if (data) {
-                const settingsMap = new Map(data.map(item => [item.key, item.value]));
-                timerEnabled = settingsMap.get('timerEnabled')?.enabled ?? false;
-                timerDuration = settingsMap.get('timerDuration')?.duration ?? 30;
-                quizQuestionLimit = settingsMap.get('quizQuestionLimit')?.limit ?? 10;
-            }
+        function applyAdminSettings(settings) {
+            if (!settings) return;
+            timerEnabled = settings.timerEnabled ?? false;
+            timerDuration = settings.timerDuration ?? 30;
+            quizQuestionLimit = settings.quizQuestionLimit ?? 10;
         }
 
         /**
-         * Saves admin settings to Supabase.
+         * Syncs the per-game question count dropdown with the admin default setting.
+         */
+        function syncGameQuestionCountFromSettings() {
+            const select = document.getElementById('game-question-count');
+            if (!select) return;
+            const limit = parseInt(quizQuestionLimit, 10);
+            if (isNaN(limit) || limit < 1) return;
+            const values = Array.from(select.options).map(o => o.value);
+            if (!values.includes(String(limit))) {
+                const option = document.createElement('option');
+                option.value = String(limit);
+                option.textContent = `${limit} câu`;
+                select.appendChild(option);
+            }
+            select.value = String(limit);
+        }
+
+        /**
+         * Saves admin settings to Firebase.
          */
         async function saveAdminSettings(button) {
             setButtonLoading(button, true);
@@ -640,17 +846,16 @@
             }
 
             try {
-                const { error } = await supabaseClient.from('settings').upsert([
-                    { key: 'timerEnabled', value: { enabled: newTimerEnabled } },
-                    { key: 'timerDuration', value: { duration: newTimerDuration } },
-                    { key: 'quizQuestionLimit', value: { limit: newQuizQuestionLimit } }
-                ], { onConflict: 'key' });
-
-                if (error) throw error;
+                await update(ref(db, 'settings'), {
+                    timerEnabled: { enabled: newTimerEnabled },
+                    timerDuration: { duration: newTimerDuration },
+                    quizQuestionLimit: { limit: newQuizQuestionLimit }
+                });
 
                 timerEnabled = newTimerEnabled;
                 timerDuration = newTimerDuration;
                 quizQuestionLimit = newQuizQuestionLimit;
+                syncGameQuestionCountFromSettings();
 
                 feedbackEl.textContent = "Đã lưu cài đặt!";
                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
@@ -665,31 +870,7 @@
         }
 
         /**
-         * Loads the API key from Supabase.
-         */
-        async function loadApiKey() {
-            const { data, error } = await supabaseClient
-                .from('settings')
-                .select('value')
-                .eq('key', 'geminiApiKey')
-                .single();
-
-            if (error && error.code !== 'PGRST116') { // Ignore 'missing row' error
-                console.error("Error loading API key:", error);
-                return;
-            }
-
-            if (data && data.value && data.value.key) {
-                userDefinedApiKey = data.value.key;
-                document.getElementById('gemini-api-key-input').placeholder = "API Key đã được lưu. Nhập để thay thế.";
-            } else {
-                userDefinedApiKey = null;
-                document.getElementById('gemini-api-key-input').placeholder = "Nhập Gemini API Key của bạn...";
-            }
-        }
-
-        /**
-         * Saves the API key to Supabase.
+         * Saves the API key to Firebase.
          */
         async function saveApiKey(button) {
             setButtonLoading(button, true);
@@ -704,12 +885,8 @@
             }
             
             try {
-                const { error } = await supabaseClient.from('settings').upsert(
-                    { key: 'geminiApiKey', value: { key: newKey } },
-                    { onConflict: 'key' }
-                );
-                if (error) throw error;
-                
+                await set(ref(db, 'settings/geminiApiKey'), { key: newKey });
+
                 userDefinedApiKey = newKey;
                 feedbackEl.textContent = "Đã lưu API Key thành công!";
                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
@@ -725,18 +902,14 @@
         }
 
         /**
-         * Deletes the API key from Supabase.
+         * Deletes the API key from Firebase.
          */
         async function deleteApiKey(button) {
             setButtonLoading(button, true);
             const feedbackEl = document.getElementById('settings-feedback');
             
             try {
-                const { error } = await supabaseClient
-                    .from('settings')
-                    .delete()
-                    .eq('key', 'geminiApiKey');
-                if (error) throw error;
+                await remove(ref(db, 'settings/geminiApiKey'));
 
                 userDefinedApiKey = null;
                 feedbackEl.textContent = "Đã xóa API Key. Hệ thống sẽ dùng key mặc định.";
@@ -854,9 +1027,70 @@
 
         // --- HISTORY & LEADERBOARD ---
         /**
-         * Saves quiz results to Supabase.
+         * Reads quiz results that could not be saved yet.
+         */
+        function readPendingResults() {
+            try {
+                const raw = localStorage.getItem(PENDING_RESULTS_KEY);
+                const parsed = raw ? JSON.parse(raw) : [];
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (error) {
+                return [];
+            }
+        }
+
+        /**
+         * Stores a result locally so it can be retried once the network is back.
+         */
+        function queuePendingResult(payload) {
+            const pending = readPendingResults();
+            pending.push(payload);
+            try {
+                localStorage.setItem(PENDING_RESULTS_KEY, JSON.stringify(pending));
+            } catch (error) {
+                console.warn('Cannot queue result locally', error);
+            }
+        }
+
+        /**
+         * Pushes queued results to Firebase. Safe to call repeatedly.
+         */
+        async function flushPendingResults() {
+            if (!navigator.onLine || !db) return;
+            const pending = readPendingResults();
+            if (pending.length === 0) return;
+
+            const remaining = [];
+            for (const item of pending) {
+                try {
+                    const historyRecord = {
+                        ...item.historyData,
+                        created_at: item.historyData.created_at || new Date().toISOString()
+                    };
+                    await set(push(ref(db, 'quiz_history')), historyRecord);
+                    if (item.leaderboardData) {
+                        await set(push(ref(db, 'leaderboard')), {
+                            ...item.leaderboardData,
+                            created_at: item.leaderboardData.created_at || historyRecord.created_at
+                        });
+                    }
+                } catch (error) {
+                    console.error("Could not sync queued result, will retry:", error);
+                    remaining.push(item);
+                }
+            }
+            try {
+                localStorage.setItem(PENDING_RESULTS_KEY, JSON.stringify(remaining));
+            } catch (error) {
+                console.warn('Cannot update local queue', error);
+            }
+        }
+
+        /**
+         * Saves quiz results to Firebase, queueing them locally when offline.
          */
         async function saveResult(resultData, playerName = null) {
+             const createdAt = new Date().toISOString();
              const historyData = {
                 name: playerName,
                 score: resultData.score,
@@ -864,52 +1098,61 @@
                 subject: resultData.subject,
                 grade: resultData.grade,
                 semester: resultData.semester,
-                questions: resultData.questions
+                questions: resultData.questions,
+                created_at: createdAt
             };
 
-            const { error: historyError } = await supabaseClient.from('quiz_history').insert(historyData);
-            if (historyError) console.error("Error saving history:", historyError);
-            else console.log("History saved!");
+            const payload = { historyData, leaderboardData: null };
 
             if (playerName) {
-                const leaderboardData = {
+                payload.leaderboardData = {
                     name: playerName,
                     score: resultData.score,
                     total_questions: resultData.totalQuestions,
                     subject: resultData.subject,
                     grade: resultData.grade,
+                    created_at: createdAt
                 };
-                const { error: leaderboardError } = await supabaseClient.from('leaderboard').insert(leaderboardData);
-                if (leaderboardError) console.error("Error saving to leaderboard:", leaderboardError);
-                else console.log("Leaderboard score saved!");
+            }
+
+            if (!navigator.onLine) {
+                queuePendingResult(payload);
+                console.warn("Offline: result saved locally and will sync later.");
+                return false;
+            }
+
+            try {
+                await set(push(ref(db, 'quiz_history')), historyData);
+                if (payload.leaderboardData) {
+                    await set(push(ref(db, 'leaderboard')), payload.leaderboardData);
+                }
+                return true;
+            } catch (error) {
+                console.error("Error saving result, queued locally:", error);
+                queuePendingResult(payload);
+                return false;
             }
         }
 
         /**
-         * Displays the quiz history from Supabase.
+         * Displays the quiz history.
          */
-        async function displayHistory() {
+        function displayHistory() {
             showScreen('history');
-            const container = document.getElementById('history-table-container');
-            container.innerHTML = '<p class="text-center text-gray-500">Đang tải lịch sử...</p>';
+            renderHistoryTable();
+        }
 
-            const { data, error } = await supabaseClient
-                .from('quiz_history')
-                .select('*')
-                .order('created_at', { ascending: false });
-            
-            if (error) {
-                console.error("Error fetching history:", error);
-                container.innerHTML = '<p class="text-center text-red-500">Không thể tải lịch sử.</p>';
-                return;
-            }
-            
-            if (data.length === 0) {
+        /**
+         * Renders the quiz history table from the live cache.
+         */
+        function renderHistoryTable() {
+            const container = document.getElementById('history-table-container');
+            if (!container) return;
+
+            if (quizHistory.length === 0) {
                 container.innerHTML = '<p class="text-center text-gray-500">Chưa có lịch sử làm bài.</p>';
                 return;
             }
-
-            quizHistory = data; // Cache results for detailed view.
 
             const nameMap = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', 'lop2': 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
 
@@ -927,7 +1170,7 @@
                     <tbody id="history-table-body" class="bg-white/30 divide-y divide-gray-200 text-gray-800">
             `;
 
-            data.forEach((r, index) => {
+            quizHistory.forEach((r, index) => {
                 const date = r.created_at ? new Date(r.created_at).toLocaleString('vi-VN') : 'N/A';
                 const scoreDisplay = `${r.score}/${r.total_questions || 10}`;
                 tableHTML += `
@@ -948,7 +1191,7 @@
             document.getElementById('history-table-body').addEventListener('click', (e) => {
                 if (e.target.classList.contains('view-detail-btn')) {
                     const index = e.target.dataset.index;
-                    showHistoryDetail(data[index]);
+                    showHistoryDetail(quizHistory[index]);
                 }
             });
         }
@@ -982,36 +1225,32 @@
         }
 
         /**
-         * Displays the leaderboard from Supabase.
+         * Filters and sorts the cached leaderboard according to the current filters.
          */
-        async function displayLeaderboard() {
-            showScreen('leaderboard');
-            const container = document.getElementById('leaderboard-table-container');
-            container.innerHTML = '<p class="text-center text-gray-500">Đang tải bảng xếp hạng...</p>';
-            
-            let query = supabaseClient.from('leaderboard').select('*');
-
+        function getFilteredLeaderboard() {
             const subjectFilter = leaderboardSubjectFilter.value;
             const gradeFilter = leaderboardGradeFilter.value;
-            const nameFilter = leaderboardNameFilter.value.trim();
+            const nameFilter = leaderboardNameFilter.value.trim().toLowerCase();
 
-            if (subjectFilter !== 'all') query = query.eq('subject', subjectFilter);
-            if (gradeFilter !== 'all') query = query.eq('grade', gradeFilter);
-            if (nameFilter) query = query.ilike('name', `%${nameFilter}%`);
+            return leaderboardCache
+                .filter(r => subjectFilter === 'all' || r.subject === subjectFilter)
+                .filter(r => gradeFilter === 'all' || r.grade === gradeFilter)
+                .filter(r => !nameFilter || String(r.name || '').toLowerCase().includes(nameFilter))
+                .sort((a, b) => {
+                    const scoreDiff = (Number(b.score) || 0) - (Number(a.score) || 0);
+                    if (scoreDiff !== 0) return scoreDiff;
+                    return String(b.created_at || '').localeCompare(String(a.created_at || ''));
+                })
+                .slice(0, 10);
+        }
 
-            query = query.order('score', { ascending: false }).order('created_at', { ascending: false }).limit(10);
-            
-            const { data: results, error } = await query;
-
-            if (error) {
-                console.error("Error fetching leaderboard:", error);
-                container.innerHTML = '<p class="text-center text-red-500">Không thể tải bảng xếp hạng.</p>';
-                return;
-            }
-            
+        /**
+         * Renders the leaderboard table.
+         */
+        function renderLeaderboardTable(results, container) {
             if (!results || results.length === 0) {
-                 container.innerHTML = '<p class="text-center text-gray-500">Chưa có ai trên bảng xếp hạng cho mục này.</p>';
-                 return;
+                container.innerHTML = '<p class="text-center text-gray-500">Chưa có ai trên bảng xếp hạng cho mục này.</p>';
+                return;
             }
 
             let tableHTML = `
@@ -1039,7 +1278,33 @@
             tableHTML += '</tbody></table>';
             container.innerHTML = tableHTML;
         }
-        
+
+        /**
+         * Displays the leaderboard from the live cache.
+         */
+        function displayLeaderboard() {
+            showScreen('leaderboard');
+            const container = document.getElementById('leaderboard-table-container');
+            if (!leaderboardLoaded && leaderboardCache.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500">Đang tải bảng xếp hạng...</p>';
+            }
+            renderLeaderboardFromCache();
+        }
+
+        /**
+         * Re-renders the leaderboard when data or filters change.
+         */
+        function renderLeaderboardFromCache() {
+            const container = document.getElementById('leaderboard-table-container');
+            if (!container) return;
+            const results = getFilteredLeaderboard();
+            const signature = JSON.stringify(results);
+            if (container.dataset.signature === signature) return;
+            container.dataset.signature = signature;
+            renderLeaderboardTable(results, container);
+        }
+
+
         // --- GAME LOGIC ---
         /**
          * Updates the state of the "Start" button.
@@ -1069,6 +1334,14 @@
         function startGame() {
             clearInterval(timerInterval);
             sessionAnswers = [];
+            currentStreak = 0;
+            bestStreak = 0;
+            lastWrongQuestions = [];
+            answeredCurrentQuestion = false;
+
+            const countSelect = document.getElementById('game-question-count');
+            const requestedCount = countSelect ? parseInt(countSelect.value, 10) : quizQuestionLimit;
+            const questionLimit = isNaN(requestedCount) ? quizQuestionLimit : requestedCount;
 
             const errorEl = document.getElementById('start-error');
             errorEl.textContent = '';
@@ -1081,8 +1354,8 @@
                 return;
             }
 
-            let allAvailableQuestions = questionsForSelection.sort(() => Math.random() - 0.5);
-            currentQuestions = allAvailableQuestions.slice(0, quizQuestionLimit);
+            let allAvailableQuestions = [...questionsForSelection].sort(() => Math.random() - 0.5);
+            currentQuestions = questionLimit > 0 ? allAvailableQuestions.slice(0, questionLimit) : allAvailableQuestions;
 
             if (currentQuestions.length === 0) {
                 errorEl.textContent = "Lỗi: Không đủ câu hỏi để bắt đầu. Vui lòng chọn lại.";
@@ -1101,6 +1374,7 @@
          */
         function displayQuestion() {
             clearInterval(timerInterval);
+            answeredCurrentQuestion = false;
             document.getElementById('feedback-container').innerHTML = '';
             document.getElementById('explanation-container').classList.add('hidden');
             document.getElementById('next-btn').classList.add('hidden');
@@ -1126,6 +1400,14 @@
 
             document.getElementById('progress-text').textContent = `Câu ${currentQuestionIndex + 1}/${currentQuestions.length}`;
             document.getElementById('score-text').textContent = `Điểm: ${score}`;
+
+            const streakEl = document.getElementById('streak-display');
+            if (currentStreak > 1) {
+                streakEl.textContent = `🔥 ${currentStreak}`;
+                streakEl.classList.remove('hidden');
+            } else {
+                streakEl.classList.add('hidden');
+            }
 
             const readQuestionBtn = document.getElementById('read-question-btn');
             readQuestionBtn.onclick = () => speakText(normalizeTextForSpeech(questionData.question), readQuestionBtn);
@@ -1153,6 +1435,8 @@
          * Checks the user's selected answer.
          */
         function checkAnswer(selectedButton, correctAnswer) {
+            if (answeredCurrentQuestion) return;
+            answeredCurrentQuestion = true;
             clearInterval(timerInterval);
             document.querySelectorAll('.answer-option').forEach(btn => btn.disabled = true);
 
@@ -1184,6 +1468,22 @@
                 correctAnswer: correctAnswer,
                 isCorrect: isCorrect
             });
+
+            if (isCorrect) {
+                currentStreak++;
+                bestStreak = Math.max(bestStreak, currentStreak);
+            } else {
+                currentStreak = 0;
+                lastWrongQuestions.push(questionData);
+            }
+
+            const streakEl = document.getElementById('streak-display');
+            if (currentStreak > 1) {
+                streakEl.textContent = `🔥 ${currentStreak}`;
+                streakEl.classList.remove('hidden');
+            } else {
+                streakEl.classList.add('hidden');
+            }
 
             document.getElementById('next-btn').classList.remove('hidden');
             getExplanationFromAI(questionData.question, questionData.answer, selectedGrade);
@@ -1223,8 +1523,11 @@
             else if (percentage >= 50) finalMessageElement.textContent = "Làm tốt lắm! Hãy chọn tên để lưu điểm nào.";
             else finalMessageElement.textContent = "Cố gắng hơn lần sau nhé! Chọn tên để lưu điểm nào.";
 
+            const bestStreakEl = document.getElementById('modal-best-streak');
+            bestStreakEl.textContent = bestStreak > 1 ? `🔥 Chuỗi đúng dài nhất: ${bestStreak} câu` : '';
+
             const resultData = {
-                // date is handled by created_at in supabase
+                // date is handled by created_at in Firebase
                 subject: selectedSubject,
                 grade: selectedGrade,
                 semester: selectedSemester,
@@ -1239,9 +1542,16 @@
                 if (e.target.classList.contains('name-btn')) {
                     playSound('click');
                     const playerName = e.target.dataset.name;
-                    saveResult(resultData, playerName);
+                    const saving = saveResult(resultData, playerName);
                     hideModal('nameSelection');
-                    displayLeaderboard();
+                    showReview();
+                    saving.then(saved => {
+                        if (!saved) {
+                            const note = document.getElementById('review-sync-note');
+                            note.textContent = '💾 Kết quả đã lưu trên máy này và sẽ tự đồng bộ khi có mạng.';
+                            note.classList.remove('hidden');
+                        }
+                    });
                 }
             };
 
@@ -1253,11 +1563,127 @@
          */
         function resetGame() {
             showScreen('selection');
+            clearInterval(timerInterval);
             selectedSubject = null;
             selectedGrade = null;
             selectedSemester = null;
+            sessionAnswers = [];
+            currentQuestions = [];
+            lastWrongQuestions = [];
+            currentStreak = 0;
+            bestStreak = 0;
             document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('selected'));
             updateStartButtonState();
+        }
+
+        /**
+         * Shows a review of the most recent quiz session with correct answers.
+         */
+        function showReview() {
+            if (!sessionAnswers.length || !currentQuestions.length) return;
+            hideModal('nameSelection');
+
+            const labels = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
+            const summaryEl = document.getElementById('review-summary');
+            summaryEl.textContent = `${labels[selectedSubject] || ''} • ${labels[selectedGrade] || ''} • ${labels[selectedSemester] || ''} — Đúng ${score}/${currentQuestions.length} câu${bestStreak > 1 ? ` • Chuỗi đúng dài nhất: ${bestStreak}` : ''}`;
+
+            const list = document.getElementById('review-list');
+            list.innerHTML = '';
+            document.getElementById('review-sync-note').classList.add('hidden');
+            sessionAnswers.forEach((answer, index) => {
+                const item = document.createElement('div');
+                item.className = `p-3 rounded-xl border ${answer.isCorrect ? 'border-green-500 bg-green-100/60' : 'border-red-500 bg-red-100/60'}`;
+
+                const title = document.createElement('p');
+                title.className = 'font-bold text-gray-800';
+                title.textContent = `${index + 1}. ${answer.questionText}`;
+
+                const chosen = document.createElement('p');
+                chosen.className = `text-sm ${answer.isCorrect ? 'text-green-700' : 'text-red-700'}`;
+                chosen.textContent = `Bé chọn: ${answer.userAnswer || 'Không trả lời'}`;
+
+                item.appendChild(title);
+                item.appendChild(chosen);
+
+                if (!answer.isCorrect) {
+                    const correct = document.createElement('p');
+                    correct.className = 'text-sm text-blue-700';
+                    correct.textContent = `Đáp án đúng: ${answer.correctAnswer}`;
+                    item.appendChild(correct);
+                }
+                list.appendChild(item);
+            });
+
+            const retryBtn = document.getElementById('retry-wrong-btn');
+            if (lastWrongQuestions.length > 0) {
+                retryBtn.textContent = `🔁 Luyện lại ${lastWrongQuestions.length} câu sai`;
+                retryBtn.disabled = false;
+                retryBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                retryBtn.textContent = '🎉 Không có câu sai';
+                retryBtn.disabled = true;
+                retryBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+
+            showScreen('review');
+        }
+
+        /**
+         * Starts a new practice session using only the questions answered incorrectly.
+         */
+        function startWrongPractice() {
+            if (!lastWrongQuestions.length) return;
+            clearInterval(timerInterval);
+            currentQuestions = [...lastWrongQuestions].sort(() => Math.random() - 0.5);
+            lastWrongQuestions = [];
+            sessionAnswers = [];
+            currentQuestionIndex = 0;
+            score = 0;
+            currentStreak = 0;
+            bestStreak = 0;
+            answeredCurrentQuestion = false;
+            showScreen('game');
+            displayQuestion();
+        }
+
+        /**
+         * Exports the cached quiz history to a CSV file.
+         */
+        function exportHistoryCSV() {
+            if (!quizHistory || quizHistory.length === 0) {
+                alert('Chưa có dữ liệu lịch sử để xuất.');
+                return;
+            }
+
+            const labels = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
+            const escapeCell = value => `"${String(value ?? '').replace(/"/g, '""')}"`;
+            const header = ['Ngày giờ', 'Tên', 'Môn', 'Lớp', 'Học kỳ', 'Điểm', 'Tổng số câu', 'Tỷ lệ (%)'];
+
+            const rows = quizHistory.map(record => {
+                const total = record.total_questions || 0;
+                const percent = total > 0 ? Math.round((record.score / total) * 100) : 0;
+                return [
+                    record.created_at ? new Date(record.created_at).toLocaleString('vi-VN') : '',
+                    record.name || 'Không lưu',
+                    labels[record.subject] || record.subject || '',
+                    labels[record.grade] || record.grade || '',
+                    labels[record.semester] || record.semester || '',
+                    record.score ?? '',
+                    total,
+                    percent
+                ];
+            });
+
+            const csv = '\uFEFF' + [header, ...rows].map(row => row.map(escapeCell).join(',')).join('\r\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `lich-su-lam-bai-${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
 
         // --- UI & MODAL MANAGEMENT ---
@@ -1342,7 +1768,7 @@
         }
 
         /**
-         * Clears a Supabase table.
+         * Clears a Firebase collection.
          */
         async function clearCollection(tableName, button) {
             setButtonLoading(button, true);
@@ -1357,10 +1783,7 @@
             feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-gray-700';
 
             try {
-                // Supabase requires a filter for delete, so we delete where a column is not null.
-                // This is a way to delete all rows.
-                const { error } = await supabaseClient.from(tableName).delete().neq('id', '00000000-0000-0000-0000-000000000000'); 
-                if (error) throw error;
+                await remove(ref(db, tableName));
                 
                 feedbackEl.textContent = `Đã xóa thành công ${friendlyName}!`;
                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
@@ -1428,7 +1851,7 @@
         }
 
         /**
-         * Adds a new student name to Supabase.
+         * Adds a new student name to Firebase.
          */
         async function addStudent(name) {
             const feedbackEl = document.getElementById('student-manager-feedback');
@@ -1441,43 +1864,36 @@
                 return;
             }
             
-            const { data, error } = await supabaseClient.from('students').insert({ name: name }).select().single();
-
-            if (error) {
-                console.error("Error adding student:", error);
-                feedbackEl.textContent = "Lỗi khi thêm học sinh (có thể tên đã tồn tại).";
-                feedbackEl.className = 'text-center text-sm font-bold h-4 text-red-600';
-            } else {
-                studentList.push(data); // Add new student object {id, name} to cache
-                populateStudentList();
+            try {
+                await set(push(ref(db, 'students')), { name: name });
                 feedbackEl.textContent = `Đã thêm học sinh "${name}" thành công!`;
                 feedbackEl.className = 'text-center text-sm font-bold h-4 text-green-800';
+            } catch (error) {
+                console.error("Error adding student:", error);
+                feedbackEl.textContent = "Lỗi khi thêm học sinh.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 text-red-600';
             }
             setTimeout(() => feedbackEl.textContent = '', 3000);
         }
 
         /**
-         * Deletes a student from Supabase.
+         * Deletes a student from Firebase.
          */
         async function deleteStudent(studentId) {
             const feedbackEl = document.getElementById('student-manager-feedback');
             feedbackEl.textContent = '';
 
-            const { error } = await supabaseClient
-                .from('students')
-                .delete()
-                .eq('id', studentId);
-
-            if (error) {
-                console.error("Error deleting student:", error);
-                feedbackEl.textContent = "Lỗi khi xóa học sinh.";
-                feedbackEl.className = 'text-center text-sm font-bold h-4 text-red-600';
-            } else {
+            try {
+                await remove(ref(db, `students/${studentId}`));
                 const studentName = studentList.find(s => s.id === studentId)?.name || '';
                 studentList = studentList.filter(s => s.id !== studentId); // Remove from cache
                 populateStudentList();
                 feedbackEl.textContent = `Đã xóa học sinh "${studentName}" thành công!`;
                 feedbackEl.className = 'text-center text-sm font-bold h-4 text-green-800';
+            } catch (error) {
+                console.error("Error deleting student:", error);
+                feedbackEl.textContent = "Lỗi khi xóa học sinh.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 text-red-600';
             }
             setTimeout(() => feedbackEl.textContent = '', 3000);
         }
@@ -1666,7 +2082,16 @@
         }
 
         /**
-         * Handles the submission of the question add/edit form to Supabase.
+         * Deletes several questions at once in a single update.
+         */
+        async function deleteQuestionsByIds(ids) {
+            const updates = {};
+            ids.forEach(id => { updates[`questions/${id}`] = null; });
+            await update(ref(db), updates);
+        }
+
+        /**
+         * Handles the submission of the question add/edit form to Firebase.
          */
         async function handleQuestionFormSubmit(e) {
             e.preventDefault();
@@ -1704,16 +2129,13 @@
             }
 
             try {
-                let error;
                 if (questionId) {
-                    ({ error } = await supabaseClient.from('questions').update(questionData).eq('id', questionId));
+                    await update(ref(db, `questions/${questionId}`), questionData);
                 } else {
-                    ({ error } = await supabaseClient.from('questions').insert(questionData));
+                    await set(push(ref(db, 'questions')), { ...questionData, created_at: new Date().toISOString() });
                 }
-                if (error) throw error;
                 
                 hideModal('questionEdit');
-                await loadQuestionsFromSupabase();
                 populateQuestionList();
             } catch (error) {
                 console.error("Error saving question:", error);
@@ -1724,27 +2146,26 @@
         }
 
         /**
-         * Deletes a question from Supabase.
+         * Deletes a question from Firebase.
          */
         async function deleteQuestion(questionId) {
-            const { error } = await supabaseClient.from('questions').delete().eq('id', questionId);
             const feedbackEl = document.getElementById('question-form-error');
 
-            if(error) {
-                console.error("Error deleting question:", error);
-                feedbackEl.textContent = "Lỗi khi xóa câu hỏi.";
-                feedbackEl.className = 'text-center text-sm font-bold h-4 text-red-600';
-            } else {
-                await loadQuestionsFromSupabase();
+            try {
+                await remove(ref(db, `questions/${questionId}`));
                 populateQuestionList();
                 feedbackEl.textContent = "Đã xóa câu hỏi.";
                 feedbackEl.className = 'text-center text-sm font-bold h-4 text-green-800';
+            } catch (error) {
+                console.error("Error deleting question:", error);
+                feedbackEl.textContent = "Lỗi khi xóa câu hỏi.";
+                feedbackEl.className = 'text-center text-sm font-bold h-4 text-red-600';
             }
             setTimeout(() => feedbackEl.textContent = '', 3000);
         }
         
         /**
-         * Finds and removes duplicate questions from Supabase.
+         * Finds and removes duplicate questions from Firebase.
          */
         async function removeDuplicateQuestions(button) {
             setButtonLoading(button, true);
@@ -1772,12 +2193,10 @@
                 }
 
                 showConfirmationModal(`Bạn có chắc chắn muốn xóa ${duplicateQuestionIds.length} câu hỏi trùng lặp không?`, async () => {
-                    const { error } = await supabaseClient.from('questions').delete().in('id', duplicateQuestionIds);
-                    if (error) throw error;
+                    await deleteQuestionsByIds(duplicateQuestionIds);
 
                     feedbackEl.textContent = `Đã xóa thành công ${duplicateQuestionIds.length} câu hỏi trùng lặp.`;
                     feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
-                    await loadQuestionsFromSupabase();
                     populateQuestionList();
                 });
 
@@ -1792,7 +2211,7 @@
         }
         
         /**
-         * Deletes questions from Supabase based on current filters.
+         * Deletes questions from Firebase based on current filters.
          */
         async function deleteFilteredQuestions(button) {
             setButtonLoading(button, true);
@@ -1822,12 +2241,10 @@
 
             showConfirmationModal(`Bạn có chắc chắn muốn xóa ${idsToDelete.length} câu hỏi đã lọc không?`, async () => {
                 try {
-                    const { error } = await supabaseClient.from('questions').delete().in('id', idsToDelete);
-                    if (error) throw error;
+                    await deleteQuestionsByIds(idsToDelete);
                     
                     feedbackEl.textContent = `Đã xóa thành công ${idsToDelete.length} câu hỏi đã lọc.`;
                     feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
-                    await loadQuestionsFromSupabase();
                     populateQuestionList();
                 } catch(error) {
                     console.error("Error deleting filtered questions:", error);
@@ -1842,7 +2259,7 @@
 
         // --- EVENT LISTENERS ---
         document.addEventListener('DOMContentLoaded', () => {
-            initializeSupabase();
+            initializeFirebase();
             document.body.addEventListener('click', async () => {
                 if (Tone.context.state !== 'running') {
                     Tone.context.resume().then(() => {
@@ -1856,6 +2273,63 @@
             soundsEnabled = !soundsEnabled;
             document.getElementById('speaker-on-icon').classList.toggle('hidden', !soundsEnabled);
             document.getElementById('speaker-off-icon').classList.toggle('hidden', soundsEnabled);
+        });
+
+        window.addEventListener('offline', () => {
+            updateOfflineBanner();
+        });
+
+        window.addEventListener('online', () => {
+            usedOfflineCache = false;
+            updateOfflineBanner();
+            flushPendingResults();
+        });
+
+        document.getElementById('show-review-btn').addEventListener('click', () => {
+            playSound('click');
+            hideModal('nameSelection');
+            showReview();
+        });
+
+        document.getElementById('retry-wrong-btn').addEventListener('click', () => {
+            playSound('click');
+            startWrongPractice();
+        });
+
+        document.getElementById('review-leaderboard-btn').addEventListener('click', () => {
+            playSound('click');
+            displayLeaderboard();
+        });
+
+        document.getElementById('review-home-btn').addEventListener('click', () => {
+            playSound('click');
+            resetGame();
+        });
+
+        document.getElementById('export-history-btn').addEventListener('click', () => {
+            playSound('click');
+            exportHistoryCSV();
+        });
+
+        // Keyboard shortcuts during the game: 1-4 to answer, Enter to continue.
+        document.addEventListener('keydown', (event) => {
+            if (screens.game.classList.contains('hidden')) return;
+            if (event.target && ['INPUT', 'SELECT', 'TEXTAREA'].includes(event.target.tagName)) return;
+
+            if (/^[1-4]$/.test(event.key)) {
+                const options = document.querySelectorAll('#options-container .answer-option');
+                const button = options[parseInt(event.key, 10) - 1];
+                if (button && !button.disabled) {
+                    event.preventDefault();
+                    button.click();
+                }
+            } else if (event.key === 'Enter') {
+                const nextBtn = document.getElementById('next-btn');
+                if (!nextBtn.classList.contains('hidden')) {
+                    event.preventDefault();
+                    nextBtn.click();
+                }
+            }
         });
 
         document.querySelectorAll('.choice-btn').forEach(btn => btn.addEventListener('click', (e) => {
@@ -2133,7 +2607,7 @@
         });
 
         /**
-         * Saves the AI-generated questions to Supabase.
+         * Saves the AI-generated questions to Firebase.
          */
         async function saveGeneratedQuestions(questions, subject, grade, semester) {
             const feedbackEl = document.getElementById('ai-generation-feedback');
@@ -2153,8 +2627,14 @@
             });
 
             if (questionsToInsert.length > 0) {
-                 const { error } = await supabaseClient.from('questions').insert(questionsToInsert);
-                 if (error) {
+                 try {
+                    const updates = {};
+                    questionsToInsert.forEach(q => {
+                        const key = push(ref(db, 'questions')).key;
+                        updates[`questions/${key}`] = { ...q, created_at: new Date().toISOString() };
+                    });
+                    await update(ref(db), updates);
+                 } catch (error) {
                     console.error("Error saving AI questions:", error);
                     feedbackEl.textContent = `Lỗi khi lưu câu hỏi: ${error.message}.`;
                     throw error;
@@ -2162,7 +2642,6 @@
             }
             
             feedbackEl.textContent = `Đã lưu thành công ${questionsToInsert.length} / ${questions.length} câu hỏi mới!`;
-            await loadQuestionsFromSupabase();
             populateQuestionList();
         }
     </script>
