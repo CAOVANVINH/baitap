@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Không gửi referer để giọng đọc Google (tiếng Việt chuẩn) hoạt động ổn định -->
+    <meta name="referrer" content="no-referrer">
     <title>Trò Chơi Học Tập Vui (Admin Pro)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -235,6 +237,16 @@
                              <button id="delete-api-key-btn" class="w-full glass-btn bg-gray-500/60 text-white font-bold py-2 rounded-xl shadow-lg hover:bg-gray-500/80 flex justify-center items-center">Xóa Key</button>
                          </div>
                      </div>
+                </div>
+                <!-- Voice Settings -->
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">Cài đặt Giọng Đọc</h3>
+                    <div class="space-y-4 max-w-sm mx-auto p-4 bg-white/20 rounded-xl">
+                        <p class="text-xs text-center text-gray-600">Chọn giọng đọc tiếng Việt. Nếu máy có nhiều giọng, bấm "Nghe thử" để chọn giọng nghe rõ và chuẩn nhất.</p>
+                        <select id="voice-select" class="w-full px-3 py-2 border border-gray-300/50 rounded-lg bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"></select>
+                        <p id="voice-status" class="text-xs text-center text-gray-600"></p>
+                        <button id="test-voice-btn" class="w-full glass-btn bg-purple-500/60 text-white font-bold py-2 rounded-xl shadow-lg hover:bg-purple-500/80 flex justify-center items-center">🔊 Nghe thử</button>
+                    </div>
                 </div>
                 <!-- Game Settings -->
                 <div>
@@ -1857,12 +1869,105 @@
             return best;
         }
 
+        // --- VOICE PREFERENCE ---
+        const SPEECH_VOICE_PREF_KEY = 'baitap_voice_pref';
+        const GOOGLE_VOICE_OPTION = 'google';
+        const AUTO_VOICE_OPTION = 'auto';
+
+        function voiceKey(voice) {
+            return (voice && voice.voiceURI) || `${(voice && voice.name) || ''}|${(voice && voice.lang) || ''}`;
+        }
+
+        function listVietnameseVoices() {
+            return speechVoices
+                .filter(isVietnameseVoice)
+                .sort((a, b) => scoreVietnameseVoice(b) - scoreVietnameseVoice(a));
+        }
+
+        function getStoredVoicePreference() {
+            try {
+                return localStorage.getItem(SPEECH_VOICE_PREF_KEY) || GOOGLE_VOICE_OPTION;
+            } catch (error) {
+                return GOOGLE_VOICE_OPTION;
+            }
+        }
+
+        function setStoredVoicePreference(value) {
+            try {
+                localStorage.setItem(SPEECH_VOICE_PREF_KEY, value);
+            } catch (error) {
+                console.warn("Không lưu được lựa chọn giọng đọc:", error);
+            }
+        }
+
+        /**
+         * Giọng đọc có sẵn trên máy: giọng người dùng chọn, nếu không có thì
+         * tự động chọn giọng tiếng Việt chuẩn nhất.
+         */
+        function resolveDeviceVoice() {
+            const pref = getStoredVoicePreference();
+            if (pref && pref !== AUTO_VOICE_OPTION && pref !== GOOGLE_VOICE_OPTION) {
+                const match = speechVoices.find(voice => voiceKey(voice) === pref);
+                if (match) return match;
+            }
+            return pickVietnameseVoice();
+        }
+
+        /**
+         * Hiển thị danh sách giọng tiếng Việt trong Cài đặt.
+         */
+        function refreshVoiceSelect() {
+            const select = document.getElementById('voice-select');
+            if (!select) return;
+            const voices = listVietnameseVoices();
+            const pref = getStoredVoicePreference();
+            select.innerHTML = '';
+            select.appendChild(new Option('Google — giọng tiếng Việt chuẩn (khuyến nghị)', GOOGLE_VOICE_OPTION));
+            select.appendChild(new Option('Tự động — dùng giọng có sẵn trên máy', AUTO_VOICE_OPTION));
+            voices.forEach(voice => {
+                select.appendChild(new Option(`${voice.name} (${voice.lang})`, voiceKey(voice)));
+            });
+            const known = pref === GOOGLE_VOICE_OPTION || pref === AUTO_VOICE_OPTION
+                || voices.some(voice => voiceKey(voice) === pref);
+            select.value = known ? pref : GOOGLE_VOICE_OPTION;
+
+            const status = document.getElementById('voice-status');
+            if (status) {
+                status.textContent = voices.length
+                    ? `Máy đang có ${voices.length} giọng tiếng Việt.`
+                    : 'Máy chưa có giọng đọc tiếng Việt — hãy dùng giọng Google ở trên. iPhone: Cài đặt → Trợ năng → Nội dung được đọc → Giọng → Tiếng Việt. Android: Cài đặt → Hệ thống → Ngôn ngữ → Đọc văn bản → Cài giọng Tiếng Việt.';
+            }
+        }
+
+        /**
+         * Hiện thông báo nhỏ ở giữa màn hình.
+         */
+        function showToast(message, duration = 7000) {
+            let toast = document.getElementById('app-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'app-toast';
+                toast.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 z-[9999] max-w-[90%] bg-gray-900/90 text-white text-sm font-medium px-4 py-3 rounded-2xl shadow-lg text-center';
+                document.body.appendChild(toast);
+            }
+            toast.textContent = message;
+            toast.classList.remove('hidden');
+            clearTimeout(showToast._timer);
+            showToast._timer = setTimeout(() => toast.classList.add('hidden'), duration);
+        }
+
         if ('speechSynthesis' in window) {
             refreshSpeechVoices();
             if (typeof speechSynthesis.addEventListener === 'function') {
-                speechSynthesis.addEventListener('voiceschanged', refreshSpeechVoices);
+                speechSynthesis.addEventListener('voiceschanged', () => {
+                    refreshSpeechVoices();
+                    refreshVoiceSelect();
+                });
             } else {
-                speechSynthesis.onvoiceschanged = refreshSpeechVoices;
+                speechSynthesis.onvoiceschanged = () => {
+                    refreshSpeechVoices();
+                    refreshVoiceSelect();
+                };
             }
         }
 
@@ -1900,10 +2005,83 @@
             });
         }
 
+        // --- GOOGLE VOICE (giọng tiếng Việt chuẩn, đọc online) ---
+        const GOOGLE_TTS_MAX_CHARS = 180;
+        let googleSpeechAudio = null;
+        let googleVoiceFailures = 0;
+
         /**
-         * Uses the Web Speech API to speak text.
+         * Chia câu thành các đoạn ngắn để giọng đọc không bị cắt.
          */
-        async function speakText(text, buttonElement = null) {
+        function splitTextForSpeech(text, maxLength) {
+            const parts = [];
+            let rest = String(text || '').trim();
+            while (rest.length > maxLength) {
+                let cut = rest.lastIndexOf(' ', maxLength);
+                if (cut <= 0) cut = maxLength;
+                parts.push(rest.slice(0, cut));
+                rest = rest.slice(cut).trim();
+            }
+            if (rest) parts.push(rest);
+            return parts;
+        }
+
+        function googleTtsUrl(text) {
+            return `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=vi&q=${encodeURIComponent(text)}`;
+        }
+
+        /**
+         * Đọc bằng giọng tiếng Việt chuẩn của Google. Nếu không đọc được
+         * (không có mạng, bị chặn...) thì chuyển sang giọng có sẵn trên máy.
+         */
+        function speakWithGoogleVoice(text, buttonElement = null) {
+            if (!googleSpeechAudio) {
+                googleSpeechAudio = new Audio();
+                googleSpeechAudio.preload = 'auto';
+            }
+            const chunks = splitTextForSpeech(text, GOOGLE_TTS_MAX_CHARS);
+            let index = 0;
+            let failed = false;
+
+            const playNext = () => {
+                if (failed) return;
+                if (index >= chunks.length) {
+                    if (buttonElement) buttonElement.classList.remove('speaking-active');
+                    return;
+                }
+                const chunk = chunks[index++];
+                googleSpeechAudio.src = googleTtsUrl(chunk);
+                const onFailed = () => {
+                    if (failed) return;
+                    failed = true;
+                    googleVoiceFailures += 1;
+                    console.error("Không phát được giọng đọc Google, chuyển sang giọng trên máy.");
+                    if (googleVoiceFailures >= 2) {
+                        setStoredVoicePreference(AUTO_VOICE_OPTION);
+                        showToast('Giọng đọc Google không phát được, chuyển sang giọng trên máy.');
+                    }
+                    speakWithDeviceVoice(text, buttonElement);
+                };
+                googleSpeechAudio.addEventListener('error', onFailed, { once: true });
+                googleSpeechAudio.onended = () => {
+                    googleSpeechAudio.removeEventListener('error', onFailed);
+                    googleVoiceFailures = 0;
+                    playNext();
+                };
+                const played = googleSpeechAudio.play();
+                if (played && typeof played.catch === 'function') {
+                    played.catch(onFailed);
+                }
+            };
+
+            if (buttonElement) buttonElement.classList.add('speaking-active');
+            playNext();
+        }
+
+        /**
+         * Đọc bằng giọng có sẵn trên máy.
+         */
+        async function speakWithDeviceVoice(text, buttonElement = null) {
             if (!'speechSynthesis' in window) {
                 console.error("Speech synthesis not supported.");
                 return;
@@ -1922,12 +2100,13 @@
 
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'vi-VN';
-                const voice = pickVietnameseVoice();
+                const voice = resolveDeviceVoice();
                 if (voice) {
                     utterance.voice = voice;
                     console.log(`[TTS] Đọc bằng giọng: ${voice.name} (${voice.lang})`);
                 } else {
                     console.warn("Không tìm thấy giọng tiếng Việt trên thiết bị; hãy cài thêm giọng đọc tiếng Việt trong phần cài đặt của máy.");
+                    showToast('Máy chưa có giọng đọc tiếng Việt nên đọc hơi sai. Thêm giọng "Tiếng Việt" trong Cài đặt của máy nhé!');
                 }
 
                 if (buttonElement) {
@@ -1944,6 +2123,18 @@
             } catch (error) {
                 console.error("Error speaking text:", error);
             }
+        }
+
+        /**
+         * Đọc văn bản bằng giọng đang chọn (Google hoặc giọng có sẵn trên máy).
+         */
+        function speakText(text, buttonElement = null) {
+            const pref = getStoredVoicePreference();
+            if (pref === GOOGLE_VOICE_OPTION) {
+                speakWithGoogleVoice(text, buttonElement);
+                return;
+            }
+            speakWithDeviceVoice(text, buttonElement);
         }
 
         let confirmCallback = null;
@@ -2612,6 +2803,26 @@
             document.getElementById('timer-toggle').checked = timerEnabled;
             document.getElementById('timer-duration').value = timerDuration;
             document.getElementById('quiz-question-limit').value = quizQuestionLimit;
+            refreshVoiceSelect();
+        });
+
+        document.getElementById('voice-select').addEventListener('change', (event) => {
+            setStoredVoicePreference(event.target.value);
+            const status = document.getElementById('voice-status');
+            if (status) {
+                if (event.target.value === GOOGLE_VOICE_OPTION) {
+                    status.textContent = 'Đang dùng giọng Google (tiếng Việt chuẩn, cần có mạng).';
+                } else if (event.target.value === AUTO_VOICE_OPTION) {
+                    status.textContent = 'Đang dùng giọng có sẵn trên máy.';
+                } else {
+                    status.textContent = 'Đã lưu giọng đọc. Bấm "Nghe thử" để kiểm tra.';
+                }
+            }
+        });
+
+        document.getElementById('test-voice-btn').addEventListener('click', () => {
+            playSound('click');
+            speakText('Bé thử đếm nhé. Một cộng một bằng hai.');
         });
         document.getElementById('manage-students-btn').addEventListener('click', () => {
             playSound('click');
