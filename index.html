@@ -982,23 +982,32 @@
         }
 
         /**
+         * Models tried in order. Google retires older model names, so the app
+         * falls back to the next one when a model is missing or overloaded.
+         */
+        const GEMINI_MODEL_CANDIDATES = ['gemini-2.5-flash', 'gemini-3.5-flash', 'gemini-flash-latest'];
+
+        /**
          * Makes a call to the Gemini API.
          */
         async function callGeminiAPI(prompt, jsonSchema = null) {
-            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
-            const payload = { contents: chatHistory };
-            
+            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+
             if (jsonSchema) {
                 payload.generationConfig = {
                     responseMimeType: "application/json",
                     responseSchema: jsonSchema
                 };
             }
-            
-            const apiKey = userDefinedApiKey || ""; 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
-            try {
+            const apiKey = userDefinedApiKey || "";
+            if (!apiKey) {
+                throw new Error("Chưa có Gemini API Key. Vui lòng vào phần Cài đặt để nhập key.");
+            }
+
+            let lastError = null;
+            for (const model of GEMINI_MODEL_CANDIDATES) {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1007,10 +1016,13 @@
 
                 if (!response.ok) {
                     const errorBody = await response.text();
-                    console.error("API call failed:", response.status, errorBody);
-                    throw new Error(`API call failed with status: ${response.status}. Chi tiết: ${errorBody.substring(0, 100)}...`);
+                    console.error("API call failed:", model, response.status, errorBody);
+                    lastError = new Error(`API call failed with status: ${response.status}. Chi tiết: ${errorBody.substring(0, 100)}...`);
+                    // Missing model (404) or temporary overload (503): try the next one.
+                    if (response.status === 404 || response.status === 503) continue;
+                    throw lastError;
                 }
-                
+
                 const result = await response.json();
                 const generatedContent = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
@@ -1019,10 +1031,8 @@
                     throw new Error("Cấu trúc phản hồi từ AI không hợp lệ. Vui lòng thử lại.");
                 }
                 return generatedContent;
-            } catch (error) {
-                console.error("Error during Gemini API call:", error);
-                throw error;
             }
+            throw lastError || new Error("Không thể kết nối tới Gemini API. Vui lòng thử lại.");
         }
 
         // --- HISTORY & LEADERBOARD ---
