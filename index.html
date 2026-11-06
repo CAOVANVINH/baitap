@@ -126,6 +126,7 @@
         <div id="selection-screen">
             <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-2">Trò Chơi Học Tập</h1>
             <p class="text-center text-gray-700 mb-6">Cùng bé vừa học vừa chơi!</p>
+            <p id="offline-banner" class="hidden text-center text-sm font-semibold text-amber-900 bg-amber-200/70 rounded-xl px-3 py-2 mb-4"></p>
             <div id="loading-questions" class="text-center text-gray-600 font-semibold mb-4"><p>Đang tải dữ liệu, vui lòng chờ...</p></div>
             <div id="selections-container" class="hidden">
                 <div class="mb-6">
@@ -337,6 +338,7 @@
         <div id="review-screen" class="hidden">
             <h2 class="text-3xl font-bold text-gray-800 mb-3 text-center">📋 Xem Lại Bài Làm</h2>
             <div id="review-summary" class="p-4 bg-white/30 rounded-2xl mb-4 text-gray-800 text-center font-semibold"></div>
+            <p id="review-sync-note" class="hidden text-center text-sm font-semibold text-amber-900 bg-amber-200/70 rounded-xl px-3 py-2 mb-4"></p>
             <div id="review-list" class="space-y-3 p-3 bg-white/20 rounded-2xl custom-scrollbar max-h-96 overflow-y-auto"></div>
             <div class="flex flex-col md:flex-row gap-3 mt-6">
                 <button id="retry-wrong-btn" class="w-full glass-btn bg-orange-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-orange-500/80">🔁 Luyện lại câu sai</button>
@@ -461,7 +463,48 @@
         let fullQuestionCollection = []; // Acts as a cache for questions from Supabase
         let studentList = []; // Acts as a cache for students from Supabase
         let quizHistory = []; // Cache for history
-        
+
+        // --- LOCAL STORAGE (offline cache & retry queue) ---
+        const CACHE_PREFIX = 'baitap_cache_v1_';
+        const PENDING_RESULTS_KEY = 'baitap_pending_results_v1';
+        let usedOfflineCache = false;
+        let lastQuestionsSignature = null;
+        let lastStudentsSignature = null;
+        let livePollInterval = null;
+
+        function cacheSet(key, value) {
+            try {
+                localStorage.setItem(CACHE_PREFIX + key, JSON.stringify(value));
+            } catch (error) {
+                console.warn('Cannot cache', key, error);
+            }
+        }
+
+        function cacheGet(key) {
+            try {
+                const raw = localStorage.getItem(CACHE_PREFIX + key);
+                return raw ? JSON.parse(raw) : null;
+            } catch (error) {
+                console.warn('Cannot read cache', key, error);
+                return null;
+            }
+        }
+
+        function isScreenVisible(name) {
+            return !!screens[name] && !screens[name].classList.contains('hidden');
+        }
+
+        function updateOfflineBanner() {
+            const banner = document.getElementById('offline-banner');
+            if (!banner) return;
+            if (!navigator.onLine || usedOfflineCache) {
+                banner.textContent = '📴 Đang dùng dữ liệu đã lưu trên máy. Khi có mạng, mọi thay đổi sẽ tự đồng bộ.';
+                banner.classList.remove('hidden');
+            } else {
+                banner.classList.add('hidden');
+            }
+        }
+
         // References to main screen elements
         const screens = {
             selection: document.getElementById('selection-screen'),
@@ -507,6 +550,7 @@
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indzd2xxbWZsamp1cGN1ZmxudnRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyMzg0NTQsImV4cCI6MjA3MjgxNDQ1NH0.7wwrvbjHqENJTOXuYJLD-HGp8o1MKZX3oJvfEKnxyGU';
             
             supabaseClient = createClient(supabaseUrl, supabaseKey);
+            usedOfflineCache = false;
 
             try {
                  await Promise.all([
@@ -521,10 +565,32 @@
                 document.getElementById('loading-questions').classList.add('hidden');
                 document.getElementById('selections-container').classList.remove('hidden');
                 updateStartButtonState();
+                updateOfflineBanner();
+
+                startLiveSync();
+                flushPendingResults();
+                keepProjectAwake();
 
             } catch (error) {
                  console.error("Error loading initial data from Supabase:", error);
-                 document.getElementById('loading-questions').innerHTML = `<p class="text-red-500 font-bold">Lỗi khi tải dữ liệu ban đầu. Vui lòng kiểm tra console và cài đặt Supabase.</p>`;
+                 const cachedQuestions = cacheGet('questions');
+                 if (Array.isArray(cachedQuestions) && cachedQuestions.length > 0) {
+                     fullQuestionCollection = cachedQuestions;
+                     restructureQuestionBank();
+                     const cachedStudents = cacheGet('students');
+                     if (Array.isArray(cachedStudents)) studentList = cachedStudents;
+                     const cachedSettings = cacheGet('settings');
+                     if (cachedSettings) applyAdminSettings(cachedSettings);
+                     usedOfflineCache = true;
+                     document.getElementById('loading-questions').classList.add('hidden');
+                     document.getElementById('selections-container').classList.remove('hidden');
+                     syncGameQuestionCountFromSettings();
+                     updateStartButtonState();
+                     updateOfflineBanner();
+                     startLiveSync();
+                     return;
+                 }
+                 document.getElementById('loading-questions').innerHTML = `<p class="text-red-500 font-bold mb-2">Lỗi khi tải dữ liệu ban đầu. Vui lòng kiểm tra kết nối mạng.</p><button onclick="location.reload()" class="glass-btn bg-blue-600/70 text-white font-bold py-2 px-4 rounded-xl">Thử lại</button>`;
             }
         }
 
@@ -535,6 +601,14 @@
             const { data, error } = await supabaseClient.from('questions').select('*');
             if (error) {
                 console.error("Error loading questions:", error);
+                const cached = cacheGet('questions');
+                if (Array.isArray(cached) && cached.length > 0) {
+                    usedOfflineCache = true;
+                    fullQuestionCollection = cached;
+                    restructureQuestionBank();
+                    updateOfflineBanner();
+                    return;
+                }
                 throw error;
             }
 
@@ -544,6 +618,8 @@
             } else {
                 fullQuestionCollection = data;
                 restructureQuestionBank();
+                lastQuestionsSignature = JSON.stringify(data);
+                cacheSet('questions', data);
                 console.log("Successfully loaded questions from Supabase.");
             }
         }
@@ -594,6 +670,14 @@
             let { data, error } = await supabaseClient.from('students').select('id, name');
             if (error) {
                  console.error("Error loading students:", error);
+                 const cached = cacheGet('students');
+                 if (Array.isArray(cached)) {
+                     usedOfflineCache = true;
+                     studentList = cached;
+                     lastStudentsSignature = JSON.stringify(cached);
+                     updateOfflineBanner();
+                     return;
+                 }
                  throw error;
             }
             if (data.length === 0) {
@@ -607,6 +691,8 @@
             } else {
                 studentList = data;
             }
+            lastStudentsSignature = JSON.stringify(studentList);
+            cacheSet('students', studentList);
             console.log("Student list loaded:", studentList);
         }
 
@@ -626,6 +712,16 @@
         }
 
         /**
+         * Applies a settings object to the in-memory state.
+         */
+        function applyAdminSettings(settings) {
+            if (!settings) return;
+            timerEnabled = settings.timerEnabled ?? false;
+            timerDuration = settings.timerDuration ?? 30;
+            quizQuestionLimit = settings.quizQuestionLimit ?? 10;
+        }
+
+        /**
          * Loads admin settings from Supabase.
          */
         async function loadAdminSettings() {
@@ -636,14 +732,24 @@
 
             if (error) {
                 console.error("Error loading admin settings:", error);
-                return; // Use defaults on error
+                const cached = cacheGet('settings');
+                if (cached) {
+                    usedOfflineCache = true;
+                    applyAdminSettings(cached);
+                    updateOfflineBanner();
+                }
+                return;
             }
 
             if (data) {
                 const settingsMap = new Map(data.map(item => [item.key, item.value]));
-                timerEnabled = settingsMap.get('timerEnabled')?.enabled ?? false;
-                timerDuration = settingsMap.get('timerDuration')?.duration ?? 30;
-                quizQuestionLimit = settingsMap.get('quizQuestionLimit')?.limit ?? 10;
+                const settings = {
+                    timerEnabled: settingsMap.get('timerEnabled')?.enabled ?? false,
+                    timerDuration: settingsMap.get('timerDuration')?.duration ?? 30,
+                    quizQuestionLimit: settingsMap.get('quizQuestionLimit')?.limit ?? 10,
+                };
+                applyAdminSettings(settings);
+                cacheSet('settings', settings);
             }
         }
 
@@ -904,7 +1010,62 @@
 
         // --- HISTORY & LEADERBOARD ---
         /**
-         * Saves quiz results to Supabase.
+         * Reads quiz results that could not be saved yet.
+         */
+        function readPendingResults() {
+            try {
+                const raw = localStorage.getItem(PENDING_RESULTS_KEY);
+                const parsed = raw ? JSON.parse(raw) : [];
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (error) {
+                return [];
+            }
+        }
+
+        /**
+         * Stores a result locally so it can be retried once the network is back.
+         */
+        function queuePendingResult(payload) {
+            const pending = readPendingResults();
+            pending.push(payload);
+            try {
+                localStorage.setItem(PENDING_RESULTS_KEY, JSON.stringify(pending));
+            } catch (error) {
+                console.warn('Cannot queue result locally', error);
+            }
+        }
+
+        /**
+         * Pushes queued results to Supabase. Safe to call repeatedly.
+         */
+        async function flushPendingResults() {
+            if (!navigator.onLine || !supabaseClient) return;
+            const pending = readPendingResults();
+            if (pending.length === 0) return;
+
+            const remaining = [];
+            for (const item of pending) {
+                try {
+                    const { error: historyError } = await supabaseClient.from('quiz_history').insert(item.historyData);
+                    if (historyError) throw historyError;
+                    if (item.leaderboardData) {
+                        const { error: leaderboardError } = await supabaseClient.from('leaderboard').insert(item.leaderboardData);
+                        if (leaderboardError) console.error("Error saving queued leaderboard score:", leaderboardError);
+                    }
+                } catch (error) {
+                    console.error("Could not sync queued result, will retry:", error);
+                    remaining.push(item);
+                }
+            }
+            try {
+                localStorage.setItem(PENDING_RESULTS_KEY, JSON.stringify(remaining));
+            } catch (error) {
+                console.warn('Cannot update local queue', error);
+            }
+        }
+
+        /**
+         * Saves quiz results to Supabase, queueing them locally when offline.
          */
         async function saveResult(resultData, playerName = null) {
              const historyData = {
@@ -917,21 +1078,37 @@
                 questions: resultData.questions
             };
 
-            const { error: historyError } = await supabaseClient.from('quiz_history').insert(historyData);
-            if (historyError) console.error("Error saving history:", historyError);
-            else console.log("History saved!");
+            const payload = { historyData, leaderboardData: null };
 
             if (playerName) {
-                const leaderboardData = {
+                payload.leaderboardData = {
                     name: playerName,
                     score: resultData.score,
                     total_questions: resultData.totalQuestions,
                     subject: resultData.subject,
                     grade: resultData.grade,
                 };
-                const { error: leaderboardError } = await supabaseClient.from('leaderboard').insert(leaderboardData);
-                if (leaderboardError) console.error("Error saving to leaderboard:", leaderboardError);
-                else console.log("Leaderboard score saved!");
+            }
+
+            if (!navigator.onLine) {
+                queuePendingResult(payload);
+                console.warn("Offline: result saved locally and will sync later.");
+                return false;
+            }
+
+            try {
+                const { error: historyError } = await supabaseClient.from('quiz_history').insert(historyData);
+                if (historyError) throw historyError;
+
+                if (payload.leaderboardData) {
+                    const { error: leaderboardError } = await supabaseClient.from('leaderboard').insert(payload.leaderboardData);
+                    if (leaderboardError) throw leaderboardError;
+                }
+                return true;
+            } catch (error) {
+                console.error("Error saving result, queued locally:", error);
+                queuePendingResult(payload);
+                return false;
             }
         }
 
@@ -1033,13 +1210,9 @@
         }
 
         /**
-         * Displays the leaderboard from Supabase.
+         * Builds the leaderboard query using the current filters.
          */
-        async function displayLeaderboard() {
-            showScreen('leaderboard');
-            const container = document.getElementById('leaderboard-table-container');
-            container.innerHTML = '<p class="text-center text-gray-500">Đang tải bảng xếp hạng...</p>';
-            
+        function buildLeaderboardQuery() {
             let query = supabaseClient.from('leaderboard').select('*');
 
             const subjectFilter = leaderboardSubjectFilter.value;
@@ -1050,19 +1223,16 @@
             if (gradeFilter !== 'all') query = query.eq('grade', gradeFilter);
             if (nameFilter) query = query.ilike('name', `%${nameFilter}%`);
 
-            query = query.order('score', { ascending: false }).order('created_at', { ascending: false }).limit(10);
-            
-            const { data: results, error } = await query;
+            return query.order('score', { ascending: false }).order('created_at', { ascending: false }).limit(10);
+        }
 
-            if (error) {
-                console.error("Error fetching leaderboard:", error);
-                container.innerHTML = '<p class="text-center text-red-500">Không thể tải bảng xếp hạng.</p>';
-                return;
-            }
-            
+        /**
+         * Renders the leaderboard table.
+         */
+        function renderLeaderboardTable(results, container) {
             if (!results || results.length === 0) {
-                 container.innerHTML = '<p class="text-center text-gray-500">Chưa có ai trên bảng xếp hạng cho mục này.</p>';
-                 return;
+                container.innerHTML = '<p class="text-center text-gray-500">Chưa có ai trên bảng xếp hạng cho mục này.</p>';
+                return;
             }
 
             let tableHTML = `
@@ -1089,6 +1259,135 @@
             });
             tableHTML += '</tbody></table>';
             container.innerHTML = tableHTML;
+        }
+
+        /**
+         * Displays the leaderboard from Supabase.
+         */
+        async function displayLeaderboard() {
+            showScreen('leaderboard');
+            const container = document.getElementById('leaderboard-table-container');
+            container.innerHTML = '<p class="text-center text-gray-500">Đang tải bảng xếp hạng...</p>';
+
+            const { data: results, error } = await buildLeaderboardQuery();
+
+            if (error) {
+                console.error("Error fetching leaderboard:", error);
+                container.innerHTML = '<p class="text-center text-red-500">Không thể tải bảng xếp hạng.</p>';
+                return;
+            }
+
+            container.dataset.signature = JSON.stringify(results || []);
+            renderLeaderboardTable(results, container);
+        }
+
+        /**
+         * Refreshes the leaderboard without showing a loading state (polling).
+         */
+        async function refreshLeaderboardSilently() {
+            if (!navigator.onLine || !supabaseClient) return;
+            const { data: results, error } = await buildLeaderboardQuery();
+            if (error) return;
+            const container = document.getElementById('leaderboard-table-container');
+            const signature = JSON.stringify(results || []);
+            if (container.dataset.signature === signature) return;
+            container.dataset.signature = signature;
+            renderLeaderboardTable(results, container);
+        }
+
+        // --- LIVE SYNC (near real-time) ---
+        /**
+         * Starts polling and (when available) Supabase Realtime subscriptions.
+         * Polling is the fallback; it needs no extra configuration in Supabase.
+         */
+        function startLiveSync() {
+            if (livePollInterval) return;
+
+            livePollInterval = setInterval(refreshLiveData, 15000);
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) refreshLiveData();
+            });
+
+            try {
+                supabaseClient.channel('baitap-live')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'questions' }, () => syncQuestionsSilently())
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'students' }, () => refreshStudentsSilently())
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'leaderboard' }, () => {
+                        if (isScreenVisible('leaderboard')) refreshLeaderboardSilently();
+                    })
+                    .subscribe();
+            } catch (error) {
+                console.warn('Realtime unavailable, using polling only:', error);
+            }
+        }
+
+        async function refreshLiveData() {
+            if (!navigator.onLine || !supabaseClient || document.hidden) return;
+            if (readPendingResults().length > 0) await flushPendingResults();
+            await syncQuestionsSilently();
+            if (isScreenVisible('leaderboard')) await refreshLeaderboardSilently();
+            if (isScreenVisible('studentManager')) await refreshStudentsSilently();
+        }
+
+        /**
+         * Reloads the question bank silently and updates the UI only when data changed.
+         */
+        async function syncQuestionsSilently() {
+            if (!navigator.onLine || !supabaseClient) return;
+            try {
+                const { data, error } = await supabaseClient.from('questions').select('*');
+                if (error || !Array.isArray(data)) return;
+                const signature = JSON.stringify(data);
+                if (signature === lastQuestionsSignature) return;
+                lastQuestionsSignature = signature;
+                fullQuestionCollection = data;
+                restructureQuestionBank();
+                cacheSet('questions', data);
+                if (isScreenVisible('questionManager')) populateQuestionList();
+                updateStartButtonState();
+            } catch (error) {
+                console.warn('Question sync failed:', error);
+            }
+        }
+
+        /**
+         * Reloads the student list silently (used by the admin student panel).
+         */
+        async function refreshStudentsSilently() {
+            if (!navigator.onLine || !supabaseClient) return;
+            try {
+                const { data, error } = await supabaseClient.from('students').select('id, name');
+                if (error || !Array.isArray(data)) return;
+                const signature = JSON.stringify(data);
+                if (signature === lastStudentsSignature) return;
+                lastStudentsSignature = signature;
+                studentList = data;
+                cacheSet('students', data);
+                if (isScreenVisible('studentManager')) populateStudentList();
+            } catch (error) {
+                console.warn('Student sync failed:', error);
+            }
+        }
+
+        /**
+         * Sends a lightweight request so the free Supabase project is not paused
+         * for inactivity. Runs at most once every 6 hours per device.
+         */
+        async function keepProjectAwake() {
+            if (!navigator.onLine || !supabaseClient) return;
+            const key = 'baitap_last_keepalive';
+            const now = Date.now();
+            try {
+                const last = Number(localStorage.getItem(key) || 0);
+                if (now - last < 6 * 60 * 60 * 1000) return;
+                localStorage.setItem(key, String(now));
+            } catch (error) { /* localStorage unavailable: still send the ping */ }
+
+            try {
+                await supabaseClient.from('settings').select('key').limit(1);
+            } catch (error) {
+                console.warn('Keep-alive ping failed:', error);
+            }
         }
         
         // --- GAME LOGIC ---
@@ -1328,9 +1627,16 @@
                 if (e.target.classList.contains('name-btn')) {
                     playSound('click');
                     const playerName = e.target.dataset.name;
-                    saveResult(resultData, playerName);
+                    const saving = saveResult(resultData, playerName);
                     hideModal('nameSelection');
                     showReview();
+                    saving.then(saved => {
+                        if (!saved) {
+                            const note = document.getElementById('review-sync-note');
+                            note.textContent = '💾 Kết quả đã lưu trên máy này và sẽ tự đồng bộ khi có mạng.';
+                            note.classList.remove('hidden');
+                        }
+                    });
                 }
             };
 
@@ -1368,6 +1674,7 @@
 
             const list = document.getElementById('review-list');
             list.innerHTML = '';
+            document.getElementById('review-sync-note').classList.add('hidden');
             sessionAnswers.forEach((answer, index) => {
                 const item = document.createElement('div');
                 item.className = `p-3 rounded-xl border ${answer.isCorrect ? 'border-green-500 bg-green-100/60' : 'border-red-500 bg-red-100/60'}`;
@@ -2060,6 +2367,17 @@
             soundsEnabled = !soundsEnabled;
             document.getElementById('speaker-on-icon').classList.toggle('hidden', !soundsEnabled);
             document.getElementById('speaker-off-icon').classList.toggle('hidden', soundsEnabled);
+        });
+
+        window.addEventListener('offline', () => {
+            updateOfflineBanner();
+        });
+
+        window.addEventListener('online', () => {
+            usedOfflineCache = false;
+            updateOfflineBanner();
+            flushPendingResults();
+            refreshLiveData();
         });
 
         document.getElementById('show-review-btn').addEventListener('click', () => {
