@@ -1795,7 +1795,11 @@
         }
 
         // --- VIETNAMESE VOICE SELECTION ---
+        // Thiết bị có thể có nhiều giọng tiếng Việt (Google, Microsoft, Apple...).
+        // Ta chấm điểm để luôn chọn giọng tiếng Việt chuẩn và rõ nhất, tránh việc
+        // trình duyệt đọc câu tiếng Việt bằng giọng tiếng Anh (nghe sai, ví dụ "bé" thành "bớ").
         let speechVoices = [];
+        let speechVoiceWaitDone = false;
 
         function refreshSpeechVoices() {
             try {
@@ -1805,15 +1809,52 @@
             }
         }
 
+        function speechLangOf(voice) {
+            return String((voice && voice.lang) || '').replace('_', '-').trim().toLowerCase();
+        }
+
+        function isVietnameseVoice(voice) {
+            const lang = speechLangOf(voice);
+            const name = String((voice && voice.name) || '');
+            return lang === 'vi' || lang.indexOf('vi-') === 0
+                || /vietnam|tiếng việt|tieng viet/i.test(name);
+        }
+
         /**
-         * Picks a Vietnamese voice, tolerating variations like "vi", "vi-VN", "vi_VN".
+         * Chấm điểm một giọng đọc. Giọng "vi-VN" được ưu tiên cao nhất, sau đó là
+         * "vi". Giọng chất lượng cao (Google, neural/natural/enhanced) được cộng điểm,
+         * còn các giọng cũ rất máy móc (compact, espeak...) bị trừ điểm nếu máy có
+         * lựa chọn tốt hơn.
+         */
+        function scoreVietnameseVoice(voice) {
+            if (!isVietnameseVoice(voice)) return -1;
+            const lang = speechLangOf(voice);
+            const name = String(voice.name || '');
+            let score = 0;
+            if (lang === 'vi-vn') score += 100;
+            else if (lang === 'vi') score += 80;
+            else score += 50;
+            if (/natural|neural|enhanced|premium/i.test(name)) score += 8;
+            if (/google/i.test(name)) score += 6;
+            if (/microsoft/i.test(name)) score += 4;
+            if (/compact|eloquence|espeak|pico|festival/i.test(name)) score -= 10;
+            return score;
+        }
+
+        /**
+         * Chọn giọng tiếng Việt tốt nhất hiện có trên thiết bị.
          */
         function pickVietnameseVoice() {
-            const langOf = v => String(v.lang || '').replace('_', '-').toLowerCase();
-            return speechVoices.find(v => langOf(v) === 'vi-vn')
-                || speechVoices.find(v => langOf(v).indexOf('vi') === 0)
-                || speechVoices.find(v => /vietnam|tiếng việt/i.test(v.name || ''))
-                || null;
+            let best = null;
+            let bestScore = 0;
+            for (const voice of speechVoices) {
+                const score = scoreVietnameseVoice(voice);
+                if (score > bestScore) {
+                    best = voice;
+                    bestScore = score;
+                }
+            }
+            return best;
         }
 
         if ('speechSynthesis' in window) {
@@ -1826,22 +1867,34 @@
         }
 
         /**
-         * Waits briefly for the browser to report its voices.
-         * Voices load asynchronously, so reading right away could use an English voice
-         * and pronounce Vietnamese words incorrectly (e.g. "bé" heard as "bớ").
+         * Đợi trình duyệt tải xong danh sách giọng đọc, nhưng chỉ đợi tới khi có
+         * giọng tiếng Việt (hoặc hết thời gian chờ). Trước đây chỉ cần danh sách
+         * khác rỗng là đọc ngay, nên lần đọc đầu tiên có thể dùng giọng tiếng Anh.
          */
-        function waitForVoices(timeout = 900) {
-            if (speechVoices.length > 0) return Promise.resolve();
+        function waitForVoices(timeout = 1200) {
+            refreshSpeechVoices();
+            if (pickVietnameseVoice()) return Promise.resolve();
+            if (speechVoiceWaitDone) return Promise.resolve();
             return new Promise(resolve => {
                 let settled = false;
                 const finish = () => {
                     if (settled) return;
                     settled = true;
+                    speechVoiceWaitDone = true;
                     refreshSpeechVoices();
+                    if (typeof speechSynthesis.removeEventListener === 'function') {
+                        speechSynthesis.removeEventListener('voiceschanged', check);
+                    }
                     resolve();
                 };
+                const check = () => {
+                    refreshSpeechVoices();
+                    if (pickVietnameseVoice()) finish();
+                };
                 if (typeof speechSynthesis.addEventListener === 'function') {
-                    speechSynthesis.addEventListener('voiceschanged', finish, { once: true });
+                    speechSynthesis.addEventListener('voiceschanged', check);
+                } else {
+                    speechSynthesis.onvoiceschanged = check;
                 }
                 setTimeout(finish, timeout);
             });
@@ -1855,20 +1908,26 @@
                 console.error("Speech synthesis not supported.");
                 return;
             }
-            if (speechSynthesis.speaking) {
+            if (speechSynthesis.speaking || speechSynthesis.pending) {
                 speechSynthesis.cancel();
                 document.querySelectorAll('.speaker-btn').forEach(btn => btn.classList.remove('speaking-active'));
+                // Chrome đôi khi bỏ qua lệnh đọc mới nếu gọi ngay sau cancel().
+                await new Promise(resolve => setTimeout(resolve, 80));
             }
             try {
-                await waitForVoices();
+                refreshSpeechVoices();
+                if (!pickVietnameseVoice()) {
+                    await waitForVoices();
+                }
 
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'vi-VN';
                 const voice = pickVietnameseVoice();
                 if (voice) {
                     utterance.voice = voice;
+                    console.log(`[TTS] Đọc bằng giọng: ${voice.name} (${voice.lang})`);
                 } else {
-                    console.warn("Vietnamese voice not found; the device may not have Vietnamese text-to-speech installed.");
+                    console.warn("Không tìm thấy giọng tiếng Việt trên thiết bị; hãy cài thêm giọng đọc tiếng Việt trong phần cài đặt của máy.");
                 }
 
                 if (buttonElement) {
