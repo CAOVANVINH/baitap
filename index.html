@@ -930,6 +930,9 @@
          */
         function normalizeTextForSpeech(text) {
             let normalized = text;
+            // Drop Markdown bold markers (**...**) but keep and read their content, e.g. **2** -> 2.
+            normalized = normalized.replace(/\*\*([\s\S]+?)\*\*/g, '$1');
+            normalized = normalized.replace(/\*\*/g, '');
             normalized = normalized.replace(/\+/g, ' cộng ');
             normalized = normalized.replace(/-/g, ' trừ ');
             normalized = normalized.replace(/\*/g, ' nhân ');
