@@ -930,6 +930,9 @@
          */
         function normalizeTextForSpeech(text) {
             let normalized = text;
+            // Drop Markdown bold markers (**...**) but keep and read their content, e.g. **2** -> 2.
+            normalized = normalized.replace(/\*\*([\s\S]+?)\*\*/g, '$1');
+            normalized = normalized.replace(/\*\*/g, '');
             normalized = normalized.replace(/\+/g, ' cộng ');
             normalized = normalized.replace(/-/g, ' trừ ');
             normalized = normalized.replace(/\*/g, ' nhân ');
@@ -1728,10 +1731,63 @@
             }
         }
 
+        // --- VIETNAMESE VOICE SELECTION ---
+        let speechVoices = [];
+
+        function refreshSpeechVoices() {
+            try {
+                speechVoices = 'speechSynthesis' in window ? (speechSynthesis.getVoices() || []) : [];
+            } catch (error) {
+                speechVoices = [];
+            }
+        }
+
+        /**
+         * Picks a Vietnamese voice, tolerating variations like "vi", "vi-VN", "vi_VN".
+         */
+        function pickVietnameseVoice() {
+            const langOf = v => String(v.lang || '').replace('_', '-').toLowerCase();
+            return speechVoices.find(v => langOf(v) === 'vi-vn')
+                || speechVoices.find(v => langOf(v).indexOf('vi') === 0)
+                || speechVoices.find(v => /vietnam|tiếng việt/i.test(v.name || ''))
+                || null;
+        }
+
+        if ('speechSynthesis' in window) {
+            refreshSpeechVoices();
+            if (typeof speechSynthesis.addEventListener === 'function') {
+                speechSynthesis.addEventListener('voiceschanged', refreshSpeechVoices);
+            } else {
+                speechSynthesis.onvoiceschanged = refreshSpeechVoices;
+            }
+        }
+
+        /**
+         * Waits briefly for the browser to report its voices.
+         * Voices load asynchronously, so reading right away could use an English voice
+         * and pronounce Vietnamese words incorrectly (e.g. "bé" heard as "bớ").
+         */
+        function waitForVoices(timeout = 900) {
+            if (speechVoices.length > 0) return Promise.resolve();
+            return new Promise(resolve => {
+                let settled = false;
+                const finish = () => {
+                    if (settled) return;
+                    settled = true;
+                    refreshSpeechVoices();
+                    resolve();
+                };
+                if (typeof speechSynthesis.addEventListener === 'function') {
+                    speechSynthesis.addEventListener('voiceschanged', finish, { once: true });
+                }
+                setTimeout(finish, timeout);
+            });
+        }
+
         /**
          * Uses the Web Speech API to speak text.
          */
-        function speakText(text, buttonElement = null) {
+        async function speakText(text, buttonElement = null) {
             if (!'speechSynthesis' in window) {
                 console.error("Speech synthesis not supported.");
                 return;
@@ -1741,13 +1797,15 @@
                 document.querySelectorAll('.speaker-btn').forEach(btn => btn.classList.remove('speaking-active'));
             }
             try {
+                await waitForVoices();
+
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'vi-VN';
-                const voice = speechSynthesis.getVoices().find(v => v.lang === 'vi-VN');
+                const voice = pickVietnameseVoice();
                 if (voice) {
                     utterance.voice = voice;
                 } else {
-                    console.warn("Vietnamese voice not found.");
+                    console.warn("Vietnamese voice not found; the device may not have Vietnamese text-to-speech installed.");
                 }
 
                 if (buttonElement) {
