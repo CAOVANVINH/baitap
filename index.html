@@ -40,7 +40,10 @@
             color: white;
         }
         #admin-login-btn, #leaderboard-btn {
-            color: #cbd5e0;
+            color: #475569;
+        }
+        #admin-login-btn:hover, #leaderboard-btn:hover {
+            color: #1e293b;
         }
         .choice-btn.selected {
             transform: scale(1.05);
@@ -139,12 +142,23 @@
                         <button data-grade="lop2" class="choice-btn glass-btn bg-rose-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-rose-500/60">Lớp 2</button>
                     </div>
                 </div>
-                <div class="mb-8">
+                <div class="mb-6">
                     <h2 class="text-xl font-semibold mb-3 text-gray-700">3. Chọn Học Kỳ</h2>
                     <div class="grid grid-cols-2 gap-4">
                         <button data-semester="hocky1" class="choice-btn glass-btn bg-purple-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-purple-500/60">Học Kỳ 1</button>
                         <button data-semester="hocky2" class="choice-btn glass-btn bg-pink-500/40 font-bold py-4 rounded-2xl shadow-lg hover:bg-pink-500/60">Học Kỳ 2</button>
                     </div>
+                </div>
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold mb-3 text-gray-700">4. Số Câu Hỏi</h2>
+                    <select id="game-question-count" class="w-full glass-btn bg-white/30 rounded-2xl px-4 py-3 font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="5">5 câu</option>
+                        <option value="10" selected>10 câu</option>
+                        <option value="15">15 câu</option>
+                        <option value="20">20 câu</option>
+                        <option value="30">30 câu</option>
+                        <option value="0">Tất cả câu hỏi</option>
+                    </select>
                 </div>
             </div>
             <button id="start-btn" class="w-full glass-btn bg-gray-500/50 text-white font-bold py-4 rounded-2xl text-xl shadow-lg cursor-not-allowed" disabled>Bắt đầu!</button>
@@ -157,9 +171,10 @@
 
         <!-- Game Screen -->
         <div id="game-screen" class="hidden">
-             <div class="flex justify-between items-center mb-4 text-white">
-                 <div id="progress-text" class="font-semibold">Câu 1/10</div>
+             <div class="flex justify-between items-center mb-4 text-white gap-2 pl-11 md:pl-4">
+                 <div id="progress-text" class="font-semibold whitespace-nowrap">Câu 1/10</div>
                  <div id="timer-display" class="font-bold text-lg hidden"></div>
+                 <div id="streak-display" class="font-bold text-lg hidden">🔥 0</div>
                  <div id="score-text" class="font-bold text-lg">Điểm: 0</div>
              </div>
              <div id="question-container" class="bg-black/10 p-6 rounded-2xl text-center mb-6 min-h-[100px] flex items-center justify-center relative">
@@ -169,6 +184,7 @@
                  </button>
              </div>
              <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+             <p id="shortcut-hint" class="text-center text-xs text-white/70 mt-3">Mẹo: nhấn phím 1–4 để chọn đáp án, Enter để sang câu tiếp theo</p>
              <div id="feedback-container" class="text-center mt-4 font-bold text-2xl h-8 text-white"></div>
              <div id="explanation-container" class="hidden relative mt-2 bg-black/10 p-4 rounded-2xl text-white text-center font-medium">
                  <p id="explanation-text" class="pr-10"></p>
@@ -318,7 +334,18 @@
             <button class="back-to-admin-btn w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button>
         </div>
 
-        <div id="history-panel" class="hidden"><h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Lịch SỬ Làm Bài</h2><div id="history-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4 custom-scrollbar"></div><button class="back-to-admin-btn w-full mt-6 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button></div>
+        <div id="review-screen" class="hidden">
+            <h2 class="text-3xl font-bold text-gray-800 mb-3 text-center">📋 Xem Lại Bài Làm</h2>
+            <div id="review-summary" class="p-4 bg-white/30 rounded-2xl mb-4 text-gray-800 text-center font-semibold"></div>
+            <div id="review-list" class="space-y-3 p-3 bg-white/20 rounded-2xl custom-scrollbar max-h-96 overflow-y-auto"></div>
+            <div class="flex flex-col md:flex-row gap-3 mt-6">
+                <button id="retry-wrong-btn" class="w-full glass-btn bg-orange-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-orange-500/80">🔁 Luyện lại câu sai</button>
+                <button id="review-leaderboard-btn" class="w-full glass-btn bg-indigo-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-indigo-500/80">🏆 Bảng Xếp Hạng</button>
+                <button id="review-home-btn" class="w-full glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">🏠 Về Menu</button>
+            </div>
+        </div>
+
+        <div id="history-panel" class="hidden"><h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Lịch SỬ Làm Bài</h2><div id="history-table-container" class="overflow-x-auto bg-white/50 rounded-2xl p-4 custom-scrollbar"></div><button id="export-history-btn" class="w-full mt-4 glass-btn bg-emerald-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-emerald-500/80">⬇️ Xuất lịch sử (CSV)</button><button class="back-to-admin-btn w-full mt-4 glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl text-lg shadow-lg hover:bg-gray-500/80">Quay lại</button></div>
         
         <div id="leaderboard-panel" class="hidden">
             <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">🏆 Bảng Xếp Hạng 🏆</h2>
@@ -334,7 +361,7 @@
 
     <!-- Modals -->
     <div id="login-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0"><div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative"><h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Đăng Nhập Admin</h2><form id="login-form"><div class="mb-4"><label for="username" class="block text-gray-700 font-semibold mb-2">Tên đăng nhập</label><input type="text" id="username" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"></div><div class="mb-6"><label for="password" class="block text-gray-700 font-semibold mb-2">Mật khẩu</label><input type="password" id="password" class="w-full px-4 py-2 border border-gray-300/50 rounded-2xl bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"></div><p id="login-error" class="text-red-500 text-center text-sm h-4 mb-4"></p><button type="submit" class="w-full glass-btn bg-blue-600/70 text-white font-bold py-3 rounded-2xl hover:bg-blue-600/90">Đăng nhập</button></form><button id="close-modal-btn" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl">&times;</button></div></div>
-    <div id="name-selection-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0"><div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative text-center"><h2 class="text-3xl font-bold text-gray-800 mb-2">Hoàn thành!</h2><p id="modal-final-score" class="text-6xl font-bold text-blue-600 my-4">0/10</p><p id="modal-final-message" class="text-lg text-gray-600 mb-6">Bé đã làm rất tốt! Hãy chọn tên của mình để lưu điểm nhé.</p><div id="name-selection-container" class="space-y-3"></div></div></div>
+    <div id="name-selection-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0"><div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative text-center"><h2 class="text-3xl font-bold text-gray-800 mb-2">Hoàn thành!</h2><p id="modal-final-score" class="text-6xl font-bold text-blue-600 my-4">0/10</p><p id="modal-final-message" class="text-lg text-gray-600 mb-3">Bé đã làm rất tốt! Hãy chọn tên của mình để lưu điểm nhé.</p><p id="modal-best-streak" class="text-sm font-bold text-orange-600 mb-4"></p><div id="name-selection-container" class="space-y-3"></div><button id="show-review-btn" class="mt-4 w-full text-sm font-semibold text-blue-700 hover:text-blue-900">👀 Xem lại bài làm</button></div></div>
     <div id="history-detail-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0"><div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-2xl relative"><h2 class="text-2xl font-bold text-center text-gray-800 mb-4">Chi Tiết Lần Chơi</h2><div id="history-detail-summary" class="text-center text-gray-700 mb-4"></div><div id="history-detail-content" class="space-y-3 bg-white/30 p-4 rounded-2xl custom-scrollbar"></div><button id="close-history-detail-btn" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-3xl">&times;</button></div></div>
     <div id="confirmation-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden opacity-0"><div class="glass-container rounded-3xl shadow-2xl p-8 w-full max-w-sm relative text-center"><h2 class="text-2xl font-bold text-gray-800 mb-4">Xác nhận hành động</h2><p id="confirmation-message" class="text-gray-700 mb-6"></p><div class="flex justify-center gap-4"><button id="confirm-delete-btn" class="w-full glass-btn bg-red-600/70 text-white font-bold py-3 rounded-2xl hover:bg-red-600/90">Xác nhận</button><button id="cancel-delete-btn" class="w-full glass-btn bg-gray-500/60 text-white font-bold py-3 rounded-2xl hover:bg-gray-500/80">Hủy</button></div></div></div>
     
@@ -428,6 +455,7 @@
         let questionBank = {}, userDefinedApiKey = null;
         let selectedSubject, selectedGrade, selectedSemester;
         let currentQuestions = [], currentQuestionIndex = 0, score = 0, sessionAnswers = [];
+        let currentStreak = 0, bestStreak = 0, lastWrongQuestions = [], answeredCurrentQuestion = false;
         let quizQuestionLimit = 10;
         let timerEnabled = false, timerDuration = 30, timerInterval;
         let fullQuestionCollection = []; // Acts as a cache for questions from Supabase
@@ -443,6 +471,7 @@
             studentManager: document.getElementById('student-manager-panel'),
             history: document.getElementById('history-panel'),
             leaderboard: document.getElementById('leaderboard-panel'),
+            review: document.getElementById('review-screen'),
             questionManager: document.getElementById('question-manager-panel'),
             aiGenerator: document.getElementById('ai-generator-panel'),
         };
@@ -486,6 +515,8 @@
                     loadAdminSettings(),
                     loadApiKey()
                 ]);
+
+                syncGameQuestionCountFromSettings();
 
                 document.getElementById('loading-questions').classList.add('hidden');
                 document.getElementById('selections-container').classList.remove('hidden');
@@ -617,6 +648,24 @@
         }
 
         /**
+         * Syncs the per-game question count dropdown with the admin default setting.
+         */
+        function syncGameQuestionCountFromSettings() {
+            const select = document.getElementById('game-question-count');
+            if (!select) return;
+            const limit = parseInt(quizQuestionLimit, 10);
+            if (isNaN(limit) || limit < 1) return;
+            const values = Array.from(select.options).map(o => o.value);
+            if (!values.includes(String(limit))) {
+                const option = document.createElement('option');
+                option.value = String(limit);
+                option.textContent = `${limit} câu`;
+                select.appendChild(option);
+            }
+            select.value = String(limit);
+        }
+
+        /**
          * Saves admin settings to Supabase.
          */
         async function saveAdminSettings(button) {
@@ -651,6 +700,7 @@
                 timerEnabled = newTimerEnabled;
                 timerDuration = newTimerDuration;
                 quizQuestionLimit = newQuizQuestionLimit;
+                syncGameQuestionCountFromSettings();
 
                 feedbackEl.textContent = "Đã lưu cài đặt!";
                 feedbackEl.className = 'text-center text-sm font-bold h-4 mt-4 text-green-800';
@@ -890,6 +940,7 @@
          */
         async function displayHistory() {
             showScreen('history');
+            quizHistory = [];
             const container = document.getElementById('history-table-container');
             container.innerHTML = '<p class="text-center text-gray-500">Đang tải lịch sử...</p>';
 
@@ -1069,6 +1120,14 @@
         function startGame() {
             clearInterval(timerInterval);
             sessionAnswers = [];
+            currentStreak = 0;
+            bestStreak = 0;
+            lastWrongQuestions = [];
+            answeredCurrentQuestion = false;
+
+            const countSelect = document.getElementById('game-question-count');
+            const requestedCount = countSelect ? parseInt(countSelect.value, 10) : quizQuestionLimit;
+            const questionLimit = isNaN(requestedCount) ? quizQuestionLimit : requestedCount;
 
             const errorEl = document.getElementById('start-error');
             errorEl.textContent = '';
@@ -1081,8 +1140,8 @@
                 return;
             }
 
-            let allAvailableQuestions = questionsForSelection.sort(() => Math.random() - 0.5);
-            currentQuestions = allAvailableQuestions.slice(0, quizQuestionLimit);
+            let allAvailableQuestions = [...questionsForSelection].sort(() => Math.random() - 0.5);
+            currentQuestions = questionLimit > 0 ? allAvailableQuestions.slice(0, questionLimit) : allAvailableQuestions;
 
             if (currentQuestions.length === 0) {
                 errorEl.textContent = "Lỗi: Không đủ câu hỏi để bắt đầu. Vui lòng chọn lại.";
@@ -1101,6 +1160,7 @@
          */
         function displayQuestion() {
             clearInterval(timerInterval);
+            answeredCurrentQuestion = false;
             document.getElementById('feedback-container').innerHTML = '';
             document.getElementById('explanation-container').classList.add('hidden');
             document.getElementById('next-btn').classList.add('hidden');
@@ -1126,6 +1186,14 @@
 
             document.getElementById('progress-text').textContent = `Câu ${currentQuestionIndex + 1}/${currentQuestions.length}`;
             document.getElementById('score-text').textContent = `Điểm: ${score}`;
+
+            const streakEl = document.getElementById('streak-display');
+            if (currentStreak > 1) {
+                streakEl.textContent = `🔥 ${currentStreak}`;
+                streakEl.classList.remove('hidden');
+            } else {
+                streakEl.classList.add('hidden');
+            }
 
             const readQuestionBtn = document.getElementById('read-question-btn');
             readQuestionBtn.onclick = () => speakText(normalizeTextForSpeech(questionData.question), readQuestionBtn);
@@ -1153,6 +1221,8 @@
          * Checks the user's selected answer.
          */
         function checkAnswer(selectedButton, correctAnswer) {
+            if (answeredCurrentQuestion) return;
+            answeredCurrentQuestion = true;
             clearInterval(timerInterval);
             document.querySelectorAll('.answer-option').forEach(btn => btn.disabled = true);
 
@@ -1184,6 +1254,22 @@
                 correctAnswer: correctAnswer,
                 isCorrect: isCorrect
             });
+
+            if (isCorrect) {
+                currentStreak++;
+                bestStreak = Math.max(bestStreak, currentStreak);
+            } else {
+                currentStreak = 0;
+                lastWrongQuestions.push(questionData);
+            }
+
+            const streakEl = document.getElementById('streak-display');
+            if (currentStreak > 1) {
+                streakEl.textContent = `🔥 ${currentStreak}`;
+                streakEl.classList.remove('hidden');
+            } else {
+                streakEl.classList.add('hidden');
+            }
 
             document.getElementById('next-btn').classList.remove('hidden');
             getExplanationFromAI(questionData.question, questionData.answer, selectedGrade);
@@ -1223,6 +1309,9 @@
             else if (percentage >= 50) finalMessageElement.textContent = "Làm tốt lắm! Hãy chọn tên để lưu điểm nào.";
             else finalMessageElement.textContent = "Cố gắng hơn lần sau nhé! Chọn tên để lưu điểm nào.";
 
+            const bestStreakEl = document.getElementById('modal-best-streak');
+            bestStreakEl.textContent = bestStreak > 1 ? `🔥 Chuỗi đúng dài nhất: ${bestStreak} câu` : '';
+
             const resultData = {
                 // date is handled by created_at in supabase
                 subject: selectedSubject,
@@ -1241,7 +1330,7 @@
                     const playerName = e.target.dataset.name;
                     saveResult(resultData, playerName);
                     hideModal('nameSelection');
-                    displayLeaderboard();
+                    showReview();
                 }
             };
 
@@ -1253,11 +1342,126 @@
          */
         function resetGame() {
             showScreen('selection');
+            clearInterval(timerInterval);
             selectedSubject = null;
             selectedGrade = null;
             selectedSemester = null;
+            sessionAnswers = [];
+            currentQuestions = [];
+            lastWrongQuestions = [];
+            currentStreak = 0;
+            bestStreak = 0;
             document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('selected'));
             updateStartButtonState();
+        }
+
+        /**
+         * Shows a review of the most recent quiz session with correct answers.
+         */
+        function showReview() {
+            if (!sessionAnswers.length || !currentQuestions.length) return;
+            hideModal('nameSelection');
+
+            const labels = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
+            const summaryEl = document.getElementById('review-summary');
+            summaryEl.textContent = `${labels[selectedSubject] || ''} • ${labels[selectedGrade] || ''} • ${labels[selectedSemester] || ''} — Đúng ${score}/${currentQuestions.length} câu${bestStreak > 1 ? ` • Chuỗi đúng dài nhất: ${bestStreak}` : ''}`;
+
+            const list = document.getElementById('review-list');
+            list.innerHTML = '';
+            sessionAnswers.forEach((answer, index) => {
+                const item = document.createElement('div');
+                item.className = `p-3 rounded-xl border ${answer.isCorrect ? 'border-green-500 bg-green-100/60' : 'border-red-500 bg-red-100/60'}`;
+
+                const title = document.createElement('p');
+                title.className = 'font-bold text-gray-800';
+                title.textContent = `${index + 1}. ${answer.questionText}`;
+
+                const chosen = document.createElement('p');
+                chosen.className = `text-sm ${answer.isCorrect ? 'text-green-700' : 'text-red-700'}`;
+                chosen.textContent = `Bé chọn: ${answer.userAnswer || 'Không trả lời'}`;
+
+                item.appendChild(title);
+                item.appendChild(chosen);
+
+                if (!answer.isCorrect) {
+                    const correct = document.createElement('p');
+                    correct.className = 'text-sm text-blue-700';
+                    correct.textContent = `Đáp án đúng: ${answer.correctAnswer}`;
+                    item.appendChild(correct);
+                }
+                list.appendChild(item);
+            });
+
+            const retryBtn = document.getElementById('retry-wrong-btn');
+            if (lastWrongQuestions.length > 0) {
+                retryBtn.textContent = `🔁 Luyện lại ${lastWrongQuestions.length} câu sai`;
+                retryBtn.disabled = false;
+                retryBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                retryBtn.textContent = '🎉 Không có câu sai';
+                retryBtn.disabled = true;
+                retryBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+
+            showScreen('review');
+        }
+
+        /**
+         * Starts a new practice session using only the questions answered incorrectly.
+         */
+        function startWrongPractice() {
+            if (!lastWrongQuestions.length) return;
+            clearInterval(timerInterval);
+            currentQuestions = [...lastWrongQuestions].sort(() => Math.random() - 0.5);
+            lastWrongQuestions = [];
+            sessionAnswers = [];
+            currentQuestionIndex = 0;
+            score = 0;
+            currentStreak = 0;
+            bestStreak = 0;
+            answeredCurrentQuestion = false;
+            showScreen('game');
+            displayQuestion();
+        }
+
+        /**
+         * Exports the cached quiz history to a CSV file.
+         */
+        function exportHistoryCSV() {
+            if (!quizHistory || quizHistory.length === 0) {
+                alert('Chưa có dữ liệu lịch sử để xuất.');
+                return;
+            }
+
+            const labels = { toan: 'Toán', tiengviet: 'Tiếng Việt', lop1: 'Lớp 1', lop2: 'Lớp 2', hocky1: 'Học Kỳ 1', hocky2: 'Học Kỳ 2' };
+            const escapeCell = value => `"${String(value ?? '').replace(/"/g, '""')}"`;
+            const header = ['Ngày giờ', 'Tên', 'Môn', 'Lớp', 'Học kỳ', 'Điểm', 'Tổng số câu', 'Tỷ lệ (%)'];
+
+            const rows = quizHistory.map(record => {
+                const total = record.total_questions || 0;
+                const percent = total > 0 ? Math.round((record.score / total) * 100) : 0;
+                return [
+                    record.created_at ? new Date(record.created_at).toLocaleString('vi-VN') : '',
+                    record.name || 'Không lưu',
+                    labels[record.subject] || record.subject || '',
+                    labels[record.grade] || record.grade || '',
+                    labels[record.semester] || record.semester || '',
+                    record.score ?? '',
+                    total,
+                    percent
+                ];
+            });
+
+            const csv = '\uFEFF' + [header, ...rows].map(row => row.map(escapeCell).join(',')).join('\r\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `lich-su-lam-bai-${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
 
         // --- UI & MODAL MANAGEMENT ---
@@ -1856,6 +2060,53 @@
             soundsEnabled = !soundsEnabled;
             document.getElementById('speaker-on-icon').classList.toggle('hidden', !soundsEnabled);
             document.getElementById('speaker-off-icon').classList.toggle('hidden', soundsEnabled);
+        });
+
+        document.getElementById('show-review-btn').addEventListener('click', () => {
+            playSound('click');
+            hideModal('nameSelection');
+            showReview();
+        });
+
+        document.getElementById('retry-wrong-btn').addEventListener('click', () => {
+            playSound('click');
+            startWrongPractice();
+        });
+
+        document.getElementById('review-leaderboard-btn').addEventListener('click', () => {
+            playSound('click');
+            displayLeaderboard();
+        });
+
+        document.getElementById('review-home-btn').addEventListener('click', () => {
+            playSound('click');
+            resetGame();
+        });
+
+        document.getElementById('export-history-btn').addEventListener('click', () => {
+            playSound('click');
+            exportHistoryCSV();
+        });
+
+        // Keyboard shortcuts during the game: 1-4 to answer, Enter to continue.
+        document.addEventListener('keydown', (event) => {
+            if (screens.game.classList.contains('hidden')) return;
+            if (event.target && ['INPUT', 'SELECT', 'TEXTAREA'].includes(event.target.tagName)) return;
+
+            if (/^[1-4]$/.test(event.key)) {
+                const options = document.querySelectorAll('#options-container .answer-option');
+                const button = options[parseInt(event.key, 10) - 1];
+                if (button && !button.disabled) {
+                    event.preventDefault();
+                    button.click();
+                }
+            } else if (event.key === 'Enter') {
+                const nextBtn = document.getElementById('next-btn');
+                if (!nextBtn.classList.contains('hidden')) {
+                    event.preventDefault();
+                    nextBtn.click();
+                }
+            }
         });
 
         document.querySelectorAll('.choice-btn').forEach(btn => btn.addEventListener('click', (e) => {
